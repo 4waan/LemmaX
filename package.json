@@ -1,13 +1,23 @@
 {
   "name": "lemmax",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "demo": "node examples/assess.mjs",
     "demo:billing": "node examples/billing.mjs",
-    "benchmark:verify": "node scripts/verify-scifact.mjs"
+    "benchmark:verify": "node scripts/verify-scifact.mjs && node scripts/verify-retrieval.mjs",
+    "benchmark:retrieval": "node scripts/benchmark-retrieval.mjs",
+    "demo:retrieval": "node examples/retrieval.mjs",
+    "mcp": "node scripts/mcp-server.mjs",
+    "mcp:check": "node scripts/smoke-mcp.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "3.25.76"
   }
 }

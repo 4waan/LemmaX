@@ -1,6 +1,6 @@
 # Implemented assessment boundary
 
-Version 0.1.0. These exports are local/server-side computational functions. The HTTP and MCP wrappers in the design document are not yet implemented.
+Package version 0.2.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP, authenticated private-company transport and fundable quotes remain open. [Retrieval and MCP contract](Retrieval-and-MCP.md).
 
 ## Inputs and authority
 

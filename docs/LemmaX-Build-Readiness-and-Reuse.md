@@ -1,5 +1,7 @@
 # LemmaX: build readiness, existing assets, and testnet validation
 
+Current implemented slice: two public retrieval connectors, paired frozen benchmark, subscription workload allocation and a read-only stdio MCP demo. [Contract, evidence and remaining boundaries](Retrieval-and-MCP.md).
+
 Repository code and focused local checks were inspected at Lemma commit `e002b5b77eae5587b2946cfa2ab52a4ae35ab6ca` and LemmaXperiment commit `b912eb522af0f179763091d91472b975ca8f6194`. Existing LemmaXperiment working-tree changes were preserved.
 
 **Conclusion:** we can start the implementation architecture and a parameterized revenue model now. The [architecture](LemmaX-Architecture.md) and [math/API contract](LemmaX-Math-and-API.md) already define their foundations. Six decisions below determine the executable MVP. Prices, revenue forecasts, comparative model results, partner adoption, and a Monad deployment are not established.

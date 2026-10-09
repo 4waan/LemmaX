@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "retrieval-oracle/v1",
+  "subjectCodeSha256": {
+    "src/retrieval.mjs": "4a875855dd1dff5bee095e233236e11c96da76e0672b492cb234f97c95ceb6da",
+    "src/scifact.mjs": "5f3ad44edc93c7fdd236a83b3da9eb63539aa1e7489045ee75e5c312c19a6b21",
+    "scripts/benchmark-retrieval.mjs": "a404c83996dced25a687657b86db69804e5e39e1a1522deb6efda732c892372c"
+  },
+  "reportSha256": "fddbe7f956ab693a308b1f89f4d6697d896a57ff47122c648f8014b31a5b38c9",
+  "checkedCases": 300,
+  "checkedOffers": 2,
+  "representativeGroups": 247,
+  "maximumAbsoluteTfidfScoreDifference": 2.7755575615628914e-16,
+  "defects": [],
+  "claimsVerified": [
+    "All BM25 top-five rankings match the earlier Python baseline.",
+    "All TF-IDF top-five rankings match Python full-vector cosine enumeration.",
+    "All public labels match prepared qrels.",
+    "All representative groups match adjacency-graph components."
+  ],
+  "circularity": [
+    "Implementation and feature tests share an author/session.",
+    "Python reference uses full document-vector dot products rather than JS posting accumulation; this is not an independent human audit."
+  ],
+  "notTested": [
+    "Label correctness",
+    "Statistical independence or calibration",
+    "Enterprise acceptance",
+    "API concurrency or deployment capacity"
+  ]
+}

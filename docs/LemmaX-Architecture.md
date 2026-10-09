@@ -1,5 +1,7 @@
 # LemmaX: private adoption, public commitments, and settlement
 
+Current implemented slice: two public retrieval connectors, paired frozen benchmark, subscription workload allocation and a read-only stdio MCP demo. [Contract, evidence and remaining boundaries](Retrieval-and-MCP.md).
+
 This document records the evaluator preference, deterministic directory scope, blob-storage research, and business/benchmark evidence.
 
 **Status:** architecture and hackathon scope document. Confirmed directions are distinguished from implementation proposals and open decisions. No contracts, deployments, prices, sponsor integrations, repository migrations, or cryptographic benchmarks are approved or implemented by this document.

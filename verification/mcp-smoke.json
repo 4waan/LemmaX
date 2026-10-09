@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "mcp-smoke/v1",
+  "transport": "stdio",
+  "benchmarkReplaysChecked": 200,
+  "codeSha256": {
+    "src/mcp.mjs": "df8a31956169e01385c1f23ef706461d6026306af7cd99997217e91743abb588",
+    "src/directory.mjs": "b09db5cdc1f263097330d469cbee6b1d30c146a20f89faaeedfb0b2c62b9e978",
+    "scripts/mcp-server.mjs": "8513d064ccd8202462d8720f6e7eddc54a61d45cfd63ce4cca7e4698ec4cb162",
+    "scripts/smoke-mcp.mjs": "2554cfc4797e5d8d2ca62dc2edde7828d70312b8795528397c39e044920ec6e9"
+  },
+  "toolCount": 5,
+  "observedAt": 1791553540,
+  "modes": [
+    {
+      "inFlightWindow": 1,
+      "requests": 100,
+      "elapsedMs": 337.192417,
+      "achievedLocalRequestsPerSecond": 296.56657433076265,
+      "meanRoundTripMs": 3.3610941500000036,
+      "p95RoundTripMs": 5.582333000000062
+    },
+    {
+      "inFlightWindow": 4,
+      "requests": 100,
+      "elapsedMs": 291.04320800000005,
+      "achievedLocalRequestsPerSecond": 343.59159482601626,
+      "meanRoundTripMs": 9.678892050000012,
+      "p95RoundTripMs": 15.240958999999975
+    }
+  ],
+  "meanRoundTripMs": 6.519993100000009,
+  "p95RoundTripMs": 13.732874999999922,
+  "limitation": "One local SDK client with in-flight windows of one and four. Synchronous server scoring, no worker parallelism. Not an independent partner integration, sustained production load or network SLA."
+}

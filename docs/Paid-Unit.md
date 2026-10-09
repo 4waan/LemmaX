@@ -45,7 +45,7 @@ Failure eligibility and allocation are evaluated under frozen terms. Deadline ex
 
 `P_outcome` describes this success event for the named applicable population. A public benchmark query cohort describes benchmark tasks. It does not become an integration-acceptance or private-company forecast merely because the same connector is used.
 
-The first library calculates Beta posterior means and equal-tail credible intervals from already admitted snapshots, then expected completion cost and contribution. All estimator, cost and commercial inputs are supplied explicitly. The example is synthetic. Actual evidence admission, signatures, authorization, HTTP/MCP transport and settlement remain separate implementation work.
+The first library calculates Beta posterior means and equal-tail credible intervals from already admitted snapshots, then expected completion cost and contribution. All estimator, cost and commercial inputs are supplied explicitly. The example is synthetic. The public benchmark stdio MCP transport is implemented. Private-company evidence admission, signatures, authenticated transport and settlement remain separate implementation work. [Implemented public connector boundary](Retrieval-and-MCP.md).
 
 Quoted principal, retained ancillary costs, buyer fallback and operator earned fees must be distinguished. The user agreed the following policy for a separately purchased attempt:
 
