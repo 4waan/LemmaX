@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+coverage/
+private/
+runs/
+__pycache__/
+.DS_Store

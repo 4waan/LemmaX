@@ -1,0 +1,14 @@
+{
+  "method": "JavaScript gold-document rank lookup, checked against Python ranked-document scan",
+  "query_metric_pairs_checked": 1500,
+  "aggregate_metrics_checked": 5,
+  "boundary_fixtures_checked": 7,
+  "maximum_allowed_absolute_difference": 1e-12,
+  "sample_size_examples_verified": [
+    59,
+    299,
+    2995
+  ],
+  "retriever_ranking_independently_verified": false,
+  "company_representativeness_verified": false
+}

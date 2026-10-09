@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "date": "2026-10-09",
+  "integerShapeQuantilesChecked": 216,
+  "closedFormHalfShapeQuantilesChecked": 9,
+  "monetaryExpectationsChecked": 400,
+  "cdfAbsoluteTolerance": 2e-08,
+  "maximumCdfAbsoluteDifference": 3.0655271052189152e-12,
+  "closedFormAbsoluteTolerance": 1e-11,
+  "maximumClosedFormAbsoluteDifference": 2.220446049250313e-16,
+  "monetaryAbsoluteTolerance": 2e-10,
+  "maximumMonetaryAbsoluteDifference": 3e-13,
+  "oracle": "Python Decimal binomial-tail identity at 65 digits; exact-decimal outcome-branch enumeration for money",
+  "circularity": "Feature tests and implementation share one author/session. The oracle uses different formulas and language, but is not an independent human audit.",
+  "codeSha256": {
+    "assessment.mjs": "9bd6e3238066cb1bc32996e9fea95cf7be1a6ed43a5c214c1b98fff13091d5b4",
+    "beta.mjs": "f7f8330fccbc5fbef6f60ed53be2bfc4d1b370bf82b4877d7026cd83e317b458"
+  },
+  "limitations": [
+    "Not every real-shape Beta parameter was covered",
+    "No probability calibration or context-transfer claim",
+    "Forecast money uses floating point; no atomic-unit settlement tested",
+    "No evidence admission, auth, connector or chain deployment tested"
+  ]
+}
