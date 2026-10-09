@@ -16,7 +16,7 @@ The assessment and retrieval cores use only the Node standard library. The imple
 - Deterministic cost ordering for eligible, evidenced, commercially available offers in one currency.
 - Workload allocation for pay-as-you-go, new subscriptions and authorized existing allowances, with reserved quota and overage constraints.
 
-Two working retrieval offers use BM25 and TF-IDF. Their paired SciFact benchmark and a public stdio MCP server support discovery, assessment, retrieval, source reading and replay. Trusted private-company evidence admission, HTTP transport, authenticated private purchase transport, persistent key/record custody and Monad Testnet deployment are subsequent work. Signed attempt primitives and a locally tested native-asset settlement prototype are implemented. No customer adoption, production prices or revenue forecast is claimed.
+Two working retrieval offers use BM25 and TF-IDF. Their paired SciFact benchmark and a public stdio MCP server support discovery, assessment, retrieval, source reading and replay. Trusted private-company evidence admission, HTTP transport, authenticated private purchase transport, persistent key/record custody and Monad Testnet deployment are subsequent work. Signed attempt primitives and a locally tested native-asset settlement prototype are implemented. A Monad client, event reconciler and dry-run-first deployment script prepare it for Monad Testnet; no contract is deployed. No customer adoption, production prices or revenue forecast is claimed.
 
 ## Run locally
 
@@ -36,6 +36,8 @@ To rerun retrieval, obtain the public SciFact dataset from the source documented
 
 `npm run demo:billing` compares synthetic tariffs at three workload sizes. These are workload averages, not next-request charges. No provider calls or quota reservations are performed.
 
+`npm run deploy:settlement` estimates a Monad deployment and sends nothing unless broadcasting is explicitly enabled. [Network settings, confirmation stages and deployment](docs/Monad-Settlement-Path.md).
+
 To run retrieval and MCP, prepare the public corpus outside tracked source and set `LEMMAX_SCIFACT_DIR`. [Setup, tool schemas and measured limitations](docs/Retrieval-and-MCP.md). Then run `npm run demo:retrieval` or `npm run mcp:check`. Clients launch `node scripts/mcp-server.mjs` directly through stdio.
 
 ## Boundaries
@@ -48,7 +50,7 @@ Forecast money uses finite decimal numbers. Actual quotes and settlement need in
 
 ## Verification
 
-The library has 55 passing Node tests. A separate Python Decimal oracle checked 225 Beta quantiles and 400 monetary expectations against different formulas. The maximum checked CDF difference was approximately `3.07e-12`; the maximum monetary difference was `3e-13`. This is numerical verification, not an independent human audit or probability calibration. [Verification report](verification/numerical-verification.json).
+The library has 63 passing Node tests. A separate Python Decimal oracle checked 225 Beta quantiles and 400 monetary expectations against different formulas. The maximum checked CDF difference was approximately `3.07e-12`; the maximum monetary difference was `3e-13`. This is numerical verification, not an independent human audit or probability calibration. [Verification report](verification/numerical-verification.json).
 
 A separate Python Decimal per-unit billing oracle checked 342 cases, including quota boundaries and disabled overage. Maximum per-case cost difference was `2e-15`. [Billing verification report](verification/billing-verification.json).
 
@@ -58,7 +60,7 @@ The paired benchmark measured BM25 at 224/300 successful cases (74.67%) and TF-I
 
 The real SDK smoke check matched 200 replays across request windows of one and four. It is a bounded local integration probe, not production capacity or partner adoption. [Smoke report](verification/mcp-smoke.json).
 
-The native-asset prototype passed 54 lifecycle checks in isolated Anvil with Monad execution rules, including signature binding, capped charges, principal refunds, full timeout refunds, replay rejection and withdrawal safety. A separate encoding/integer oracle checked 128 commitments, 256 typed digests and 256 allocations. No testnet contract is deployed. [Settlement contract and limits](docs/Attempt-and-Settlement.md).
+The native-asset prototype passed 64 lifecycle checks in isolated Anvil with Monad execution rules, including signature binding, capped charges, principal refunds, full timeout refunds, replay rejection, withdrawal safety, the reserve-balance guard, confirmation-stage waits, deployment code checks and event reconciliation. Funding used 353,458 gas; Monad charges the gas limit, so the client sends each write with an explicit, bounded headroom over its estimate. A separate encoding/integer oracle checked 128 commitments, 256 typed digests and 256 allocations. No testnet contract is deployed. [Settlement contract and limits](docs/Attempt-and-Settlement.md).
 
 ## Design and next decision
 
@@ -71,8 +73,9 @@ The native-asset prototype passed 54 lifecycle checks in isolated Anvil with Mon
 - [Implemented library contract](docs/Implementation.md)
 - [Retrieval and MCP integration](docs/Retrieval-and-MCP.md)
 - [Private records, receipts and settlement](docs/Attempt-and-Settlement.md)
+- [Monad settlement path, deployment and plan](docs/Monad-Settlement-Path.md)
 
-The user agreed connector-principal refund for eligible failure, with actual separately quoted, capped execution/evaluation charges retained. Unused reserve is buyer-owned credit. An agent-controlled withdrawal bar with a minimum and subscription-aware cost comparisons are being specified. Withdrawal semantics, offer versions, tariffs, evaluator authority, timeouts and contract allocations remain to be frozen before funding is enabled. Workload billing allocation is implemented; live provider entitlement checks and quota reservation remain open. Two retrieval offers and their public MCP integration are implemented. Signed quote/receipt primitives and local Monad settlement are implemented. The user selected full timeout refund. Next, finalize real evaluator/failure terms and configure a testnet deployment. No external partner is currently lined up.
+The user agreed connector-principal refund for eligible failure, with actual separately quoted, capped execution/evaluation charges retained. Unused reserve is buyer-owned credit. An agent-controlled withdrawal bar with a minimum and subscription-aware cost comparisons are being specified. Withdrawal semantics, offer versions, tariffs, evaluator authority, timeouts and contract allocations remain to be frozen before funding is enabled. Workload billing allocation is implemented; live provider entitlement checks and quota reservation remain open. Two retrieval offers and their public MCP integration are implemented. Signed quote/receipt primitives and local Monad settlement are implemented. The user selected full timeout refund. Testnet deployment tooling is implemented and unused. Next, select the funding asset, demonstration issuer and evaluator keys, and demonstration tariffs, then deploy to Monad Testnet and join the MCP server to the funding path. [Plan and open decisions](docs/Monad-Settlement-Path.md#4-plan). No external partner is currently lined up.
 
 ## Repository hygiene
 

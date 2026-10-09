@@ -1,6 +1,6 @@
 # Private attempts, signed receipts and settlement
 
-Package version 0.3.0 adds private-record commitments/encryption, signed quote and receipt primitives, exact integer allocation, and a native-asset Solidity settlement prototype. The public MCP server remains read-only and non-fundable. No contract has been deployed to Monad Testnet.
+Package version 0.3.0 added private-record commitments/encryption, signed quote and receipt primitives, exact integer allocation, and a native-asset Solidity settlement prototype. Version 0.4.0 adds the Monad client, reconciler and deployment script described in [the Monad settlement path](Monad-Settlement-Path.md). The public MCP server remains read-only and non-fundable. No contract has been deployed to Monad Testnet.
 
 The user selected full refund when no valid evaluator verdict is submitted by the settlement deadline. Success pays connector principal and actual capped execution/evaluation charges. Eligible failure refunds principal and retains only those actual capped charges. Timeout credits the entire locked amount to the buyer, with no service deductions.
 
@@ -64,10 +64,10 @@ The compiler is pinned to Solidity 0.8.37 with an Osaka target. OpenZeppelin sup
 
 With the prepared public corpus, `npm run demo:attempt` signs and verifies a real successful and failed retrieval case, while keeping keys, record plaintext and salts out of its output. Its charge amounts are illustrative, its contract domain is an undeployed local fixture, and it moves no funds.
 
-The Node suite has 55 passing tests. The local Monad lifecycle script passed 54 checks, including JS/Solidity digest agreement, funding/authority/caps, exact allocations, timeout, duplicate operations, failed transfer rollback, withdrawal ownership, reentrant receiver and solvency. [Local lifecycle report](../verification/settlement-check.json).
+The Node suite has 63 passing tests. The local Monad lifecycle script passed 64 checks through the settlement client and deployment script, including JS/Solidity digest agreement, funding/authority/caps, exact allocations, timeout, duplicate operations, failed transfer rollback, withdrawal ownership, reentrant receiver and solvency. [Local lifecycle report](../verification/settlement-check.json).
 
 A separate Python word-encoding oracle with Rust Keccak checked 128 record commitments, 256 typed digests and 256 exact allocations. [Oracle report](../verification/attempt-verification.json). Feature tests and implementation share an author/session. These are different-formula checks, not an independent human security audit, evaluation-honesty proof or key-custody review.
 
 ## Remaining testnet work
 
-Choose the real company-approved evaluator and quote issuer, finalize failure eligibility and dispute terms, select actual tariffs/deadlines, and connect persistent company-controlled records. Then configure a testnet deployer and fund the exact demonstration budget. The public MCP server needs a separately authenticated, wallet-authorized purchase path before it can issue fundable customer quotes. No wallet credentials or testnet funds have been used by this work.
+Choose the real company-approved evaluator and quote issuer, finalize failure eligibility and dispute terms, select actual tariffs/deadlines, and connect persistent company-controlled records. The deployment script, settlement client and reconciler are implemented and unused against a public network; a deployer key and the exact demonstration budget remain to be supplied. [Monad settlement path](Monad-Settlement-Path.md). The public MCP server needs a separately authenticated, wallet-authorized purchase path before it can issue fundable customer quotes. No wallet credentials or testnet funds have been used by this work.
