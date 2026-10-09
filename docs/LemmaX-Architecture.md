@@ -329,3 +329,7 @@ The [build readiness and reuse review](LemmaX-Build-Readiness-and-Reuse.md) orde
 Conversation-derived decisions are recorded separately from external capabilities. External sources were checked during research. The hackathon pages were read through the browser; some other provider pages were unavailable or contained differing deployment descriptions, and those limits are stated above.
 
 The architecture remains a design document. The initial retrieval research ran one public lexical benchmark and checked its metric arithmetic. The subsequent reuse review inspected both repositories and ran focused existing tests, including 37 local LemmaXperiment contract tests. These checks do not test new retrieval connectors, comparative model offers, a new Monad deployment/settlement flow, or company adoption. No economic validation or protection against all inference from public payment metadata is established.
+
+## Implemented attempt and settlement slice
+
+Private AES-GCM record envelopes, randomized commitments, EIP-712 quotes/receipts and a native-asset Solidity settlement prototype are implemented. The user selected full locked-amount refund after the settlement deadline if no valid verdict is accepted. Local Monad execution tests cover both outcomes, timeout, authority, replay protection and withdrawals. The public MCP demo remains read-only; live company approval, eligibility/disputes, persistent key custody and testnet deployment remain open. [Contract and verification](Attempt-and-Settlement.md).

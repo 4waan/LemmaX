@@ -1,6 +1,6 @@
 # Implemented assessment boundary
 
-Package version 0.2.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP, authenticated private-company transport and fundable quotes remain open. [Retrieval and MCP contract](Retrieval-and-MCP.md).
+Package version 0.3.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP and authenticated private-company purchase transport remain open. Signed quotes/receipts and a native-asset contract prototype are tested locally; no customer funding endpoint or testnet deployment exists. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
 
 ## Inputs and authority
 
@@ -42,7 +42,7 @@ Each result includes `pOutcome`, `cReuse`, `costInterval`, `expectedSaving`, `cu
 
 Rank only eligible, sufficiently evidenced, available candidates by expected cost. Compare one currency and shared context; exact cost ties use the offer identifier. An unknown candidate keeps `rank: null` instead of receiving an artificial low probability or numeric last place.
 
-The result object is internal. The public response needs explicit authorization/redaction for evidence counts, identities and operator margin. Forecast values do not authorize funding. Canonical private records, randomized commitments, evaluator signatures and atomic-unit settlement remain to be implemented.
+The result object is internal. The public response needs explicit authorization/redaction for evidence counts, identities and operator margin. Forecast values do not authorize funding. Private record commitments/encryption, evaluator signatures and integer native-asset settlement are implemented in a separate prototype. Live record custody, company access control and deployment remain open.
 
 ## Verification limits
 

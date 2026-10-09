@@ -1,6 +1,6 @@
 {
   "name": "lemmax",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -13,11 +13,24 @@
     "benchmark:verify": "node scripts/verify-scifact.mjs && node scripts/verify-retrieval.mjs",
     "benchmark:retrieval": "node scripts/benchmark-retrieval.mjs",
     "demo:retrieval": "node examples/retrieval.mjs",
+    "demo:attempt": "node examples/attempt.mjs",
     "mcp": "node scripts/mcp-server.mjs",
-    "mcp:check": "node scripts/smoke-mcp.mjs"
+    "mcp:check": "node scripts/smoke-mcp.mjs",
+    "contract:compile": "node scripts/compile-settlement.mjs",
+    "settlement:check": "node scripts/settlement-check.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
+    "viem": "2.57.4",
     "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.6.1",
+    "solc": "0.8.37"
+  },
+  "overrides": {
+    "solc": {
+      "tmp": "0.2.7"
+    }
   }
 }

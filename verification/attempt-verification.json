@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "attempt-oracle/v1",
+  "codeSha256": {
+    "src/attempt.mjs": "8681edb074f7f9a1d92f7afa394ba1e747cc5b786ff79601c630cfa35e2abfb2"
+  },
+  "casesChecked": 128,
+  "commitmentsChecked": 128,
+  "typedDigestsChecked": 256,
+  "allocationsChecked": 256,
+  "defects": [],
+  "claimsVerified": [
+    "Restricted ABI record hash and randomized commitments match Python word encoding with Rust Keccak.",
+    "EIP-712 quote and receipt digests match independently assembled Python domain/type encoding.",
+    "Success/failure/timeout allocations match source-by-source exact-integer accounting."
+  ],
+  "circularity": [
+    "Feature tests and implementation share an author/session.",
+    "Python uses explicit word encoding instead of viem ABI/EIP-712 routines; Keccak comes from independent Rust cast.",
+    "This is not an independent human audit."
+  ],
+  "notTested": [
+    "AES-GCM implementation audit",
+    "Evaluator honesty",
+    "Key custody and company access control",
+    "Monad testnet deployment",
+    "Automatic withdrawal thresholds"
+  ]
+}

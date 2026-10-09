@@ -23,3 +23,7 @@ GitHub Actions checkout and setup-node are referenced at pinned commit hashes in
 ## MCP runtime
 
 The transport uses the [official TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) and [Zod](https://github.com/colinhacks/zod), both under their upstream MIT licenses. Exact package versions and transitive integrity hashes are pinned in `package-lock.json`. Runtime dependencies are installed by the operator, not vendored. The assessment and retrieval algorithms themselves use the Node standard library.
+
+## Signed receipts and contract tooling
+
+[viem](https://github.com/wevm/viem) supplies Ethereum ABI, typed hashing and local-account signing. [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) supplies EIP-712, ECDSA recovery and reentrancy protection. [Solidity](https://github.com/ethereum/solidity) is the pinned build compiler. [Official Foundry](https://github.com/foundry-rs/foundry) provides isolated local Monad execution testing. Their upstream licenses/notices remain in the installed packages and tool distributions. No earlier Lemma or LemmaXperiment contract source was copied. The original LemmaX source license remains unselected.

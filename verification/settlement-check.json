@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "settlement-check/v1",
+  "network": "local-anvil-monad",
+  "hardfork": "MonadTen",
+  "anvilVersion": "1.8.5",
+  "compiler": "0.8.37+commit.f401782d.Emscripten.clang",
+  "evmVersion": "osaka",
+  "codeSha256": {
+    "contracts/AttemptSettlement.sol": "25435f156a2e570c21852f5ca356fd0b6a62422519776a8e84c6fa6a49aea3c9",
+    "contracts/test/WithdrawalReceivers.sol": "a63f49f2519aa17bd3cfa8698bdef75a2a7cf1816f60e43e7e6b1be862fc4474",
+    "src/attempt.mjs": "8681edb074f7f9a1d92f7afa394ba1e747cc5b786ff79601c630cfa35e2abfb2",
+    "scripts/compile-settlement.mjs": "dc0267cdcc0e5adfc2d1cc17ce030e1936b3c5cdc5945634efd21aeb314c7199",
+    "scripts/settlement-check.mjs": "4d834c241e189a802e89a07ee5576ed440661cc9b0007f3b8b37a60c9bcbb5fe"
+  },
+  "checksPassed": 54,
+  "observedAt": 1791555895,
+  "verified": [
+    "JS/Solidity typed digest agreement",
+    "Issuer, buyer and evaluator authority",
+    "Wrong-chain and modified terms rejected",
+    "Exact funding and reserve caps",
+    "Success/failure allocation",
+    "Full timeout refund",
+    "Duplicate funding/settlement/refund rejected",
+    "Owner credit withdrawal and solvency",
+    "Failed transfer restores credit",
+    "Reentrant withdrawal blocked while remaining credit exists"
+  ],
+  "limitations": [
+    "Isolated local Monad execution, not a testnet deployment",
+    "Illustrative amounts, no commercial tariffs",
+    "Evaluator correctness and company approval are trusted",
+    "Automatic withdrawal bar and ERC-20 support not implemented"
+  ]
+}

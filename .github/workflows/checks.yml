@@ -18,3 +18,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run benchmark:verify
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+        with:
+          version: v1.8.5
+      - run: npm run settlement:check
