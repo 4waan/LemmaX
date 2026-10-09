@@ -1,6 +1,6 @@
 # LemmaX: EIP-4844 blobs, Monad, and evidence storage
 
-Researched October 9, 2026 (IST). This note extends the [LemmaX architecture](LemmaX-Architecture.md) and [math/API specification](LemmaX-Math-and-API.md). It records verified capabilities and proposed integration choices. No blob transactions, contracts, storage accounts, bridges, or deployments were created.
+This note extends the [LemmaX architecture](LemmaX-Architecture.md) and [math/API specification](LemmaX-Math-and-API.md). It records verified capabilities and proposed integration choices. No blob transactions, contracts, storage accounts, bridges, or deployments were created.
 
 **Recommendation for discussion:** keep the four-day MVP on Monad with private, durable evidence storage and signed evaluator outcomes. Consider Ethereum blobs later for publishing authorized batches that other participants need to retrieve and replay. Native blob storage on Monad is currently unavailable. Adding the optional publication route is not an adopted product decision.
 
@@ -32,9 +32,9 @@ If publication is later selected, the approved evaluator can check it offchain a
 
 ## 3. Developments beyond the original EIP
 
-The relevant recent change is **PeerDAS**, delivered with Ethereum's Fusaka upgrade on December 3, 2025. It uses distributed sampling and reconstruction to scale blob availability without requiring every node to download every blob. This improves Ethereum's publication capacity. It does not add permanent retention or make Monad accept blob transactions. [Ethereum Fusaka overview](https://ethereum.org/roadmap/fusaka/).
+**PeerDAS**, delivered with Ethereum's Fusaka upgrade, uses distributed sampling and reconstruction to scale blob availability without requiring every node to download every blob. This improves Ethereum's publication capacity. It does not add permanent retention or make Monad accept blob transactions. [Ethereum Fusaka overview](https://ethereum.org/roadmap/fusaka/).
 
-The Ethereum Foundation reported a target of 14 blobs and maximum of 21 per block after the January 2026 parameter increases. The mainnet consensus configuration inspected for this research also schedules a maximum of 21 from January 7, 2026. These are block limits; PeerDAS sets a separate maximum of six blobs per transaction. [Ethereum Foundation checkpoint](https://blog.ethereum.org/2026/01/20/checkpoint-8), [mainnet configuration](https://raw.githubusercontent.com/ethereum/consensus-specs/master/configs/mainnet.yaml), [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594).
+The Ethereum Foundation reported a target of 14 blobs and maximum of 21 per block after its parameter increases. The mainnet consensus configuration inspected for this research also schedules a maximum of 21. These are block limits; PeerDAS sets a separate maximum of six blobs per transaction. [Ethereum Foundation checkpoint](https://blog.ethereum.org/2026/01/20/checkpoint-8), [mainnet configuration](https://raw.githubusercontent.com/ethereum/consensus-specs/master/configs/mainnet.yaml), [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594).
 
 PeerDAS also changes the network transaction wrapper and proof format. An older blob tutorial is insufficient evidence that an SDK, signing service, and RPC provider support the current network. Pin and verify their actual versions before implementing a publisher. [EIP-7594 networking specification](https://eips.ethereum.org/EIPS/eip-7594).
 
@@ -135,7 +135,7 @@ This applies only when `h > c_variable`, no extra fee is charged, and the assume
 
 Buyer-paid publication changes `C_reuse` only through actual additional expenditure or valued delay. Put a directly paid chain fee in `G`, or a LemmaX-billed publication service in `T`, without counting both. If LemmaX absorbs the expense, its margin falls without automatically increasing the buyer's bill. Keeping settlement independent avoids making the buyer wait for a batch merely to receive a verdict.
 
-For a storage benchmark, Cloudflare currently lists Standard R2 at $0.015 per GB-month, with a monthly allowance of 10 GB-month, one million Class A operations, and ten million Class B operations. Egress is free under the documented pricing. Those allowances do not cover the whole application, evaluator, or database. This is an optional comparison, not a hosting migration. [R2 pricing, updated October 1, 2026](https://developers.cloudflare.com/r2/pricing/).
+For a storage benchmark, Cloudflare lists Standard R2 at $0.015 per GB-month, with a monthly allowance of 10 GB-month, one million Class A operations, and ten million Class B operations. Egress is free under the documented pricing. Those allowances do not cover the whole application, evaluator, or database. This is an optional comparison, not a hosting migration; recheck prices before quoting. [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
 
 For a small prototype whose evidence fits those allowances, conventional storage can have zero marginal storage charges. Ethereum publication adds transaction costs. Blobs should therefore be justified by their availability/replay benefit, rather than a blanket claim that they are the cheapest permanent storage.
 

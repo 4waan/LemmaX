@@ -1,6 +1,6 @@
 # LemmaX: business requirements and benchmark evidence
 
-Prepared October 9, 2026. This continues the [architecture](LemmaX-Architecture.md) and [mathematics/API](LemmaX-Math-and-API.md). The three candidate capabilities are invoice extraction, support classification, and knowledge retrieval. Hosted access and company-run model assets remain desired catalog forms.
+This continues the [architecture](LemmaX-Architecture.md) and [mathematics/API](LemmaX-Math-and-API.md). The three candidate capabilities are invoice extraction, support classification, and knowledge retrieval. Hosted access and company-run model assets remain desired catalog forms.
 
 **Current decision:** do not use the tentative knowledge base as trusted evidence. Use reproducible public benchmarks first, followed by tests of the actual connector and an authorized company workload. No company corpus, willingness to pay, first capability, or purchased right has been confirmed. The research below informs that decision rather than substituting a preference score for it.
 
@@ -48,7 +48,7 @@ Public benchmark results answer a restricted question: how a specified pipeline 
 
 ## 3. Actual retrieval baseline
 
-Executed locally on October 9, 2026 using the official SciFact archive. The archive MD5 matches BEIR's published value. The runner uses Python's standard library, an untuned BM25 implementation, title plus document text, lowercase ASCII tokenization, `k1=1.2`, `b=0.75`, no stemming or stopword removal, and no test-set tuning. It is not the official BEIR BM25 implementation. Ranking configuration and hashes are preserved in the result file.
+Executed locally using the official SciFact archive. The archive MD5 matches BEIR's published value. The runner uses Python's standard library, an untuned BM25 implementation, title plus document text, lowercase ASCII tokenization, `k1=1.2`, `b=0.75`, no stemming or stopword removal, and no test-set tuning. It is not the official BEIR BM25 implementation. Ranking configuration and hashes are preserved in the result file.
 
 Measured on **5,183 documents, 300 test queries, and 339 labeled query/document pairs**:
 
@@ -82,7 +82,7 @@ For binary tests, more examples must be tied to a claim. With zero observed fail
 
 Compare offers only for the same business job and workload horizon. A document parser's billing unit cannot establish that it is cheaper than a search embedding service. Published prices are components; measured costs must include the pipeline and company effort.
 
-Published component prices checked October 9, 2026:
+Published component price references (recheck before quoting):
 
 - Google Document AI's invoice parser bills $0.10 for each document of up to ten pages, with additional ten-page document ranges billed separately. Thus 300 short documents have a $30 parser list-price component before credits, review, storage, and integration. This is arithmetic from published pricing, not an executed invoice benchmark. [Document AI pricing](https://cloud.google.com/products/document-ai/pricing).
 - Voyage lists `voyage-4-lite` at $0.02 per million tokens, with an introductory free allowance. Embeddings alone exclude search indexing, source connectors, permission enforcement, updates, reranking, and generation. The allowance is not a permanent business-cost assumption. [Voyage pricing](https://docs.voyageai.com/docs/pricing).

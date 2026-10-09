@@ -1,6 +1,6 @@
 # Implemented assessment boundary
 
-Version 0.1.0, October 9, 2026. These exports are local/server-side computational functions. The HTTP and MCP wrappers in the design document are not yet implemented.
+Version 0.1.0. These exports are local/server-side computational functions. The HTTP and MCP wrappers in the design document are not yet implemented.
 
 ## Inputs and authority
 
@@ -49,3 +49,23 @@ The result object is internal. The public response needs explicit authorization/
 Feature tests and implementation share an author/session. The separate numerical oracle uses Python Decimal binomial-tail identities for integer-shape Beta quantiles, a closed-form half-shape distribution, and outcome-branch monetary enumeration. It avoids the production Gamma/continued-fraction implementation. Its report is bound to code hashes.
 
 The oracle covers 216 integer-shape quantiles, nine half-shape quantiles and 400 monetary expectations. It does not cover every real-shape input, establish probability calibration, audit evidence authority, or validate a settlement contract. The external verification harness remains outside the tracked source tree.
+
+## Workload billing adapter
+
+`priceBillingPlan(workload, plan)` computes access cost over one explicit horizon and meter. Workload requires `workloadRef`, `horizonRef`, `billingMeterRef`, positive integer `taskCount`, nonnegative `usageUnits`, and `costBasis` (`incremental` or `acquisition`). Forecast quantities must describe the same cases and retry budget as the assessment context.
+
+Plans require matching horizon/meter, `planRef`, `currency`, `billingModel`, `unitPrice`, `setupCost`, `quotaOpportunityCost` and explicit `overageAllowed`. Zero costs must be supplied explicitly. Subscription access is `new` or `existing`:
+
+- New access adds `fixedFee` once and uses `includedUnits` before overage.
+- Existing access excludes the already-paid fixed fee. Its admitted `entitlementSnapshot` must match plan, horizon and meter, confirm authorization/coverage, and include `snapshotRef`, `remainingUnits` and `reservedUnits`. Available allowance is remaining minus reserved.
+- An acquisition/renewal decision requires a new-plan quote, rather than silently reusing a sunk-fee comparison.
+
+The result reports applied fee, available allowance, billed units, usage charge, total access cost and per-case allocation (`workload_average`). Missing tariff or entitlement inputs produce `needs_check` with null costs. Exceeding allowance when overage is disabled produces `ineligible` with null costs. Invalid numbers and mismatched currencies are rejected.
+
+`assessBillingPlans({workload, offers, context, policy, asOf})` adds an eligible offer's per-case access allocation to its base `buyerCosts.attemptOverhead`, then calls the assessment core. Base overhead must exclude the access costs already allocated by this adapter. `purchasePrice` is any additional refundable connector-service principal; already-covered access cannot also be charged there. Unknown or disallowed billing suppresses ranking without manufacturing evidence.
+
+This allocation leaves task-success probabilities unchanged. Provider access expense is not automatically operator revenue. Supply operator terms separately, excluding double-counted subscription revenue. Full period-level LemmaX subscription contribution accounting remains to be implemented.
+
+The caller must supply admitted pricing and entitlement snapshots. No live provider authentication, quota reservation, purchases, cancellation, tier/seat pricing, multi-period renewal, currency conversion, or withdrawal policy is implemented. Workload averages are not executable next-request prices. Forecast arithmetic uses floating-point currency values; settlement still requires atomic units.
+
+The separate billing oracle enumerates per-unit charges in Python Decimal across 342 cases. It checks all three billing paths, zero/exact/adjacent quota boundaries, disabled overage and allocation across task counts. Maximum checked per-case difference was `2e-15`. The oracle and feature tests share an author/session, so this is numerical verification rather than an independent human audit.

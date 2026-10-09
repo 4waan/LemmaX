@@ -1,6 +1,6 @@
 # LemmaX: build readiness, existing assets, and testnet validation
 
-Prepared October 9, 2026 (IST). Repository code and focused local checks were inspected at Lemma commit `e002b5b77eae5587b2946cfa2ab52a4ae35ab6ca` and LemmaXperiment commit `b912eb522af0f179763091d91472b975ca8f6194`. Existing LemmaXperiment working-tree changes were preserved.
+Repository code and focused local checks were inspected at Lemma commit `e002b5b77eae5587b2946cfa2ab52a4ae35ab6ca` and LemmaXperiment commit `b912eb522af0f179763091d91472b975ca8f6194`. Existing LemmaXperiment working-tree changes were preserved.
 
 **Conclusion:** we can start the implementation architecture and a parameterized revenue model now. The [architecture](LemmaX-Architecture.md) and [math/API contract](LemmaX-Math-and-API.md) already define their foundations. Six decisions below determine the executable MVP. Prices, revenue forecasts, comparative model results, partner adoption, and a Monad deployment are not established.
 
@@ -38,7 +38,7 @@ Use the public SciFact result as an external relevance baseline. Add a separatel
 
 Choose a company-approved evaluator execution location and signer, funding-party acceptance of its authority, verdict format, signing-key rotation, deadline, dispute access, and retention. Prefer evaluating private records within the approved company environment where practical.
 
-Resolve which failures are refundable, whether consumed provider/service charges are retained, what happens without a timely verdict, and who receives each allocation. The contract must authenticate and bind the signed outcome to the funded attempt, chain, contract, quote/policy, nonce, and deadline.
+The user agreed full connector-principal refund for eligible failure, with only actual separately quoted, capped execution/evaluation charges retained. Unused reserve is buyer-owned credit. Resolve failure eligibility, withdrawal threshold versus retained-balance semantics, what happens without a timely verdict, and who receives each allocation. The contract must authenticate and bind the signed outcome to the funded attempt, chain, contract, quote/policy, nonce, and deadline.
 
 Publish only the randomized attempt commitment, settlement outcome, and necessary financial/authorization state. Existing public resource identifiers and evaluator report links cannot be carried over automatically. Wallets, payees, amounts, and timing can still reveal relationships; a commitment does not eliminate that metadata exposure. No ZK or FHE dependency is needed for the chosen trust model.
 
@@ -134,11 +134,13 @@ Use the general expected-earned-revenue form if the chosen policy does not earn 
 
 Escrow principal owed to publishers or customers is a liability, not revenue. Testnet token transfers are accounting demonstrations. Buyer-owned compute is not automatically a LemmaX expense. Break-even paid volume is fixed overhead divided by positive, population-weighted contribution, with forecast uncertainty and evidence refresh costs included. If contribution is nonpositive, increasing volume does not repair that unit model.
 
-Remaining inputs are real tariffs, refund/consumed-charge policy, operator costs, refresh cost/horizon, paid volumes/conversion, and support burden. We can produce the equations, ledger, and sensitivity analysis now; a credible revenue forecast waits for these measurements. Benchmark-case `p` cannot price an unrelated integration-success share.
+Subscription billing is also in scope. Compare an authorized existing plan by incremental cost and acquisition/renewal by its added fixed fee, allowance, overage and actual workload horizon. LemmaX's own plan revenue follows a period-level contribution model; it is not a success fee earned afresh on every included query. [Subscription and usage mathematics](LemmaX-Math-and-API.md#subscription-and-usage-billing).
+
+Remaining inputs are real tariffs, failure eligibility and exact consumed-charge allocation, withdrawal policy, operator costs, refresh cost/horizon, paid volumes/conversion, and support burden. We can produce the equations, ledger, and sensitivity analysis now; a credible revenue forecast waits for these measurements. Benchmark-case `p` cannot price an unrelated integration-success share.
 
 ## 8. Hackathon criteria and four-day order
 
-The official **Trust, Identity & AI Infrastructure** rubric assigns **20% to Traction & Path Forward**. Another team integrating during the hackathon is an example of traction evidence, rather than a separate mandatory validation score. The track also weights market readiness at 25%. Its published deadline is October 14, 2026 at 09:29 IST. The live product, public repository, access instructions, logo, and technical/pitch videos need submission preparation. [Official track, inspected October 9, 2026](https://hackathon.monad.xyz/tracks/trust-identity-ai).
+The official **Trust, Identity & AI Infrastructure** rubric assigns **20% to Traction & Path Forward**. Another team integrating during the hackathon is an example of traction evidence, rather than a separate mandatory validation score. The track also weights market readiness at 25%. Check the submission deadline in the portal. The live product, public repository, access instructions, logo, and technical/pitch videos need submission preparation. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
 **Day 1:** resolve decisions 1 and 2, freeze cases/interface/evidence policy, and prepare the small partner integration package. Identify a suitable partner without promising adoption.
 

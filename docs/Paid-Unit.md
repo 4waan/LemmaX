@@ -1,12 +1,12 @@
 # LemmaX paid unit: bounded source-retrieval attempt
 
-Working MVP scope, October 9, 2026 (IST). The user approved proceeding after the one-case recommendation. This document makes that scope implementable; fee/refund terms and numerical defaults still require selection.
+Working MVP scope. The user approved proceeding after the one-case recommendation and agreed the principal-refund policy. This document makes that scope implementable; tariffs, withdrawal semantics and numerical limits still require selection.
 
 ## What is listed and purchased
 
 The asset class is `authorized_source_retrieval`. A listing identifies one versioned connector capability, including its adapter and model/provider/runtime configuration where applicable. It can be exposed through MCP or equivalent HTTP.
 
-The demo purchase is one bounded attempt against a frozen task and corpus/access profile. Its result contains up to five ranked source references with provenance. The attempt includes the declared retry allowance and its aggregate consumption. A retry is not a new independent benchmark case.
+The measurement unit is one bounded attempt against a frozen task and corpus/access profile. Its result contains up to five ranked source references with provenance. The attempt includes the declared retry allowance and its aggregate consumption. A retry is not a new independent benchmark case. Resource access may be billed per use or covered by a subscription; an attempt is not necessarily a fresh purchase of access already paid for.
 
 Each reference needs source/document identity within the private boundary, source version, location sufficient to verify provenance, and rank. Exact excerpt limits and output schema belong in the next offer/interface decision.
 
@@ -47,4 +47,33 @@ Failure eligibility and allocation are evaluated under frozen terms. Deadline ex
 
 The first library calculates Beta posterior means and equal-tail credible intervals from already admitted snapshots, then expected completion cost and contribution. All estimator, cost and commercial inputs are supplied explicitly. The example is synthetic. Actual evidence admission, signatures, authorization, HTTP/MCP transport and settlement remain separate implementation work.
 
-Quoted principal, retained ancillary costs, buyer fallback and operator earned fees must be distinguished. The next user decision is whether eligible failure refunds only connector principal or the entire quoted bill. The library accepts explicit conditional retained-cost assumptions without selecting that policy.
+Quoted principal, retained ancillary costs, buyer fallback and operator earned fees must be distinguished. The user agreed the following policy for a separately purchased attempt:
+
+- Success pays the connector principal plus actual, separately quoted execution/evaluation charges within their caps.
+- Eligible failure refunds connector principal. Only actual, attributable execution/evaluation charges within the accepted caps are retained.
+- Unused execution/evaluation reserve remains the buyer's money. Crediting or withdrawing it does not create revenue.
+
+Failure eligibility, missing verdicts, timeout/dispute handling and allocation authority still require definition. The library can represent full principal refund with `failureRetention: 0`; retaining consumed services belongs in the expected service bill, not an extra principal charge.
+
+## Reserve credit and agent-controlled withdrawal
+
+The user requires a minimum and an agent-configurable bar above that minimum. The proposed implementation separates the execution reserve needed for a quoted task from the threshold used to batch withdrawal of settled, available credit.
+
+Let `M` be the minimum automatic-withdrawal threshold for the funding asset, `theta >= M` the buyer-authorized agent setting, and `U` settled credit available to withdraw. Locked funds for active attempts are excluded from `U`. Settlement credits unused amounts immediately; a bar governs transfer scheduling rather than ownership of the money.
+
+The bar's meaning is awaiting clarification:
+
+- **Accumulated-credit trigger:** when `U >= theta`, request withdrawal of available credit.
+- **Retained working balance:** preserve `theta` and request withdrawal of only `max(0, U-theta)`.
+
+No mode or numeric minimum is selected. The proposed minimum should follow measured withdrawal expense and an explicit acceptable fee fraction, using the same asset denomination. The agent cannot bypass the quote's required execution funding by lowering its withdrawal setting. Recommend allowing an explicit close-out withdrawal below the automatic threshold so small balances do not become stranded; this is a proposal, not a finalized rule.
+
+Withdrawal preferences require wallet authority, a permitted destination and replay protection. A threshold check can run in the company's existing agent or a simple worker. It does not require LemmaX to deploy an intelligent subagent.
+
+## Subscription-backed attempts
+
+Subscription billing is part of the requested scope. Keep capability/outcome identity separate from the offer's billing plan. An API or MCP interface does not determine whether access is billed per call, by a recurring plan, by seat, or through an included allowance.
+
+For an already-paid plan, check authorized entitlement, remaining allowance, billing period and applicable usage route before quoting an attempt. Do not charge the recurring access fee again as per-attempt principal. Reserve only incremental charges and separately quoted LemmaX services. Consuming included allowance can still have an opportunity cost when it displaces other intended work.
+
+A newly purchased or renewed subscription is a distinct commercial right. Individual retrieval failure does not automatically refund that plan's entire recurring fee; cancellation, trial and service-credit terms belong to the plan's acceptance policy. Per-case quality probabilities cannot substitute for plan-activation or period-level acceptance evidence. [Subscription comparison mathematics](LemmaX-Math-and-API.md#subscription-and-usage-billing).

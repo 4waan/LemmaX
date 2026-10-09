@@ -1,0 +1,10 @@
+---
+description: Keep project documentation free of dates and timestamps
+alwaysApply: true
+---
+
+- Do not add calendar dates or wall-clock timestamps to documentation prose, headings, captions, tables, or preparation/update/research notes.
+- Use versions, commit hashes, and evidence references for provenance in documentation.
+- Keep cited source URLs accurate, including date-containing paths when required by the source.
+- Keep required runtime time fields and original machine-readable benchmark provenance separate from documentation prose.
+- Check documentation for dates and timestamps before committing.

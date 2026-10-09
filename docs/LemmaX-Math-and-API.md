@@ -1,7 +1,5 @@
 # LemmaX: decision mathematics and assessment API
 
-Prepared October 9, 2026 (IST).
-
 **Confirmed MVP boundary:** a resource directory with deterministic equations and structured assessment outputs. LemmaX returns `P_outcome`, ranks eligible resources by `C_reuse`, and governs its service offers through contribution margin. It does not generate an integration plan or perform agentic adoption work in the initial assessment path.
 
 **Status:** proposed mathematical and API contract for review. No production prices, priors, evidence thresholds, probability calibration claims, margin floors, subscriptions, refund deductions, or implementation are selected by the numerical examples. This specification takes precedence over earlier adoption-plan proposals for the MVP.
@@ -119,6 +117,8 @@ expected_saving = B - C_reuse
 
 If only some failures qualify for a full refund, `R_failure = (1-q)*P`, where `q` is the conditional probability of refund eligibility. Partial refunds require the actual expected retained amount. Unknown refund eligibility must be returned as a missing assumption rather than replaced with a full-refund promise.
 
+The agreed per-attempt policy refunds full connector principal on eligible failure, retains only actual separately quoted execution/evaluation charges within accepted caps, and returns unused reserve to the buyer's available credit. A cohort restricted to eligible failures has `R_failure = 0`. A broader failure population must model its actual eligibility mix. Consumed service charges remain in `A`; unused reserve is not a consumed charge. Withdrawal fees or delay/locked-capital costs belong in `G` or `D` once, under the selected withdrawal policy.
+
 Direct completion cost `B_direct` can differ from `B_failure`, since a failed attempt may leave useful work or introduce recovery costs. In that case compare `B_direct - C_reuse`, not an automatically reused `B`.
 
 ### Ranking and uncertainty
@@ -141,6 +141,34 @@ cost_high = max(C_reuse(p_low), C_reuse(p_high))
 The direction depends on whether successful purchase cost is above or below failed-attempt retention plus fallback and loss. A lower probability is not universally the higher-cost case. This range reflects probability uncertainty only; uncertain expenditure and fallback need separately labeled scenarios or a joint model.
 
 The forecast is not a spending authorization or a settlement verdict. Actual payments use frozen quotes and integer atomic-unit accounting.
+
+### Subscription and usage billing
+
+Billing plans are separate from capability and interface definitions. Subscription access is within the requested directory scope. Compare plans over one declared workload and horizon; a recurring access fee cannot be treated as a per-call purchase price or multiplied by a per-case success probability.
+
+For a simple fixed-fee plan with included allowance and linear overage, define:
+
+```text
+C_subscription(H) = F_incremental(H)
+                  + o * max(0, usageUnits(H) - Q_available(H))
+                  + O_quota(H) + I_setup(H)
+                  + sum_i E[W_i + (T_i-S_i) + P_retained_i
+                            + indicator(Y_i=0)*(B_i+L_i)]
+                  + G_H + D_H
+average_case_cost = C_subscription(H) / N_H
+```
+
+`H` is the shared workload horizon, `N_H` its task count, and usage units use the plan's actual meter. `Q_available` excludes allowance already spent or reserved for other work. `o` is the overage tariff under the verified terms; unsupported overage is an eligibility limit, not permission to spend. `O_quota` is a declared opportunity cost for displacing other planned uses. `I_setup` is one-time setup expenditure. The per-case sum excludes expenses already counted in the plan, setup, chain or delay terms.
+
+For a current, already-paid plan, `F_incremental = 0` if this decision creates no upgrade, extra seat, renewal or other additional fixed charge. Report that as an incremental spending comparison. For acquisition or renewal planning, include the actual additional recurring fee over the same horizon. A fully allocated cost view may attribute sunk subscription expense, but it must be labeled separately and must not control the incremental choice by silently charging it twice.
+
+Already-covered access normally has no new per-case access principal: `P_retained_i = 0` for that right. Additional connector services can have their own explicit charges. A plan-level cancellation or service credit follows its own terms; there is no automatic refund of a whole subscription when one query fails.
+
+The simple workload allocation model is implemented in `src/billing.mjs`. Flat-rate, seat, tiered, usage and credit-based subscriptions require their actual constraints and tariff functions. [Stripe recurring pricing models](https://docs.stripe.com/products-prices/pricing-models). As a concrete model-service example, Hugging Face applies included compute credits on its routed billing path, while a custom provider key is billed by the provider and does not use those credits. Verify the actual route and entitlement before treating an allowance as available. [Hugging Face billing](https://huggingface.co/docs/inference-providers/pricing).
+
+Proposed assessment additions are `billingModel`, `billingPlanRef`, `entitlementSnapshotRef`, `costBasis`, `workloadRef`, `horizonRef`, forecast task/usage quantities, remaining allowance, and fee/overage constraints. The local `priceBillingPlan` and `assessBillingPlans` exports implement a subset of these fields, described in [the implemented contract](Implementation.md). HTTP/MCP transport remains proposed. The adapter consumes admitted entitlement snapshots; it does not verify live subscription rights, reserve quota or enforce provider rate limits.
+
+Ways to lower measured completion cost are to use authorized existing entitlement where it fits the task, avoid unnecessary new subscriptions, consume appropriately allocated included allowance before overage, share cached evaluation/indexing work only within authorized boundaries, and batch small onchain withdrawals. Each depends on terms, quality, freshness, quota and actual cost measurements. Neither a subscription nor a high utilization forecast guarantees a lower cost.
 
 ## 4. Contribution margin: governing LemmaX services
 
@@ -169,6 +197,18 @@ m = E[R_LemmaX + F_attempt - C_attempt - S_attempt] - K/N
 ```
 
 `R_LemmaX` is the purchase revenue actually earned by LemmaX under that policy. No success fee percentage, margin floor, or evidence reuse count has been selected.
+
+For a LemmaX subscription, use a period-level contribution model:
+
+```text
+M_H = R_subscription_earned(H)
+    + sum_i E[R_attempt_i + F_extra_i - C_i - S_i]
+    - K_H - C_period_direct(H)
+```
+
+`R_subscription_earned` is LemmaX's own earned plan revenue or earned subscription commission, rather than the entire provider invoice owed to someone else. `F_extra_i` includes only fees charged in addition to the subscription; included evaluations cannot also be counted as new per-case revenue. Evidence expense and directly attributable period expense are counted once. Use actual plan refund/credit terms when deriving earned revenue. Do not multiply the recurring subscription fee by per-query `p` or assume every subscribed task produces a new marketplace commission.
+
+A proposed economical LemmaX plan includes cached assessments and a bounded evaluation allowance, with transparent additional execution/evaluation charges and optional overage. Batch evidence refresh and settlement where useful, while preserving per-case outcomes and private access controls. Plan prices, allowances and discounts are unselected; unlimited costly execution is not assumed.
 
 ### Service availability and subsidy limits
 

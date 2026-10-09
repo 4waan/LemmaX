@@ -1,0 +1,25 @@
+{
+  "subjectSha256": "2c1da5cbd9832dc6f650d69411f5c4bbe72c94d63bdb13551694a9208cf25b89",
+  "checkedCases": 342,
+  "maxAbsolutePerCaseDifference": "2E-15",
+  "oracle": "Python Decimal per-unit charge enumeration, outside tracked source",
+  "defects": [],
+  "observations": [
+    "Existing entitlement excludes sunk fixed fee and deducts reserved quota.",
+    "New plan fixed fee is applied once per declared workload."
+  ],
+  "claimsVerified": [
+    "Pay-as-you-go, new subscription, existing entitlement, zero allowance, exact quota and adjacent boundaries, disabled overage, workload allocation."
+  ],
+  "circularity": [
+    "Feature tests and implementation share an author/session.",
+    "Oracle uses a different language and enumerated units but is not an independent human audit."
+  ],
+  "notTested": [
+    "Live provider entitlement or pricing",
+    "Concurrent quota reservation",
+    "Tiered, seat-based or multi-period tariffs",
+    "Atomic-unit settlement",
+    "Forecast workload accuracy"
+  ]
+}

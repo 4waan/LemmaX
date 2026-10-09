@@ -14,6 +14,7 @@ This first slice implements a deterministic, dependency-free assessment library:
 - Expected completion cost, probability-only cost intervals and direct-completion savings.
 - Contribution and service-availability gates, without changing probabilities to favor commission.
 - Deterministic cost ordering for eligible, evidenced, commercially available offers in one currency.
+- Workload allocation for pay-as-you-go, new subscriptions and authorized existing allowances, with reserved quota and overage constraints.
 
 There is a synthetic CLI demonstration and a separately recorded public SciFact lexical baseline. HTTP/MCP transport, trusted evidence admission, retrieval offers, signatures, wallets and Monad deployment are subsequent work. No customer adoption, production prices or revenue forecast is claimed.
 
@@ -24,12 +25,15 @@ Use Node.js 22 or newer. No package installation or model API key is needed.
 ```sh
 npm test
 npm run demo
+npm run demo:billing
 npm run benchmark:verify
 ```
 
 `npm run demo` marks every offer, count, tariff and policy as synthetic. Its numerical values are not the measured SciFact result or selected commercial defaults. `npm run benchmark:verify` independently recomputes stored relevance metrics and checks the measured runner hash; it does not rerun retrieval or certify the stored labels.
 
 To rerun retrieval, obtain the public SciFact dataset from the source documented in [the benchmark runner](benchmarks/scifact_bm25.py), then pass local paths using its `--help` instructions. The dataset and document text are not vendored. [Dataset attribution and rights](THIRD_PARTY.md).
+
+`npm run demo:billing` compares synthetic tariffs at three workload sizes. These are workload averages, not next-request charges. No provider calls or quota reservations are performed.
 
 ## Boundaries
 
@@ -41,7 +45,9 @@ Forecast money uses finite decimal numbers. Actual quotes and settlement need in
 
 ## Verification
 
-The first slice has 23 passing Node tests. A separate Python Decimal oracle checked 225 Beta quantiles and 400 monetary expectations against different formulas. The maximum checked CDF difference was approximately `3.07e-12`; the maximum monetary difference was `3e-13`. This is numerical verification, not an independent human audit or probability calibration. [Verification report](verification/numerical-verification.json).
+The library has 36 passing Node tests. A separate Python Decimal oracle checked 225 Beta quantiles and 400 monetary expectations against different formulas. The maximum checked CDF difference was approximately `3.07e-12`; the maximum monetary difference was `3e-13`. This is numerical verification, not an independent human audit or probability calibration. [Verification report](verification/numerical-verification.json).
+
+A separate Python Decimal per-unit billing oracle checked 342 cases, including quota boundaries and disabled overage. Maximum per-case cost difference was `2e-15`. [Billing verification report](verification/billing-verification.json).
 
 The earlier SciFact run hit a relevant source in the top five on 224 of 300 queries, or 74.67%. It used no paid API calls or model training. That is one untuned lexical baseline, not a model comparison, enterprise acceptance result, or API capacity claim. [Measured report](benchmarks/scifact-bm25-results.json).
 
@@ -55,7 +61,7 @@ The earlier SciFact run hit a relevant source in the top five on 224 of 300 quer
 - [Blob-storage research](docs/LemmaX-Blob-Research.md)
 - [Implemented library contract](docs/Implementation.md)
 
-The immediate policy decision is whether eligible failure refunds connector principal only or the entire quoted bill. Offer versions, tariffs, evaluator authority, timeouts and contract allocations remain to be frozen before funding is enabled. No external partner is currently lined up.
+The user agreed connector-principal refund for eligible failure, with actual separately quoted, capped execution/evaluation charges retained. Unused reserve is buyer-owned credit. An agent-controlled withdrawal bar with a minimum and subscription-aware cost comparisons are being specified. Withdrawal semantics, offer versions, tariffs, evaluator authority, timeouts and contract allocations remain to be frozen before funding is enabled. Workload billing allocation is implemented; live provider entitlement checks and quota reservation remain open. Next, implement two comparable retrieval offers and benchmark the same frozen cases before exposing assessments over MCP. No external partner is currently lined up.
 
 ## Repository hygiene
 

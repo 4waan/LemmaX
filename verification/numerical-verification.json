@@ -1,6 +1,5 @@
 {
   "status": "passed",
-  "date": "2026-10-09",
   "integerShapeQuantilesChecked": 216,
   "closedFormHalfShapeQuantilesChecked": 9,
   "monetaryExpectationsChecked": 400,

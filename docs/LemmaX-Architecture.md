@@ -1,6 +1,6 @@
 # LemmaX: private adoption, public commitments, and settlement
 
-Prepared October 9, 2026 (IST). Updated with the evaluator preference, deterministic directory scope, blob-storage research, and business/benchmark evidence from this conversation.
+This document records the evaluator preference, deterministic directory scope, blob-storage research, and business/benchmark evidence.
 
 **Status:** architecture and hackathon scope document. Confirmed directions are distinguished from implementation proposals and open decisions. No contracts, deployments, prices, sponsor integrations, repository migrations, or cryptographic benchmarks are approved or implemented by this document.
 
@@ -35,8 +35,11 @@ The [business requirements and benchmark evidence](LemmaX-Business-Requirements.
 14. The demo must include minimal reproducible evidence that the approach can scale. Load levels, hardware, budgets, performance thresholds, and extrapolation limits must be explicit. No scale-readiness test has yet been executed for the LemmaX assessment/settlement path.
 15. The user accepted the initial retrieval quality criterion: at least one labeled relevant source among up to five ranked, authorized references, with provenance. Specific resource offers, source connectors, benchmark/cohort policy, and cost/deadline limits remain open.
 16. Per-resource probability comparison is part of the directory output. Each bar estimates success against the same declared acceptance profile and carries evidence and uncertainty. These separate success probabilities need not sum to one. The values `0.84`, `0.05`, and `0.11` supplied in discussion are illustrative, not measured resource estimates.
+17. For a separately purchased attempt, success pays connector principal plus actual separately quoted execution/evaluation charges within their caps. Eligible failure refunds connector principal and retains only those consumed charges. Unused reserve remains buyer-owned credit.
+18. Withdrawal needs a minimum and a buyer-authorized agent-controlled bar above it. The exact minimum, whether the bar triggers withdrawal or preserves a working balance, and close-out behavior remain open. This scheduling preference does not change the amount owed to the buyer.
+19. Subscription-billed resources are within scope alongside usage-billed resources. Capability/outcome and billing-plan identities remain separate. Compare costs over a common workload/horizon, account for authorized existing entitlements, and do not treat a recurring fee as a new successful-query purchase.
 
-The assessment output is now fixed as structured numerical results. The purchased resource right, first resource subtype, shared acceptance predicates, evaluator operator, refund accounting, timeout/dispute policy, subsidy funding, and sponsor choices remain open. No numerical business parameters are selected.
+The assessment output is now fixed as structured numerical results. The first resource offers, exact limits, evaluator operator, failure eligibility, withdrawal semantics, subscription rights/tariffs, timeout/dispute policy, subsidy funding, and sponsor choices remain open. No numerical business parameters are selected. The [paid-unit specification](Paid-Unit.md) records the agreed refund direction and proposed subscription/withdrawal boundaries.
 
 ## 2. Product and component boundary
 
@@ -267,7 +270,7 @@ The architecture is portable to other EVM networks. Monad's performance, primiti
 
 ## 9. Hackathon alignment and sponsor candidates
 
-The official portal was inspected in the browser on October 9, 2026 after the earlier architecture document was written. The target is **Trust, Identity & AI Infrastructure**. Its stated submission deadline is **October 14, 2026 at 09:29 IST**. Plan around the user's four-day development window and reserve time for demonstration and submission. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
+The target is **Trust, Identity & AI Infrastructure**, as verified in the official portal. Plan around the user's four-day development window and reserve time for demonstration and submission. Check the submission deadline in the portal. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
 The track asks for trust/provenance infrastructure, user-controlled data, and portability without dependence on one platform. Its criteria allocate 20% to technical work, 20% to design and developer experience, 15% to originality, 25% to market relevance, and 20% to traction. An API can address developer experience if its documentation and live workflow are clear. [Track criteria](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
@@ -321,6 +324,6 @@ Before implementing, resolve the actual purchased right/service, evidence requir
 
 The [build readiness and reuse review](LemmaX-Build-Readiness-and-Reuse.md) orders the six remaining implementation decisions, inspects the two repositories beyond their top-level summaries, and proposes a bounded retrieval-service testnet demonstration. No independent partner is currently lined up. Internal use of our projects is integration evidence, while another team's use remains a separate validation target. The commercial attempt, probability event, and refund event must use the same unit; benchmark-query success cannot substitute for integration or license acceptance.
 
-Conversation-derived decisions are recorded separately from external capabilities. External sources were checked on October 9, 2026. The hackathon pages were read through the browser; some other provider pages were unavailable or contained differing deployment descriptions, and those limits are stated above.
+Conversation-derived decisions are recorded separately from external capabilities. External sources were checked during research. The hackathon pages were read through the browser; some other provider pages were unavailable or contained differing deployment descriptions, and those limits are stated above.
 
 The architecture remains a design document. The initial retrieval research ran one public lexical benchmark and checked its metric arithmetic. The subsequent reuse review inspected both repositories and ran focused existing tests, including 37 local LemmaXperiment contract tests. These checks do not test new retrieval connectors, comparative model offers, a new Monad deployment/settlement flow, or company adoption. No economic validation or protection against all inference from public payment metadata is established.
