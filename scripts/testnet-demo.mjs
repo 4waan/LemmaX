@@ -18,7 +18,7 @@ import { createEvaluator } from "../src/evaluator.mjs";
 import { createPurchaseDesk, plain } from "../src/purchase.mjs";
 import { createMcpServer } from "../src/mcp.mjs";
 import { createPublicDirectory } from "../src/directory.mjs";
-import { createSciFactIndex, loadSciFact } from "../src/scifact.mjs";
+import { SCIFACT_PROFILE, createSciFactIndex, loadSciFact } from "../src/scifact.mjs";
 import { DEMO_TERMS, formatUsdc, usdcAtomic } from "../src/terms.mjs";
 
 // Runs the agreed three-attempt demonstration (success, eligible failure, timeout) through
@@ -52,8 +52,10 @@ async function budget({ publicClient, usdc, r, plan }) {
   const need = { deployer: plan ? plan.maxCharge : 0n,
     facilitator: (3n * limit("fund") + limit("withdraw")) * maxFeePerGas,
     evaluator: (limit("settleSuccess") + limit("settleFailure") + limit("refundTimeout")) * maxFeePerGas };
-  const usdcNeed = 3n * (BigInt(DEMO_TERMS.principal) + BigInt(DEMO_TERMS.executionCap) + BigInt(DEMO_TERMS.evaluationCap));
-  const rows = {};
+  const total = BigInt(DEMO_TERMS.principal) + BigInt(DEMO_TERMS.executionCap) + BigInt(DEMO_TERMS.evaluationCap), usdcNeed = 3n * total;
+  // The issuer refuses quotes past the operator caps, so check them before anything is sent.
+  const rows = { caps: { maxPerAttempt: formatUsdc(r.caps.maxPerAttempt), perAttemptNeeded: formatUsdc(total), dailyCap: formatUsdc(r.caps.dailyCap),
+    dailyNeeded: formatUsdc(usdcNeed), sufficient: r.caps.maxPerAttempt >= total && r.caps.dailyCap >= usdcNeed } };
   for (const role of ["deployer", "facilitator", "evaluator"]) {
     const have = await publicClient.getBalance({ address: r[role].address });
     rows[role] = { address: r[role].address, monNeeded: formatUnits(need[role], 18), monHeld: formatUnits(have, 18), sufficient: have >= need[role] };
@@ -63,11 +65,29 @@ async function budget({ publicClient, usdc, r, plan }) {
   return { maxFeePerGas: maxFeePerGas.toString(), roles: rows, sufficient: Object.values(rows).every(row => row.sufficient) };
 }
 
+// Assess and choose the offer and cases before any chain access; a stale or unranked
+// assessment stops here instead of after a deployment has been paid for.
+function preflight(report, index, data) {
+  const directory = createPublicDirectory({ report, index, data });
+  const assessments = Object.fromEntries([SCENARIO, CHECK_SCENARIO].map(scenarioRef => [scenarioRef,
+    directory.assess({ profileRef: SCIFACT_PROFILE.profileRef, scenarioRef }).results.map(x => ({ offerRef: x.offerRef, pOutcome: x.pOutcome.mean,
+      cReuse: x.cReuse, expectedSaving: x.expectedSaving, rank: x.rank, reasons: x.reasons }))]));
+  const top = assessments[SCENARIO].find(x => x.rank === 1);
+  if (!top) throw new TypeError(`No offer ranks under ${SCENARIO}: ${[...new Set(assessments[SCENARIO].flatMap(x => x.reasons ?? []))].join(", ")}`);
+  const rows = report.perCase.filter(row => row.outputs[top.offerRef]);
+  const hits = rows.filter(row => row.outputs[top.offerRef].success), misses = rows.filter(row => !row.outputs[top.offerRef].success);
+  if (hits.length < 2 || !misses.length) throw new TypeError("The frozen report lacks the cases this demonstration needs");
+  return { assessments, offerRef: top.offerRef, plans: [{ label: "timeout", caseRef: hits[1].caseRef, profileRef: "demo-timeout/v1" },
+    { label: "success", caseRef: hits[0].caseRef, profileRef: "demo-standard/v1" },
+    { label: "eligible_failure", caseRef: misses[0].caseRef, profileRef: "demo-standard/v1" }] };
+}
+
 async function main(env) {
   const target = env.LEMMAX_DEMO_TARGET;
   if (!["fork", "testnet"].includes(target)) throw new TypeError("Set LEMMAX_DEMO_TARGET to fork or testnet");
   const r = roles(env);
   const data = loadSciFact(env.LEMMAX_SCIFACT_DIR), index = createSciFactIndex(data), report = loadRetrievalReport();
+  const preview = preflight(report, index, data);
   const usdc = MONAD_NETWORKS.testnet.usdc;
   let node = null;
   try {
@@ -93,6 +113,7 @@ async function main(env) {
     const funding = await budget({ publicClient, usdc, r, plan });
     if (target === "testnet" && (env.LEMMAX_DEMO_BROADCAST !== "1" || !funding.sufficient)) {
       return { schemaVersion: "testnet-demo/v1", target, dryRun: true, chainId: chain.id, settlement: reuse ?? "to be deployed", budget: funding,
+        chosenOffer: preview.offerRef, plans: preview.plans,
         next: funding.sufficient ? "Set LEMMAX_DEMO_BROADCAST=1 to run on Monad Testnet." : "Fund the roles marked insufficient, then rerun." };
     }
     const confirm = result => waitForStage(publicClient, result, "verified", { pollMs: 300, timeoutMs: 180000 });
@@ -125,15 +146,12 @@ async function main(env) {
       // The buyer agent ranks offers under its declared alternative, then buys the top offer.
       const assessments = {};
       for (const scenarioRef of [SCENARIO, CHECK_SCENARIO]) {
-        const assessed = await call("lemma_assess", { profileRef: report.profileRef ?? "beir-scifact-test-source-hit5/v1", scenarioRef });
+        const assessed = await call("lemma_assess", { profileRef: SCIFACT_PROFILE.profileRef, scenarioRef });
         assessments[scenarioRef] = assessed.results.map(x => ({ offerRef: x.offerRef, pOutcome: x.pOutcome.mean, cReuse: x.cReuse, expectedSaving: x.expectedSaving, rank: x.rank }));
       }
-      const offerRef = assessments[SCENARIO].find(x => x.rank === 1).offerRef;
-      const outcomes = report.perCase.filter(row => row.outputs[offerRef]);
-      const hits = outcomes.filter(row => row.outputs[offerRef].success), misses = outcomes.filter(row => !row.outputs[offerRef].success);
-      const plans = [{ label: "timeout", caseRef: hits[1].caseRef, profileRef: "demo-timeout/v1" },
-        { label: "success", caseRef: hits[0].caseRef, profileRef: "demo-standard/v1" },
-        { label: "eligible_failure", caseRef: misses[0].caseRef, profileRef: "demo-standard/v1" }];
+      const offerRef = assessments[SCENARIO].find(x => x.rank === 1)?.offerRef;
+      if (offerRef !== preview.offerRef) throw new Error("The agent's assessment differs from the preflight choice");
+      const plans = preview.plans;
       const attempts = [];
       const step = (attempt, name, result) => { attempt.steps[name] = { transactionHash: result.hash ?? result.transactionHash, gasUsed: String(result.gasUsed), gasLimit: String(result.gasLimit),
         ...(target === "testnet" ? { explorer: `${EXPLORER}/tx/${result.hash ?? result.transactionHash}` } : {}) }; };

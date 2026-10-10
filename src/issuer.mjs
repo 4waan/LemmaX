@@ -39,8 +39,11 @@ export function createQuoteIssuer({ account, domain, token, payees, caps, terms 
       bindRecordToQuote(record, salt, quote);
       const authorization = fundingAuthorizationTypedData({ token: { name: token.name, version: token.version, chainId: String(token.chainId), verifyingContract: token.address },
         domain, quote, validAfter: "0", validBefore: window.authorizationValidBefore });
-      const issuerSignature = await account.signTypedData(quoteTypedData(domain, quote));
+      // Reserve before the first await, so concurrent calls cannot all pass the same check.
       issued.set(day, used + total);
+      let issuerSignature;
+      try { issuerSignature = await account.signTypedData(quoteTypedData(domain, quote)); }
+      catch (error) { issued.set(day, issued.get(day) - total); throw error; }
       return { quote, issuerSignature, quoteDigest: quoteDigest(domain, quote), record, salt, authorization, profileRef };
     },
   });

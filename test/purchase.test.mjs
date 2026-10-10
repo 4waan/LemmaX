@@ -58,6 +58,14 @@ test("Issuer signs bound quotes and buyer authorizations and enforces per-attemp
   assert.throws(() => issuerFor(a, { caps: { maxPerAttempt: 7999n, dailyCap: 16000n } }), /per-attempt cap/);
   assert.throws(() => issuerFor(a, { caps: { maxPerAttempt: 0n, dailyCap: 1n } }), /positive/);
   await assert.rejects(issue(3, "../etc"), /Invalid benchmark case/);
+  // Concurrent requests reserve before signing, so only the cap's worth succeeds.
+  const raced = await Promise.allSettled([issue(5), issue(5), issue(5)]);
+  assert.deepEqual(raced.map(x => x.status), ["fulfilled", "fulfilled", "rejected"]);
+  assert.equal(tight.issuedOn(5), "16000");
+  const failing = issuerFor({ ...a, issuer: { address: a.issuer.address, signTypedData: async () => { throw new Error("signer offline"); } } },
+    { caps: { maxPerAttempt: 8000n, dailyCap: 8000n } });
+  await assert.rejects(failing.issue({ offerRef, caseRef: "hit", query: "q", buyer: a.buyer.address, profileRef: "demo-timeout/v1", issuedAt: "86405" }), /signer offline/);
+  assert.equal(failing.issuedOn(1), "0");
   await assert.rejects(tight.issue({ offerRef: "unknown/v1", caseRef: "hit", query: "q", buyer: a.buyer.address, profileRef: "demo-timeout/v1", issuedAt: "999999" }), /Unknown retrieval offer/);
 });
 
@@ -111,7 +119,9 @@ test("MCP purchase tools exist only with a desk and return specific rejection re
     },
     async attemptInfo(attemptId) { return { quoteDigest: `0x${"11".repeat(32)}`, fundedAt: "1010", state: funded.includes(attemptId) ? "funded" : "none" }; },
   };
-  const desk = createPurchaseDesk({ issuer, settlement, relayer: {}, data, chainTime: async () => "1000", confirm: async () => ({ stage: "verified" }) });
+  let now = "1000", release;
+  const desk = createPurchaseDesk({ issuer, settlement, relayer: {}, data, chainTime: async () => now,
+    confirm: async () => { if (release) await release; return { stage: "verified" }; } });
   const connect = async withDesk => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const server = createMcpServer(directory, withDesk ? desk : null), client = new Client({ name: "buyer-agent", version: "1.0.0" });
@@ -127,8 +137,18 @@ test("MCP purchase tools exist only with a desk and return specific rejection re
   assert.equal(q.fundingTotal, "8000"); assert.equal(q.buyerAuthorization.domain.chainId, "10143");
   const signature = await a.buyer.signTypedData({ ...q.buyerAuthorization, domain: { ...q.buyerAuthorization.domain, chainId: 10143 } });
   const fund = args => client.callTool({ name: "lemma_fund_attempt", arguments: { attemptId: q.attemptId, validAfter: "0", validBefore: q.buyerAuthorization.message.validBefore, ...args } });
-  const ok = await fund({ signature });
+  now = "1116";
+  assert.match((await fund({ signature })).content[0].text, /Request rejected: Quote expires too soon to relay safely/);
+  now = "1000";
+  let open; release = new Promise(resolve => { open = resolve; });
+  const first = fund({ signature });
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.match((await fund({ signature })).content[0].text, /Funding already in progress/);
+  open(); release = null;
+  const ok = await first;
   assert.deepEqual([ok.structuredContent.state, ok.structuredContent.confirmation, ok.structuredContent.blockNumber], ["funded", "verified", "7"]);
+  assert.match((await fund({ signature })).content[0].text, /already funded or closed/);
+  assert.equal(funded.length, 1);
   assert.equal((await client.callTool({ name: "lemma_attempt_status", arguments: { attemptId: q.attemptId } })).structuredContent.state, "funded");
   const unknown = await client.callTool({ name: "lemma_fund_attempt", arguments: { attemptId: `0x${"22".repeat(32)}`, validAfter: "0", validBefore: "1", signature } });
   assert.match(unknown.content[0].text, /Request rejected: Unknown quote/);
