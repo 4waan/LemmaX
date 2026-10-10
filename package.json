@@ -1,6 +1,6 @@
 {
   "name": "lemmax",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,6 +19,7 @@
     "contract:compile": "node scripts/compile-settlement.mjs",
     "contract:abi": "node scripts/compile-settlement.mjs --write-abi",
     "settlement:check": "node scripts/settlement-check.mjs",
+    "settlement:fork-check": "node scripts/settlement-fork-check.mjs",
     "deploy:settlement": "node scripts/deploy-settlement.mjs"
   },
   "dependencies": {

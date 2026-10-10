@@ -3,10 +3,11 @@ import { monad, monadTestnet } from "viem/chains";
 
 const localChain = defineChain({ id: 31337, name: "Local Monad execution",
   nativeCurrency: { name: "Test", symbol: "TEST", decimals: 18 }, rpcUrls: { default: { http: ["http://127.0.0.1:8545"] } } });
+// Circle-issued USDC (six decimals) is the settlement asset; local checks deploy a mock.
 export const MONAD_NETWORKS = Object.freeze({
-  local: Object.freeze({ chain: localChain, mainnet: false }),
-  testnet: Object.freeze({ chain: monadTestnet, mainnet: false }),
-  mainnet: Object.freeze({ chain: monad, mainnet: true }),
+  local: Object.freeze({ chain: localChain, mainnet: false, usdc: null }),
+  testnet: Object.freeze({ chain: monadTestnet, mainnet: false, usdc: "0x534b2f3A21130d7a60830c2Df862319e593943A3" }),
+  mainnet: Object.freeze({ chain: monad, mainnet: true, usdc: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603" }),
 });
 export const CONFIRMATION_STAGES = Object.freeze(["included", "finalized", "verified"]);
 // A finalized block's execution state root is agreed three blocks later.
@@ -24,15 +25,6 @@ export async function connectMonad({ network, rpcUrl, allowMainnet = false, poll
   const reported = await publicClient.getChainId();
   if (reported !== chain.id) throw new TypeError(`RPC reports chain ${reported}, expected ${chain.id} for ${network}`);
   return { network, chain, publicClient };
-}
-
-// Monad's asynchronous execution reverts, while still charging gas, a native-value spend
-// that leaves an EOA below min(start balance, 10 MON). An "emptying" transaction from an
-// undelegated sender with no other transaction in the last three blocks is exempt.
-export const RESERVE_BALANCE_WEI = 10n ** 19n;
-export function dipsIntoReserve(balance, value) {
-  if (typeof balance !== "bigint" || typeof value !== "bigint" || balance < 0n || value < 0n) throw new RangeError("Balance and value must be nonnegative bigints");
-  return balance - value < (balance < RESERVE_BALANCE_WEI ? balance : RESERVE_BALANCE_WEI);
 }
 
 // Monad charges the transaction gas limit, not the gas used, so unused headroom is

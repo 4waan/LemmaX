@@ -1,0 +1,9 @@
+# Default rules, plus one exception: verification reports publish the SHA-256 digest of
+# the token test double, and its file name trips the generic API key rule.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Source digest of the FiatToken test double in verification reports"
+regexTarget = "line"
+regexes = ['''^\s*"contracts/test/MockFiatToken\.sol": "[0-9a-f]{64}",?$''']

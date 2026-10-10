@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { attemptFixture } from "./fixtures/attempt.mjs";
-import { newAttemptId, quoteDigest } from "../src/attempt.mjs";
-import { RESERVE_BALANCE_WEI, connectMonad, dipsIntoReserve, gasLimitFor, waitForStage, MONAD_NETWORKS } from "../src/monad.mjs";
+import { recoverTypedDataAddress } from "viem";
+import { attemptFixture, FIXTURE_TOKEN } from "./fixtures/attempt.mjs";
+import { fundingAuthorizationTypedData, newAttemptId, quoteDigest, signingDomain } from "../src/attempt.mjs";
+import { connectMonad, gasLimitFor, waitForStage, MONAD_NETWORKS } from "../src/monad.mjs";
 import { SETTLEMENT_ABI, fundingTotal, quoteArgs, receiptArgs } from "../src/settlement.mjs";
 import { reconcileAttempts } from "../src/reconcile.mjs";
 import { compileSettlement } from "../scripts/compile-settlement.mjs";
@@ -33,20 +34,28 @@ test("Gas limits add bounded explicit headroom because Monad charges the limit",
   for (const bad of [[0n, 0], [100, 0], [100n, -1], [100n, 5001], [100n, 1.5], [100n, undefined]]) assert.throws(() => gasLimitFor(...bad));
 });
 
-test("Reserve-balance guard flags native spends that leave an EOA below min(balance, 10 MON)", () => {
-  const R = RESERVE_BALANCE_WEI;
-  assert.equal(R, 10n * 10n ** 18n);
-  assert.equal(dipsIntoReserve(R + 130n, 130n), false);
-  assert.equal(dipsIntoReserve(R + 129n, 130n), true);
-  assert.equal(dipsIntoReserve(5n * 10n ** 18n, 1n), true);
-  assert.equal(dipsIntoReserve(5n * 10n ** 18n, 0n), false);
-  assert.equal(dipsIntoReserve(0n, 0n), false);
-  assert.throws(() => dipsIntoReserve(1, 0n));
+test("Buyer funding authorization pays the exact total to the contract with the quote digest as nonce", async () => {
+  const { buyer, domain, quote } = attemptFixture();
+  const token = { name: "USDC", version: "2", chainId: "31337", verifyingContract: FIXTURE_TOKEN };
+  const typed = fundingAuthorizationTypedData({ token, domain, quote, validAfter: "0", validBefore: quote.quoteExpiresAt });
+  assert.deepEqual(typed.domain, { name: "USDC", version: "2", chainId: 31337n, verifyingContract: FIXTURE_TOKEN });
+  assert.deepEqual(typed.message, { from: buyer.address, to: domain.verifyingContract, value: "130", validAfter: "0",
+    validBefore: quote.quoteExpiresAt, nonce: quoteDigest(domain, quote) });
+  assert.equal(await recoverTypedDataAddress({ ...typed, signature: await buyer.signTypedData(typed) }), buyer.address);
+  assert.equal(signingDomain(domain).version, "2");
+  const base = { token, domain, quote, validAfter: "0", validBefore: "1050" };
+  assert.throws(() => fundingAuthorizationTypedData({ ...base, validAfter: "1050" }), /window is empty/);
+  assert.throws(() => fundingAuthorizationTypedData({ ...base, token: { ...token, chainId: "143" } }), /chains differ/);
+  assert.throws(() => fundingAuthorizationTypedData({ ...base, token: { ...token, verifyingContract: buyer.address } }), /differs from the quote asset/);
+  assert.throws(() => fundingAuthorizationTypedData({ ...base, token: { ...token, name: "" } }), /name and version/);
+  assert.throws(() => fundingAuthorizationTypedData({ ...base, quote: { ...quote, asset: "0x0000000000000000000000000000000000000000" } }), /Zero authority/);
 });
 
 test("Network connection refuses unknown networks, implicit mainnet and missing RPC URLs before any request", async () => {
   assert.equal(MONAD_NETWORKS.testnet.chain.id, 10143);
   assert.equal(MONAD_NETWORKS.mainnet.chain.id, 143);
+  assert.equal(MONAD_NETWORKS.testnet.usdc, "0x534b2f3A21130d7a60830c2Df862319e593943A3");
+  assert.equal(MONAD_NETWORKS.local.usdc, null);
   await assert.rejects(connectMonad({ network: "toString", rpcUrl: "http://127.0.0.1:1" }), /local, testnet or mainnet/);
   await assert.rejects(connectMonad({ network: "mainnet", rpcUrl: "https://rpc.example" }), /explicit permission/);
   await assert.rejects(connectMonad({ network: "testnet" }), /explicit http/);

@@ -1,16 +1,17 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createWalletClient, encodeDeployData, getAddress, http } from "viem";
+import { createWalletClient, encodeDeployData, erc20Abi, getAddress, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { compileSettlement } from "./compile-settlement.mjs";
-import { CONFIRMATION_STAGES, connectMonad, gasLimitFor, waitForStage } from "../src/monad.mjs";
+import { CONFIRMATION_STAGES, MONAD_NETWORKS, connectMonad, gasLimitFor, waitForStage } from "../src/monad.mjs";
+import { SETTLEMENT_DOMAIN } from "../src/attempt.mjs";
 import { SETTLEMENT_ABI } from "../src/settlement.mjs";
 import { digest } from "../src/retrieval.mjs";
 
 const SOURCES = ["contracts/AttemptSettlement.sol", "scripts/compile-settlement.mjs", "scripts/deploy-settlement.mjs", "src/monad.mjs", "src/settlement.mjs"];
 
-// Constructor-set immutables (issuer, cached EIP-712 domain) differ per deployment.
+// Constructor-set immutables (issuer, asset, cached EIP-712 domain) differ per deployment.
 // Zero them in both runtime codes so the deployed code can be compared with this build.
 export function maskImmutables(code, references) {
   const bytes = Buffer.from(code.slice(2), "hex");
@@ -18,20 +19,30 @@ export function maskImmutables(code, references) {
   return bytes;
 }
 
-export async function planDeployment({ publicClient, from, artifact, issuer, gasHeadroomBps }) {
+// Quotes are exact atomic USDC amounts, so the asset must report six decimals.
+async function settlementAsset(publicClient, asset) {
+  const address = getAddress(asset);
+  const read = functionName => publicClient.readContract({ address, abi: erc20Abi, functionName });
+  const [symbol, decimals] = await Promise.all([read("symbol"), read("decimals")]);
+  if (decimals !== 6) throw new TypeError(`Settlement asset reports ${decimals} decimals, expected 6`);
+  return { address, symbol, decimals };
+}
+
+export async function planDeployment({ publicClient, from, artifact, issuer, asset, gasHeadroomBps }) {
   if (JSON.stringify(artifact.abi) !== JSON.stringify(SETTLEMENT_ABI)) throw new Error("Committed ABI differs from this build");
-  const data = encodeDeployData({ abi: artifact.abi, bytecode: artifact.bytecode, args: [getAddress(issuer)] });
+  const token = await settlementAsset(publicClient, asset);
+  const data = encodeDeployData({ abi: artifact.abi, bytecode: artifact.bytecode, args: [getAddress(issuer), token.address] });
   const gasEstimate = await publicClient.estimateGas({ account: getAddress(from), data });
   const gasLimit = gasLimitFor(gasEstimate, gasHeadroomBps);
   const { maxFeePerGas } = await publicClient.estimateFeesPerGas();
   // Monad bills the limit, so limit times max fee bounds the deployment charge.
-  return { gasEstimate, gasLimit, maxFeePerGas, maxCharge: gasLimit * maxFeePerGas };
+  return { token, gasEstimate, gasLimit, maxFeePerGas, maxCharge: gasLimit * maxFeePerGas };
 }
 
-export async function deploySettlement({ publicClient, wallet, artifact, issuer, gasHeadroomBps, stage, pollMs, timeoutMs }) {
+export async function deploySettlement({ publicClient, wallet, artifact, issuer, asset, gasHeadroomBps, stage, pollMs, timeoutMs }) {
   const approvedIssuer = getAddress(issuer);
-  const plan = await planDeployment({ publicClient, from: wallet.account.address, artifact, issuer: approvedIssuer, gasHeadroomBps });
-  const hash = await wallet.deployContract({ abi: artifact.abi, bytecode: artifact.bytecode, args: [approvedIssuer], gas: plan.gasLimit });
+  const plan = await planDeployment({ publicClient, from: wallet.account.address, artifact, issuer: approvedIssuer, asset, gasHeadroomBps });
+  const hash = await wallet.deployContract({ abi: artifact.abi, bytecode: artifact.bytecode, args: [approvedIssuer, plan.token.address], gas: plan.gasLimit });
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success" || !receipt.contractAddress) throw new Error("Deployment transaction failed");
   const confirmation = await waitForStage(publicClient, receipt, stage, { pollMs, timeoutMs });
@@ -40,12 +51,13 @@ export async function deploySettlement({ publicClient, wallet, artifact, issuer,
   const masked = maskImmutables(runtime, artifact.immutableReferences);
   if (!masked.equals(maskImmutables(artifact.deployedBytecode, artifact.immutableReferences))) throw new Error("Deployed runtime code differs from this build");
   const read = functionName => publicClient.readContract({ address, abi: SETTLEMENT_ABI, functionName });
-  const [onchainIssuer, domain] = await Promise.all([read("approvedIssuer"), read("eip712Domain")]);
+  const [onchainIssuer, onchainAsset, domain] = await Promise.all([read("approvedIssuer"), read("asset"), read("eip712Domain")]);
   const chainId = await publicClient.getChainId();
-  if (getAddress(onchainIssuer) !== approvedIssuer || domain[1] !== "LemmaXAttemptSettlement" || domain[2] !== "1"
+  if (getAddress(onchainIssuer) !== approvedIssuer || getAddress(onchainAsset) !== plan.token.address
+    || domain[1] !== SETTLEMENT_DOMAIN.name || domain[2] !== SETTLEMENT_DOMAIN.version
     || domain[3] !== BigInt(chainId) || getAddress(domain[4]) !== address) throw new Error("Deployed authority or signing domain differs from the request");
   const block = await publicClient.getBlock({ blockNumber: receipt.blockNumber });
-  return { schemaVersion: "settlement-deployment/v1", chainId, address, approvedIssuer, deployer: wallet.account.address,
+  return { schemaVersion: "settlement-deployment/v2", chainId, address, approvedIssuer, asset: plan.token, deployer: wallet.account.address,
     eip712: { name: domain[1], version: domain[2] }, transactionHash: hash, blockNumber: receipt.blockNumber.toString(),
     blockHash: receipt.blockHash, blockTimestamp: block.timestamp.toString(),
     confirmation: { stage, finalizedHead: confirmation.finalizedHead?.toString() ?? null },
@@ -66,10 +78,14 @@ async function main(env) {
   const { network, chain, publicClient } = await connectMonad({ network: env.LEMMAX_MONAD_NETWORK, rpcUrl: env.LEMMAX_MONAD_RPC_URL,
     allowMainnet: env.LEMMAX_ALLOW_MAINNET === "1" });
   const issuer = getAddress(env.LEMMAX_QUOTE_ISSUER ?? "");
+  // The network profile names Circle USDC; only a local run supplies its own token.
+  const asset = env.LEMMAX_SETTLEMENT_ASSET ?? MONAD_NETWORKS[network].usdc;
+  if (!asset) throw new TypeError("Set LEMMAX_SETTLEMENT_ASSET for a local network");
+  if (MONAD_NETWORKS[network].usdc && getAddress(asset) !== getAddress(MONAD_NETWORKS[network].usdc)) throw new TypeError("Testnet and mainnet settle only in Circle USDC");
   const deployer = env.LEMMAX_DEPLOYER_KEY ? account(env.LEMMAX_DEPLOYER_KEY) : null;
   const artifact = compileSettlement();
-  const plan = await planDeployment({ publicClient, from: deployer?.address ?? issuer, artifact, issuer, gasHeadroomBps: headroom });
-  const summary = { network, chainId: chain.id, approvedIssuer: issuer, gasEstimate: plan.gasEstimate.toString(), gasLimit: plan.gasLimit.toString(),
+  const plan = await planDeployment({ publicClient, from: deployer?.address ?? issuer, artifact, issuer, asset, gasHeadroomBps: headroom });
+  const summary = { network, chainId: chain.id, approvedIssuer: issuer, asset: plan.token, gasEstimate: plan.gasEstimate.toString(), gasLimit: plan.gasLimit.toString(),
     maxFeePerGas: plan.maxFeePerGas.toString(), maxChargeWei: plan.maxCharge.toString() };
   if (env.LEMMAX_DEPLOY_BROADCAST !== "1") return { dryRun: true, ...summary };
   if (!deployer) throw new TypeError("Broadcasting requires LEMMAX_DEPLOYER_KEY");
@@ -77,7 +93,7 @@ async function main(env) {
   const output = env.LEMMAX_DEPLOYMENT_OUTPUT;
   if (!output) throw new TypeError("Set LEMMAX_DEPLOYMENT_OUTPUT to an ignored directory");
   const wallet = createWalletClient({ account: deployer, chain, transport: http(env.LEMMAX_MONAD_RPC_URL, { retryCount: 0 }) });
-  const manifest = { network, ...await deploySettlement({ publicClient, wallet, artifact, issuer, gasHeadroomBps: headroom,
+  const manifest = { network, ...await deploySettlement({ publicClient, wallet, artifact, issuer, asset, gasHeadroomBps: headroom,
     stage: env.LEMMAX_CONFIRMATION_STAGE, pollMs: 500, timeoutMs: 120000 }) };
   mkdirSync(output, { recursive: true });
   writeFileSync(join(output, `AttemptSettlement.${network}.json`), JSON.stringify(manifest, null, 2) + "\n");

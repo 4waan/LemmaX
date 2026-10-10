@@ -1,6 +1,8 @@
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { zeroAddress } from "viem";
 import { ATTEMPT_SCHEMA, SETTLEMENT_POLICY_HASH, commitAttemptRecord, hashReference, newAttemptId, quoteDigest } from "../../src/attempt.mjs";
+
+// Placeholder token address for offline signing tests; local chain checks deploy a mock token.
+export const FIXTURE_TOKEN = "0x4000000000000000000000000000000000000004";
 
 export function attemptFixture() {
   const issuer = privateKeyToAccount(generatePrivateKey());
@@ -16,7 +18,7 @@ export function attemptFixture() {
   const quote = { attemptId: newAttemptId(), recordCommitment: commitAttemptRecord(record, salt), policyHash: SETTLEMENT_POLICY_HASH,
     issuer: issuer.address, buyer: buyer.address, connectorPayee: "0x2000000000000000000000000000000000000002",
     executorPayee: "0x3000000000000000000000000000000000000003", evaluatorPayee: evaluator.address, evaluatorSigner: evaluator.address,
-    asset: zeroAddress, principal: record.principal, executionCap: record.executionCap, evaluationCap: record.evaluationCap,
+    asset: FIXTURE_TOKEN, principal: record.principal, executionCap: record.executionCap, evaluationCap: record.evaluationCap,
     quoteExpiresAt: "1050", executeBy: record.executeBy, settleBy: "1200", timeoutMode: 1 };
   const receipt = { attemptId: quote.attemptId, quoteDigest: quoteDigest(domain, quote), evidenceCommitment: newAttemptId(),
     outcome: 1, executionUsed: "7", evaluationUsed: "3", completedAt: "1075", evaluatedAt: "1080" };

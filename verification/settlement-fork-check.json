@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "settlement-fork-check/v1",
+  "network": "local fork of Monad Testnet",
+  "chainId": 10143,
+  "forkBlock": "69711175",
+  "asset": {
+    "address": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
+    "name": "USDC",
+    "version": "2",
+    "implementation": "0x21240161521D6854BE79F7D3a0A65c6BeDDB42fb",
+    "domainSeparator": "0xf1090f5a61ddee19528cecc447be0f91c7205fc2b34dd271fc0de87809a0a48d"
+  },
+  "anvilVersion": "1.8.5",
+  "codeSha256": {
+    "contracts/AttemptSettlement.sol": "0a46c8eaf70162bf1fb61bbca36f1d6782fe0058c975df37c33b6488675bc236",
+    "contracts/AttemptSettlement.abi.json": "22cf34e414f0e59e88453aa977cfbda3adbe714e12c8de9fc78429a6b6aa84f0",
+    "src/attempt.mjs": "fa14a4baa09549838f8b4c24a537033e8cd420839d3262fb1dfbcf8ae46ee531",
+    "src/monad.mjs": "a8d1584bee90306f9ca07c087251580c2cb33c20b738dd5a363688466401fef6",
+    "src/settlement.mjs": "45efbadfc729e9ab4bcb80ac4ab90f5cea7e1be3cbd619dd6eeb57836cc6a28a",
+    "src/reconcile.mjs": "db7407b91eb15d550105f2d0b265b0c897dc547824a2225cc5081b796cb4cd71",
+    "scripts/compile-settlement.mjs": "daf55dc2c79d844cde4c8142ed3bc11396fbc8ae1b43483540f1aa040b5c9ccc",
+    "scripts/deploy-settlement.mjs": "d6d50c2ce12b38667c12bf41063a287bbf947fc13bb1c6e1ec86cb33de732cf1",
+    "scripts/settlement-check.mjs": "59ca018a4b76ec876adc7410b66a93fb27f3988073613d25f90a2f412ad6bf60",
+    "scripts/settlement-fork-check.mjs": "ac91e3d0c2437d2ce5c0198fc6e826a6cdb716b0785864a332f95570d08afebb"
+  },
+  "checksPassed": 59,
+  "observedAt": 1791600853,
+  "gasHeadroomBps": 1000,
+  "gas": {
+    "deploy": {
+      "gasUsed": "1867064",
+      "gasLimit": "2053771"
+    },
+    "fund": {
+      "gasUsed": "282450",
+      "gasLimit": "313088"
+    },
+    "settleSuccess": {
+      "gasUsed": "195971",
+      "gasLimit": "217961"
+    },
+    "settleFailure": {
+      "gasUsed": "125368",
+      "gasLimit": "140298"
+    },
+    "withdraw": {
+      "gasUsed": "145896",
+      "gasLimit": "162883"
+    },
+    "refundTimeout": {
+      "gasUsed": "94696",
+      "gasLimit": "106565"
+    }
+  },
+  "verified": [
+    "Client-derived EIP-712 domain equals the deployed USDC domain separator",
+    "Buyer EIP-3009 authorization accepted by Circle's FiatToken implementation",
+    "Full lifecycle, rejections, allocations, timeout, withdrawal and reconciliation against real USDC"
+  ],
+  "limitations": [
+    "Local fork; no transaction reached Monad Testnet",
+    "Buyer USDC minted on the fork through an impersonated master minter",
+    "Gas measured under local MonadTen execution of forked state"
+  ]
+}

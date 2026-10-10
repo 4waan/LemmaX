@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "issuer",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -75,6 +80,17 @@
   {
     "inputs": [],
     "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
     "type": "error"
   },
   {
@@ -228,6 +244,48 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "asset",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "attemptInfo",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "digest",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "fundedAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum AttemptSettlement.State",
+        "name": "state",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -410,13 +468,35 @@
       },
       {
         "internalType": "bytes",
-        "name": "signature",
+        "name": "issuerSignature",
         "type": "bytes"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "validAfter",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "validBefore",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct AttemptSettlement.BuyerAuthorization",
+        "name": "buyer",
+        "type": "tuple"
       }
     ],
     "name": "fund",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -602,9 +682,96 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "id",
-        "type": "bytes32"
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "attemptId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "recordCommitment",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "policyHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "connectorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "executorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "evaluatorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "evaluatorSigner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "principal",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "executionCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "evaluationCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "quoteExpiresAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "executeBy",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settleBy",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "timeoutMode",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct AttemptSettlement.AttemptQuote",
+        "name": "q",
+        "type": "tuple"
       }
     ],
     "name": "refundTimeout",
@@ -614,6 +781,98 @@
   },
   {
     "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "attemptId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "recordCommitment",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "policyHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "connectorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "executorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "evaluatorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "evaluatorSigner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "principal",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "executionCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "evaluationCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "quoteExpiresAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "executeBy",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settleBy",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "timeoutMode",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct AttemptSettlement.AttemptQuote",
+        "name": "q",
+        "type": "tuple"
+      },
       {
         "components": [
           {
@@ -693,7 +952,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "address payable",
+        "internalType": "address",
         "name": "destination",
         "type": "address"
       }

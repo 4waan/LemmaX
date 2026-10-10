@@ -1,6 +1,6 @@
 # Implemented assessment boundary
 
-Package version 0.4.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP and authenticated private-company purchase transport remain open. Signed quotes/receipts and a native-asset contract prototype are tested locally; no customer funding endpoint or testnet deployment exists. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
+Package version 0.5.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP and authenticated private-company purchase transport remain open. Signed quotes/receipts and a native-asset contract prototype are tested locally; no customer funding endpoint or testnet deployment exists. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
 
 ## Inputs and authority
 

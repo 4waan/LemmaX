@@ -29,7 +29,7 @@ Authorization-denied, stale/deleted-source and unsupported-query tests also belo
 
 A fundable quote needs exact offer/context/outcome versions, private task/input references, corpus and access snapshot, limits, buyer and payee authorization, evaluator authority, priced service and ancillary charges, refunds, timeout rules, quote expiry, and attempt nonce.
 
-Detailed fields stay private. A randomized commitment binds the record to minimal Monad financial and authorization state. A signature and commitment authenticate bindings; neither proves honest evaluator execution. Private-record/signed-quote primitives and a native-asset settlement prototype are implemented and tested locally. The public MCP demo still issues no fundable customer quotes and no testnet contract is deployed. [Implemented financial boundary](Attempt-and-Settlement.md).
+Detailed fields stay private. A randomized commitment binds the record to minimal Monad financial and authorization state. A signature and commitment authenticate bindings; neither proves honest evaluator execution. Private-record/signed-quote primitives and a USDC settlement prototype are implemented and tested locally and against testnet USDC on a fork. The public MCP demo still issues no fundable customer quotes and no testnet contract is deployed. [Implemented financial boundary](Attempt-and-Settlement.md).
 
 ## Attempt states
 
@@ -39,7 +39,7 @@ awaiting_evaluation -> settled_success
 awaiting_evaluation -> settled_failure
 ```
 
-Failure eligibility and allocation are evaluated under frozen terms. The user selected full locked-amount refund when no valid verdict is submitted by the settlement deadline. Unresolved evidence cannot settle; cancellation and dispute/correction rules for customer use remain open. Customer funding through the public demo remains unavailable. The local prototype supports signed, explicit native-asset funding for tests. Every terminal settlement consumes the attempt authorization exactly once.
+Failure eligibility and allocation are evaluated under frozen terms. The user selected full locked-amount refund when no valid verdict is submitted by the settlement deadline. Unresolved evidence cannot settle; cancellation and dispute/correction rules for customer use remain open. Customer funding through the public demo remains unavailable. The local prototype supports signed USDC funding through the buyer's EIP-3009 authorization for tests. Every terminal settlement consumes the attempt authorization exactly once.
 
 ## Probability and financial alignment
 
