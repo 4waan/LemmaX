@@ -2,8 +2,12 @@ import { assessBillingPlans } from "./billing.mjs";
 import { assess } from "./assessment.mjs";
 import { RETRIEVAL_OFFERS } from "./retrieval.mjs";
 import { SCIFACT_PROFILE, BENCHMARK_CONTEXT } from "./scifact.mjs";
+import { BUYER_ALTERNATIVES, DEMO_TERMS, OPERATOR_COST_SNAPSHOT } from "./terms.mjs";
 
 export const ILLUSTRATIVE_SCENARIO = "illustrative-workload-cost/v1";
+export const DEMO_TERMS_SCENARIOS = Object.freeze(Object.fromEntries(Object.entries(BUYER_ALTERNATIVES).map(([ref, alternative]) => [`demo-terms-${ref}`, alternative])));
+export const ASSESSMENT_SCENARIOS = Object.freeze(["public-evidence", ILLUSTRATIVE_SCENARIO, ...Object.keys(DEMO_TERMS_SCENARIOS)]);
+const usdc = units => Number(units) / 1000000;
 const policy = Object.freeze({ policyRef: "illustrative-uniform-prior/v1", alpha: 1, beta: 1,
   coverage: 0.95, minimumCases: 30, maximumAgeSeconds: 2592000 });
 const workload = Object.freeze({ workloadRef: "illustrative-100-retrievals/v1", horizonRef: "illustrative-period/v1",
@@ -33,16 +37,25 @@ export function createPublicDirectory({ report, index, data, asOf = () => Math.f
     },
     assess({ profileRef, scenarioRef = "public-evidence" }) {
       requireProfile(profileRef);
-      if (!["public-evidence", ILLUSTRATIVE_SCENARIO].includes(scenarioRef)) throw new TypeError("Unknown assessment scenario");
+      if (!ASSESSMENT_SCENARIOS.includes(scenarioRef)) throw new TypeError("Unknown assessment scenario");
       const illustrative = scenarioRef === ILLUSTRATIVE_SCENARIO;
+      const alternative = Object.hasOwn(DEMO_TERMS_SCENARIOS, scenarioRef) ? DEMO_TERMS_SCENARIOS[scenarioRef] : null;
       const offers = RETRIEVAL_OFFERS.map((offer, i) => {
         const m = measured(offer.offerRef);
         const item = { offerRef: offer.offerRef, eligibility: "eligible", snapshot: {
           ...BENCHMARK_CONTEXT, offerRef: offer.offerRef, policyRef: policy.policyRef,
           snapshotRef: `paired-public-benchmark/${report.codeSha256["src/retrieval.mjs"]}`,
           successes: m.representativeSuccesses, failures: m.representativeFailures,
-          unresolved: 0, complete: true, independentUnits: illustrative, observedAt: report.observedAt,
+          unresolved: 0, complete: true, independentUnits: scenarioRef !== "public-evidence", observedAt: report.observedAt,
         } };
+        // Agreed USDC terms: consumed charges are paid on every attempt, principal only on success.
+        if (alternative) {
+          item.buyerCosts = { currency: "USDC", assumptionRef: scenarioRef, purchasePrice: usdc(DEMO_TERMS.principal),
+            attemptOverhead: usdc(DEMO_TERMS.executionCharge) + usdc(DEMO_TERMS.evaluationCharge), failureRetention: 0,
+            fallbackOnFailure: alternative.costPerQuery, lossOnFailure: 0, directCost: alternative.costPerQuery };
+          item.operatorCosts = { currency: "USDC", termsRef: DEMO_TERMS.termsRef, successShare: 0, earnedServiceFees: usdc(DEMO_TERMS.executionCharge),
+            deliveryCost: OPERATOR_COST_SNAPSHOT.deliveryCostPerAttempt, subsidy: 0, evidenceCost: 0, expectedPaidAttempts: 1, minimumContribution: 0 };
+        }
         if (illustrative) {
           item.buyerCosts = { currency: "DEMO_UNITS", assumptionRef: ILLUSTRATIVE_SCENARIO,
             attemptOverhead: 0.02, purchasePrice: 0, failureRetention: 0, fallbackOnFailure: 1, lossOnFailure: 0, directCost: 1 };
@@ -61,7 +74,9 @@ export function createPublicDirectory({ report, index, data, asOf = () => Math.f
       const assessed = illustrative ? assessBillingPlans({ ...input, workload }) : assess(input);
       return { ...assessed, scenarioRef, fundable: false,
         evidenceScope: "Public SciFact relevance. Not enterprise acceptance or arbitrary-query success.",
-        assumptions: illustrative ? ["Representative cases treated as independent for this conditional demonstration.",
+        assumptions: alternative ? ["Representative cases treated as independent for this conditional demonstration.",
+          `Agreed USDC terms ${DEMO_TERMS.termsRef}; buyer alternative ${scenarioRef.slice("demo-terms-".length)}: ${alternative.basis}.`]
+          : illustrative ? ["Representative cases treated as independent for this conditional demonstration.",
           "Uniform prior, costs, tariffs, workload and operator terms are illustrative, not selected commercial policy."] : [],
         calibrationStatus: "not_established", independenceStatus: "not_established",
         results: assessed.results.map(({ contribution, ...result }) => ({ ...result,

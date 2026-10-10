@@ -20,7 +20,7 @@
     "scripts/settlement-check.mjs": "59ca018a4b76ec876adc7410b66a93fb27f3988073613d25f90a2f412ad6bf60"
   },
   "checksPassed": 62,
-  "observedAt": 1791600845,
+  "observedAt": 1791602184,
   "gasHeadroomBps": 1000,
   "gas": {
     "deploy": {
@@ -28,24 +28,24 @@
       "gasLimit": "2053771"
     },
     "fund": {
-      "gasUsed": "256017",
-      "gasLimit": "284012"
+      "gasUsed": "255969",
+      "gasLimit": "283959"
     },
     "settleSuccess": {
-      "gasUsed": "195983",
-      "gasLimit": "217974"
+      "gasUsed": "195959",
+      "gasLimit": "217948"
     },
     "settleFailure": {
       "gasUsed": "125356",
       "gasLimit": "140285"
     },
     "withdraw": {
-      "gasUsed": "126259",
-      "gasLimit": "141282"
+      "gasUsed": "126271",
+      "gasLimit": "141295"
     },
     "refundTimeout": {
-      "gasUsed": "94708",
-      "gasLimit": "106578"
+      "gasUsed": "94696",
+      "gasLimit": "106565"
     }
   },
   "verified": [

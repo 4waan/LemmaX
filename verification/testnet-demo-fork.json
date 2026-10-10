@@ -1,0 +1,247 @@
+{
+  "schemaVersion": "testnet-demo/v1",
+  "target": "fork",
+  "dryRun": false,
+  "chainId": 10143,
+  "settlement": "0xfb59487E973C883E3fe4301238D485f7B248fA7f",
+  "observedAt": 1791602259,
+  "codeSha256": {
+    "contracts/AttemptSettlement.sol": "0a46c8eaf70162bf1fb61bbca36f1d6782fe0058c975df37c33b6488675bc236",
+    "src/attempt.mjs": "fa14a4baa09549838f8b4c24a537033e8cd420839d3262fb1dfbcf8ae46ee531",
+    "src/settlement.mjs": "45efbadfc729e9ab4bcb80ac4ab90f5cea7e1be3cbd619dd6eeb57836cc6a28a",
+    "src/issuer.mjs": "75635b65e7183e177ba8c469b5b05265b4245da12544ed97aef5ceba7dfdf479",
+    "src/evaluator.mjs": "fe53b64de0f78b164836c68c37dff165e850f32363677b52b33390a86fdfcb74",
+    "src/purchase.mjs": "0dafeefef659d39595263b472432528b320dc4c3f73db148bee99cad088906b1",
+    "src/mcp.mjs": "0c3aecf810ea8dfe5ae35a16b7950e8401b2bc516cddf44cb4c99023cf7d9b44",
+    "src/directory.mjs": "e1a3fbea1106e0575ea273c39e392eca6e302dba408457e6cb9bc380e2b0b250",
+    "src/terms.mjs": "bac42f8fd02d3a6a06b8a6fc6e1efda4054433653a6aad0559450c51ce840f3f",
+    "src/reconcile.mjs": "db7407b91eb15d550105f2d0b265b0c897dc547824a2225cc5081b796cb4cd71",
+    "src/monad.mjs": "a8d1584bee90306f9ca07c087251580c2cb33c20b738dd5a363688466401fef6",
+    "scripts/testnet-demo.mjs": "b4b95538e77afd10fbd121e3182f6844d5828d3cf2279d498c7b9ea24b2417e0"
+  },
+  "deployment": {
+    "transactionHash": "0x2e22731ab73a00ae585f7611e7d09ff817c0df0f4815c14f0f89af865da490ff",
+    "blockNumber": "69715685",
+    "gasUsed": "1867064",
+    "gasLimit": "2053771",
+    "maskedRuntimeSha256": "f5908484d3d0ade01f3eb8ca7b79c34cda33fc3e0600cfa325c2566ba32d6d2c"
+  },
+  "terms": {
+    "termsRef": "lemmax-demo-terms/v1",
+    "principal": "5000",
+    "executionCap": "2000",
+    "evaluationCap": "1000",
+    "executionCharge": "1500",
+    "evaluationCharge": "800"
+  },
+  "assessments": {
+    "demo-terms-llm-reads-corpus/v1": [
+      {
+        "offerRef": "lemmax/bm25-source-retrieval/v1",
+        "pOutcome": 0.7429718875502008,
+        "cReuse": 0.05587831325301205,
+        "expectedSaving": 0.13812168674698796,
+        "rank": 2
+      },
+      {
+        "offerRef": "lemmax/tfidf-source-retrieval/v1",
+        "pOutcome": 0.7630522088353414,
+        "cReuse": 0.05208313253012047,
+        "expectedSaving": 0.14191686746987953,
+        "rank": 1
+      }
+    ],
+    "demo-terms-own-pipeline/v1": [
+      {
+        "offerRef": "lemmax/bm25-source-retrieval/v1",
+        "pOutcome": 0.7429718875502008,
+        "cReuse": 0.006631726907630523,
+        "expectedSaving": -0.004231726907630523,
+        "rank": 1
+      },
+      {
+        "offerRef": "lemmax/tfidf-source-retrieval/v1",
+        "pOutcome": 0.7630522088353414,
+        "cReuse": 0.006683935742971888,
+        "expectedSaving": -0.004283935742971888,
+        "rank": 2
+      }
+    ]
+  },
+  "chosenOffer": "lemmax/tfidf-source-retrieval/v1",
+  "attempts": [
+    {
+      "label": "timeout",
+      "caseRef": "1012",
+      "profileRef": "demo-timeout/v1",
+      "offerRef": "lemmax/tfidf-source-retrieval/v1",
+      "attemptId": "0x6f7567a652a12871f1d5a2fab5c40d3aea4110e12ffe5740dcecca9837bb1a8d",
+      "quoteDigest": "0x429b4d0aff558b801ee380d71cda9d21a381c5e7ed871ccca331fe522053a52e",
+      "fundingTotal": "0.008",
+      "steps": {
+        "fund": {
+          "transactionHash": "0x9c835bba24354d7db9522e9e34cbc6a6817135438f487b0f3961d45f5ed7f2f1",
+          "gasUsed": "282498",
+          "gasLimit": "313141"
+        },
+        "refundTimeout": {
+          "transactionHash": "0xe70dab76bc9d91c90dcdd72473b93c999192bf5ec23694015efa9da722fb0031",
+          "gasUsed": "77756",
+          "gasLimit": "87931"
+        }
+      },
+      "state": "refunded_timeout"
+    },
+    {
+      "label": "success",
+      "caseRef": "100",
+      "profileRef": "demo-standard/v1",
+      "offerRef": "lemmax/tfidf-source-retrieval/v1",
+      "attemptId": "0x2b46ee0967eeef4c641fb4912a1d63b40e224af99a6eeb351eca639ed7257616",
+      "quoteDigest": "0x098a0554036cb81d249ba094f6433694457a9c759195f940e81151d434bf9ae3",
+      "fundingTotal": "0.008",
+      "steps": {
+        "fund": {
+          "transactionHash": "0x6edf0fc2106a48e8f28bea6cf32b148b6e6a85f5a628ace413237af19e82a414",
+          "gasUsed": "248510",
+          "gasLimit": "275754"
+        },
+        "settle": {
+          "transactionHash": "0xbd147d2f35ef29c836c5609d1572ddd31bb98d2f6c17764ece450137992140f2",
+          "gasUsed": "213043",
+          "gasLimit": "236740"
+        }
+      },
+      "state": "settled_success"
+    },
+    {
+      "label": "eligible_failure",
+      "caseRef": "1",
+      "profileRef": "demo-standard/v1",
+      "offerRef": "lemmax/tfidf-source-retrieval/v1",
+      "attemptId": "0x5fb06a15fcecf80a86b6557b30e86e8504a77304371e57901d0ddd351c332a53",
+      "quoteDigest": "0x13f155da1cf1674b5e697150f018716ba02da13a820fc005382766b59f2c101d",
+      "fundingTotal": "0.008",
+      "steps": {
+        "fund": {
+          "transactionHash": "0x26833d541af0951ef958f22a72e14fbe4d01ca1c1b4c058aae9b5855bd5d1dac",
+          "gasUsed": "248518",
+          "gasLimit": "275763"
+        },
+        "settle": {
+          "transactionHash": "0x306448945806b88dd0b6d4149d34fa6863a1b4f2e8ec9a3e7f2403271c702266",
+          "gasUsed": "125440",
+          "gasLimit": "140377"
+        }
+      },
+      "state": "settled_failure"
+    }
+  ],
+  "lemmaxWithdrawal": {
+    "amount": "0.003",
+    "transactionHash": "0x13182b5881c24175211260cf77913e8dd3f2d6a3917e5b10c92a2a1252797b3e"
+  },
+  "reconciliation": {
+    "ok": true,
+    "attempts": [
+      {
+        "attemptId": "0x6f7567a652a12871f1d5a2fab5c40d3aea4110e12ffe5740dcecca9837bb1a8d",
+        "state": "refunded_timeout",
+        "allocation": {
+          "connector": "0",
+          "executor": "0",
+          "evaluator": "0",
+          "buyerCredit": "8000",
+          "totalFunded": "8000"
+        },
+        "issues": []
+      },
+      {
+        "attemptId": "0x2b46ee0967eeef4c641fb4912a1d63b40e224af99a6eeb351eca639ed7257616",
+        "state": "settled_success",
+        "allocation": {
+          "connector": "5000",
+          "executor": "1500",
+          "evaluator": "800",
+          "buyerCredit": "700",
+          "totalFunded": "8000"
+        },
+        "issues": []
+      },
+      {
+        "attemptId": "0x5fb06a15fcecf80a86b6557b30e86e8504a77304371e57901d0ddd351c332a53",
+        "state": "settled_failure",
+        "allocation": {
+          "connector": "0",
+          "executor": "1500",
+          "evaluator": "800",
+          "buyerCredit": "5700",
+          "totalFunded": "8000"
+        },
+        "issues": []
+      }
+    ],
+    "issues": []
+  },
+  "ledger": {
+    "balance": "21000",
+    "lockedFunds": "0",
+    "totalCredit": "21000",
+    "unallocated": "0",
+    "solvent": true
+  },
+  "balancesBefore": {
+    "deployer": {
+      "address": "0x4Ce5cE1F77bE49a060D7c0DCAee3835C067EBCD4",
+      "mon": "1",
+      "usdc": "0"
+    },
+    "facilitator": {
+      "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "mon": "1",
+      "usdc": "0"
+    },
+    "evaluator": {
+      "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "mon": "1",
+      "usdc": "0"
+    },
+    "buyer": {
+      "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "mon": "0",
+      "usdc": "0.05"
+    },
+    "provider": {
+      "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "mon": "0",
+      "usdc": "0"
+    }
+  },
+  "balancesAfter": {
+    "deployer": {
+      "address": "0x4Ce5cE1F77bE49a060D7c0DCAee3835C067EBCD4",
+      "mon": "0.877461734807222313",
+      "usdc": "0"
+    },
+    "facilitator": {
+      "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "mon": "0.98673645052363785",
+      "usdc": "0.003"
+    },
+    "evaluator": {
+      "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "mon": "0.99808592317877469",
+      "usdc": "0"
+    },
+    "buyer": {
+      "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "mon": "0",
+      "usdc": "0.026"
+    },
+    "provider": {
+      "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "mon": "0",
+      "usdc": "0"
+    }
+  }
+}

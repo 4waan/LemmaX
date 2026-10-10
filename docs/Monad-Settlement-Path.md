@@ -8,7 +8,7 @@ Package version 0.5.0. Settlement now uses Circle USDC on Monad. A buyer funds a
 - **Keys.** The quote issuer and the evaluator use separate keys, so the two authorities are distinct onchain.
 - **Network.** The live demonstration targets Monad Testnet.
 - **Offer prices.** Both retrieval offers carry the same principal.
-- **Cost basis.** Demonstration prices reflect published reference prices and measured costs, not invented figures. Section 6 proposes values for confirmation.
+- **Cost basis.** Demonstration prices reflect published reference prices and measured costs, not invented figures. The terms in section 6 are agreed.
 - **Deadlines.** Two deadline profiles: a standard profile, and a short profile that makes the timeout refund demonstrable.
 - **LemmaX revenue.** LemmaX earns only the execution charge. There is no onchain success share, so the three payees (connector, executor, evaluator) are unchanged.
 
@@ -93,7 +93,7 @@ Broadcasting additionally requires `LEMMAX_DEPLOY_BROADCAST=1`, `LEMMAX_DEPLOYER
 
 ### Verification
 
-The Node suite has 63 passing tests. They include the ABI drift check, the funding authorization's domain, nonce, window and chain guards, gas policy, stage waits, and reconciliation of matching, tampered and duplicated events.
+The Node suite has 68 passing tests. They include the ABI drift check, the funding authorization's domain, nonce, window and chain guards, gas policy, stage waits, and reconciliation of matching, tampered and duplicated events.
 
 `npm run settlement:check` deploys a local FiatToken test double (EIP-3009, ERC-1271-capable signature checks, a blocklist and a short-payment switch) and runs the full lifecycle under Monad execution. It passed 62 checks, including the following:
 
@@ -114,25 +114,33 @@ Gas under Monad execution with 10% headroom, used and (limit charged):
 | Operation | Version 1, native MON | Version 2, Circle USDC on fork |
 | --- | ---: | ---: |
 | Deploy | 1,745,774 (1,920,352) | 1,867,064 (2,053,771) |
-| `fund` | 353,458 (391,199) | 282,450 (313,088) |
+| `fund` | 353,458 (391,199) | 282,458 (313,097) |
 | `settle`, success | 188,124 (209,332) | 195,971 (217,961) |
-| `settle`, eligible failure | 117,400 (131,535) | 125,368 (140,298) |
+| `settle`, eligible failure | 117,400 (131,535) | 125,344 (140,271) |
 | `refundTimeout` | 87,323 (98,455) | 94,696 (106,565) |
 | `withdraw` | 74,486 (84,332) | 145,896 (162,883) |
 
 Funding now includes the token transfer and still costs about 20% less, because the quote is no longer stored. Settlement costs slightly more, because the quote is resupplied and hashed. A USDC withdrawal to an address without a balance pays Monad's state-growth charge for the new balance slot. These are local measurements of forked state, not testnet receipts.
 
+### Purchase path
+
+`src/terms.mjs` holds the agreed tariff and deadline profiles as versioned data (`lemmax-demo-terms/v1`) and parses operator caps exactly, without floating point. `createQuoteIssuer` builds the private record and quote, signs the quote with the issuer key and returns the typed data the buyer wallet signs. It refuses terms above `LEMMA_MAX_USDC_PER_RESOLUTION` and stops issuing when a chain day's issued total would pass `LEMMA_DAILY_USDC_CAP`; every issued quote counts, funded or not. `createEvaluator` opens the record, reruns the committed retrieval task, checks authorization, source version and output limit, judges relevance against the public labels and signs the receipt with the agreed charges. A conformance failure stays unresolved, so that attempt ends in the full timeout refund.
+
+The MCP server registers three purchase tools only when the operator supplies a purchase desk. `lemma_quote_attempt` returns the signed quote, the typed data for the buyer wallet, and the private record and salt for the buyer to keep. `lemma_fund_attempt` relays the buyer's signed authorization for a quote this desk issued and waits for the Verified stage. `lemma_attempt_status` reads onchain state. A rejection returns the reason from our validation, the contract or the token. Issued quotes live in process memory. The stdio transport runs under the operator's control; a remote transport needs authentication before it is exposed. Two further assessment scenarios price the agreed terms against the declared buyer alternatives.
+
+`npm run demo:testnet` runs the demonstration through those tools. The buyer agent assesses both alternatives, then a timeout attempt is funded first, a success and an eligible failure are settled by the evaluator, the timeout attempt is refunded after its settlement deadline, LemmaX withdraws its execution charges, and the events are reconciled. `LEMMAX_DEMO_TARGET=fork` rehearses on a local fork of Monad Testnet with fork-minted funds. `LEMMAX_DEMO_TARGET=testnet` reports balances and the gas budget only, unless `LEMMAX_DEMO_BROADCAST=1`. The rehearsal with the configured role keys and Circle's USDC passed: TF-IDF ranked first under the LLM-reads-corpus alternative, all three outcomes ended as planned, LemmaX withdrew 0.003 USDC and reconciliation reported no issues. [Rehearsal report](../verification/testnet-demo-fork.json).
+
 ## 5. Plan
 
-**Phase 3: testnet purchase path.** Confirm the demonstration terms in section 6. Deploy to chain 10143 with the Circle USDC address and verify the source on MonadVision. Run the quote issuer and evaluator as small services with separate keys from the environment; the issuer also relays funding and the evaluator relays settlement. Add `lemma_quote_attempt` and `lemma_attempt_status` to an authenticated MCP transport. Run one success, one eligible failure and one timeout on testnet and publish the reconciliation report. Exit: three settled testnet attempts whose events reconcile with their private records.
+**Phase 3: testnet purchase path.** Implemented and rehearsed on a fork, as described in section 4. Remaining: fund the roles in section 7, run `npm run demo:testnet` with broadcasting enabled, verify the source on MonadVision and publish the testnet report. A remote MCP transport needs authentication before it serves anyone beyond the operator. Exit: three settled testnet attempts whose events reconcile with their private records.
 
 **Phase 4: trust and identity.** Register the directory agent and evaluator in the ERC-8004 Identity Registry, which is deployed on Monad mainnet and testnet; the validation registry is still pending and remains outside the settlement path. Publish authorized feedback after settlement only under an explicit disclosure policy. Add Envio HyperIndex if a live status view needs more than the reconciler. Automate the withdrawal bar once its meaning is chosen. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
 
 **Phase 5: evidence and submission.** Run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness), extend the cost ledger with measured testnet gas, and prepare the technical demonstration.
 
-## 6. Proposed demonstration terms
+## 6. Agreed demonstration terms
 
-These values are proposals for confirmation. Each traces to a published reference price or a measurement. Reference prices and the MON price are snapshots and must be rechecked before use.
+The user agreed these terms. Each traces to a published reference price or a measurement. Reference prices and the MON price are snapshots; recheck them before mainnet use, and revise the versioned charges if MON approaches the break-even prices below.
 
 ### Reference prices and measured costs
 
@@ -143,7 +151,7 @@ These values are proposals for confirmation. Each traces to a published referenc
 - **Compute.** BM25 and TF-IDF scoring measured 2.5 ms mean per query. On AWS Lambda arm64 ($0.0000133334 per GB-second, $0.20 per million requests, 1 ms billing) that is about $0.0000002 per query. [AWS price list](https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSLambda/current/us-east-1/index.json).
 - **Monad gas.** The observed mainnet base fee sat at the 100 MON-gwei floor with a typical 2 MON-gwei tip; the MON price snapshot was $0.0248 (CoinGecko and CoinMarketCap). With the measured limits above, a funding relay costs 0.0319 MON, about $0.00079. A successful settlement relay costs 0.0222 MON, about $0.00055, and a failure settlement 0.0143 MON, about $0.00036. [CoinGecko](https://www.coingecko.com/en/coins/monad), [CoinMarketCap](https://coinmarketcap.com/currencies/monad/).
 
-### Proposed tariff, equal for both offers
+### Tariff, equal for both offers
 
 | Term | USDC | Atomic | Basis |
 | --- | ---: | ---: | --- |
@@ -170,7 +178,7 @@ The assessment library with these inputs, the representative public cohort and a
 | Own pipeline, 0.0024 | 0.743, 0.0066 | 0.763, 0.0067 | negative, about -0.004 |
 | LLM reads corpus, 0.194 | 0.743, 0.0559 | 0.763, 0.0521 | positive, about 0.14 |
 
-With equal prices, TF-IDF ranks first when the alternative is expensive. When the alternative costs less than the principal, buying is not worth it and the directory says so. At real prices, the fixed settlement overhead (e + v = 0.0023) is almost half the principal. Per-attempt onchain settlement suits attempts worth more than a few cents; batched settlement is the direction for sub-cent queries. Probabilities describe the public benchmark under the disclosed independence assumption, not calibrated customer outcomes.
+With equal prices, TF-IDF ranks first when the alternative is expensive. When the alternative costs less than the principal, buying is not worth it and the directory says so. The demonstration agent declares the LLM-reads-corpus alternative for its main run and shows the own-pipeline case once, so both answers appear. At real prices, the fixed settlement overhead (e + v = 0.0023) is almost half the principal. Per-attempt onchain settlement suits attempts worth more than a few cents; batched settlement is the direction for sub-cent queries. Probabilities describe the public benchmark under the disclosed independence assumption, not calibrated customer outcomes.
 
 ### Deadline profiles
 
@@ -183,8 +191,24 @@ Measured work takes seconds: Verified arrives about 1.5 s after inclusion, scori
 
 The buyer authorization window ends one second after the quote expires. The timeout profile is used once, with the evaluator withholding its receipt, so the full refund can be shown live.
 
-## 7. Open decisions
+## 7. Testnet roles and funding
 
-1. **Confirm the section 6 terms**, including which buyer alternative the demonstration agent declares.
-2. **Withdrawal bar.** Accumulated-credit trigger or retained working balance, and the minimum. [Paid unit](Paid-Unit.md#reserve-credit-and-agent-controlled-withdrawal).
-3. **Indexer.** Proposal: keep the in-repo reconciler as the correctness check and add Envio only for a status view.
+The operator environment carries keys from the earlier Lemma deployment. Each is an ordinary EOA, so the same addresses work on Monad Testnet. Phase 3 maps them by variable name; values are never printed or committed.
+
+| Variable | Phase 3 role | Needs on Monad Testnet |
+| --- | --- | --- |
+| `DEPLOYER_PRIVATE_KEY` | Deploys `AttemptSettlement` | About 0.21 MON for one deployment |
+| `FACILITATOR_PRIVATE_KEY` | Quote issuer, funding relayer, executor payee | About 0.032 MON per funded attempt |
+| `EVALUATOR_PRIVATE_KEY` | Evaluator signer and payee, settlement relayer | About 0.022 MON per settlement |
+| `PROVIDER_PRIVATE_KEY`, `LEMMA_PROVIDER_ADDRESS` | Connector payee for both offers | MON only to withdraw credit |
+| `BENCHMARK_BUYER_PRIVATE_KEY`, `BENCHMARK_BUYER_ADDRESS` | Demonstration buyer; signs EIP-3009 authorizations | USDC to fund; MON only to withdraw credit |
+| `LEMMA_MAX_USDC_PER_RESOLUTION`, `LEMMA_DAILY_USDC_CAP` | Issuer refuses a quote above the per-attempt total or past the daily funded total | None |
+
+The Arbitrum Sepolia variables and `RESOLUTION_WARRANTY_REGISTRY_ADDRESS` belong to the earlier deployment and are not used on Monad. The issuer and evaluator keys are distinct, as agreed.
+
+All five addresses start with no MON and no USDC on Monad Testnet. Circle's public faucet lists Monad Testnet but is protected by reCAPTCHA, and the official Monad faucet blocks automated browsers. Neither is automated; a person requests tokens there, or funds arrive through a captcha-free route such as Circle CCTP from Arbitrum Sepolia.
+
+## 8. Open decisions
+
+1. **Withdrawal bar.** Accumulated-credit trigger or retained working balance, and the minimum. [Paid unit](Paid-Unit.md#reserve-credit-and-agent-controlled-withdrawal).
+2. **Indexer.** Proposal: keep the in-repo reconciler as the correctness check and add Envio only for a status view.

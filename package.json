@@ -20,7 +20,8 @@
     "contract:abi": "node scripts/compile-settlement.mjs --write-abi",
     "settlement:check": "node scripts/settlement-check.mjs",
     "settlement:fork-check": "node scripts/settlement-fork-check.mjs",
-    "deploy:settlement": "node scripts/deploy-settlement.mjs"
+    "deploy:settlement": "node scripts/deploy-settlement.mjs",
+    "demo:testnet": "node scripts/testnet-demo.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
