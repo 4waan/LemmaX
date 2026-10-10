@@ -1,6 +1,6 @@
 # LemmaX on Monad: architecture, deployment path and plan
 
-Package version 0.5.0. Settlement now uses Circle USDC on Monad. A buyer funds an attempt with one EIP-3009 authorization bound to the signed quote, and the contract stores only the quote digest. Earlier slices added network profiles, a gas and confirmation policy, a typed client, event reconciliation and a dry-run-first deployment script. No contract is deployed to Monad Testnet or mainnet, and no wallet credentials or testnet funds have been used. [Attempt and settlement contract](Attempt-and-Settlement.md).
+Package version 0.6.0. Settlement uses Circle USDC on Monad. A buyer funds an attempt with one EIP-3009 authorization bound to the signed quote, and the contract stores only the quote digest. The settlement contract is deployed on Monad Testnet at [`0xfb59487E973C883E3fe4301238D485f7B248fA7f`](https://testnet.monadvision.com/address/0xfb59487E973C883E3fe4301238D485f7B248fA7f), with source verified on MonadVision, and the agreed three-attempt demonstration has run there through the MCP purchase tools. Nothing is deployed to mainnet. [Attempt and settlement contract](Attempt-and-Settlement.md).
 
 ## 1. Decisions recorded
 
@@ -130,9 +130,25 @@ The MCP server registers three purchase tools only when the operator supplies a 
 
 `npm run demo:testnet` runs the demonstration through those tools. The buyer agent assesses both alternatives, then a timeout attempt is funded first, a success and an eligible failure are settled by the evaluator, the timeout attempt is refunded after its settlement deadline, LemmaX withdraws its execution charges, and the events are reconciled. `LEMMAX_DEMO_TARGET=fork` rehearses on a local fork of Monad Testnet with fork-minted funds. `LEMMAX_DEMO_TARGET=testnet` reports balances, the gas budget, the operator caps and the chosen offer and cases only, unless `LEMMAX_DEMO_BROADCAST=1`. The offer is assessed and chosen before any chain access, so a stale or unranked assessment stops the run before anything is paid for. The rehearsal with the configured role keys and Circle's USDC passed: TF-IDF ranked first under the LLM-reads-corpus alternative, all three outcomes ended as planned, LemmaX withdrew 0.003 USDC and reconciliation reported no issues. [Rehearsal report](../verification/testnet-demo-fork.json).
 
+### Live run on Monad Testnet
+
+The contract was deployed by `DEPLOYER_PRIVATE_KEY` in transaction [0x5b25bc59ae](https://testnet.monadvision.com/tx/0x5b25bc59ae3e434d2b9f6b686eaa7c9a630697a0c8cd2d36118e2a4e4d446802). Its runtime matches the build with immutables masked, its issuer is the facilitator, its token is Circle USDC and its signing domain is version 2. Sourcify on MonadVision reports an exact match for both creation and runtime bytecode.
+
+The demonstration then ran against that contract through the MCP purchase tools, with the buyer agent declaring the LLM-reads-corpus alternative. The facilitator relayed every funding transaction and the evaluator relayed every settlement, so the buyer used no MON.
+
+| Attempt | Case | Final state | Funding | Settlement or refund |
+| --- | --- | --- | --- | --- |
+| Timeout profile, evaluator withholds | 1012 | refunded in full | [0xffeb4190](https://testnet.monadvision.com/tx/0xffeb419092994c492a8bcc53adbb9ef1f80ca9a72c525ffd0032e63d09ecd85c) | [0x7b4078e7](https://testnet.monadvision.com/tx/0x7b4078e70ef7b8003d69cdd27f04d88edd6c925178b99b0f9d57f940c43a0ec2) |
+| Success | 100 | settled, success | [0xd992b619](https://testnet.monadvision.com/tx/0xd992b619833cfde8ab9eb09727e7c005b99728ccde3e7279b287140cf562a658) | [0x28dea749](https://testnet.monadvision.com/tx/0x28dea749676021673024c96ac1c6ee17ad6356cbd6a5667abcb54c00acbb6ac4) |
+| Eligible failure | 1 | settled, eligible failure | [0xacc329b5](https://testnet.monadvision.com/tx/0xacc329b5b4e6fcd64bcabca7251c05feada9b39aa260c81527686123bfbadafa) | [0xacd6d2f3](https://testnet.monadvision.com/tx/0xacd6d2f3652ab0b8a8be679851bdab663c92d917b5ca2e5c945d3664a9bc781b) |
+
+LemmaX then withdrew its 0.003 USDC of execution charges ([0x3652f0a6](https://testnet.monadvision.com/tx/0x3652f0a67d7d2e91daeb202cc355df3c4d0136cc2192c6989fe0e7e244c0c170)). The remaining credit matches the agreed allocation exactly: buyer 0.0144 USDC (the 0.008 timeout refund, 0.0007 unused caps after success and 0.0057 after failure), provider 0.005 and evaluator 0.0016. The contract balance equals that outstanding credit, nothing is locked, and reconciliation of the run's events against the private quotes and receipts reported no issues. The buyer spent 0.024 USDC; relaying cost the facilitator 0.103 MON and the evaluator 0.048 MON. [Live report](../verification/testnet-demo.json).
+
+Monad Testnet receipts report gas used equal to the transaction gas limit, consistent with charging the limit: funding 276,824 to 314,498, successful settlement 237,465, failure settlement 141,554 and refund 88,477. The public RPC limits `eth_getLogs` to 100 blocks, so the reconciler reads in 100-block chunks. An earlier, interrupted run had deployed the contract without emitting any event, so this run read events from its own first block (`LEMMAX_SETTLEMENT_FROM_BLOCK`) and reused the contract (`LEMMAX_SETTLEMENT_ADDRESS`).
+
 ## 5. Plan
 
-**Phase 3: testnet purchase path.** Implemented and rehearsed on a fork, as described in section 4. Remaining: fund the roles in section 7, run `npm run demo:testnet` with broadcasting enabled, verify the source on MonadVision and publish the testnet report. A remote MCP transport needs authentication before it serves anyone beyond the operator. Exit: three settled testnet attempts whose events reconcile with their private records.
+**Phase 3: testnet purchase path.** Done: the three attempts ran on Monad Testnet and reconcile with their private records, and the contract source is verified (section 4). A remote MCP transport still needs authentication before it serves anyone beyond the operator.
 
 **Phase 4: trust and identity.** Register the directory agent and evaluator in the ERC-8004 Identity Registry, which is deployed on Monad mainnet and testnet; the validation registry is still pending and remains outside the settlement path. Publish authorized feedback after settlement only under an explicit disclosure policy. Add Envio HyperIndex if a live status view needs more than the reconciler. Automate the withdrawal bar once its meaning is chosen. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
 
@@ -206,7 +222,7 @@ The operator environment carries keys from the earlier Lemma deployment. Each is
 
 The Arbitrum Sepolia variables and `RESOLUTION_WARRANTY_REGISTRY_ADDRESS` belong to the earlier deployment and are not used on Monad. The issuer and evaluator keys are distinct, as agreed.
 
-All five addresses start with no MON and no USDC on Monad Testnet. Circle's public faucet lists Monad Testnet but is protected by reCAPTCHA, and the official Monad faucet blocks automated browsers. Neither is automated; a person requests tokens there, or funds arrive through a captcha-free route such as Circle CCTP from Arbitrum Sepolia.
+The operator funded the deployer, facilitator and evaluator with testnet MON and the buyer with faucet USDC. Circle's public faucet lists Monad Testnet but is protected by reCAPTCHA, and the official Monad faucet blocks automated browsers, so neither is automated. A captcha-free route for USDC is Circle CCTP from Arbitrum Sepolia, which Circle's forwarding service can complete on Monad without the recipient holding MON; MON itself still has to come from a faucet.
 
 ## 8. Open decisions
 

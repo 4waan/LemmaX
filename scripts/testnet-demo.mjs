@@ -198,7 +198,8 @@ async function main(env) {
         codeSha256: sourceHashes(["contracts/AttemptSettlement.sol", "src/attempt.mjs", "src/settlement.mjs", "src/issuer.mjs", "src/evaluator.mjs", "src/purchase.mjs",
           "src/mcp.mjs", "src/directory.mjs", "src/terms.mjs", "src/reconcile.mjs", "src/monad.mjs", "scripts/testnet-demo.mjs"]),
         ...(target === "testnet" ? { explorer: `${EXPLORER}/address/${address}` } : {}),
-        deployment: deployment && { transactionHash: deployment.transactionHash, blockNumber: deployment.blockNumber, gasUsed: deployment.gasUsed, gasLimit: deployment.gasLimit, maskedRuntimeSha256: deployment.maskedRuntimeSha256 },
+        deployment: deployment ? { transactionHash: deployment.transactionHash, blockNumber: deployment.blockNumber, gasUsed: deployment.gasUsed, gasLimit: deployment.gasLimit, maskedRuntimeSha256: deployment.maskedRuntimeSha256 }
+          : { reused: true, eventsReadFromBlock: fromBlock.toString() },
         terms: DEMO_TERMS, assessments, chosenOffer: offerRef, attempts,
         lemmaxWithdrawal: { amount: formatUsdc(earned), transactionHash: withdrawn.hash },
         reconciliation: { ok: reconciliation.ok, attempts: reconciliation.attempts.map(a => ({ attemptId: a.attemptId, state: a.state, allocation: a.allocation, issues: a.issues })), issues: reconciliation.issues },
