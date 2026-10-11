@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { createWalletClient, encodeDeployData, erc20Abi, getAddress, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { compileSettlement } from "./compile-settlement.mjs";
-import { CONFIRMATION_STAGES, MONAD_NETWORKS, connectMonad, gasLimitFor, waitForStage } from "../src/monad.mjs";
+import { CONFIRMATION_STAGES, MONAD_NETWORKS, connectMonad, envAddress, gasLimitFor, waitForStage } from "../src/monad.mjs";
 import { SETTLEMENT_DOMAIN } from "../src/attempt.mjs";
 import { SETTLEMENT_ABI } from "../src/settlement.mjs";
 import { digest } from "../src/retrieval.mjs";
@@ -39,6 +39,23 @@ export async function planDeployment({ publicClient, from, artifact, issuer, ass
   return { token, gasEstimate, gasLimit, maxFeePerGas, maxCharge: gasLimit * maxFeePerGas };
 }
 
+// Checks that the code at an address is this build with the expected issuer, asset and
+// signing domain. Used after a deployment and before reusing an existing contract.
+export async function verifyDeployment({ publicClient, address, artifact, issuer, asset }) {
+  const target = getAddress(address);
+  const runtime = await publicClient.getCode({ address: target });
+  if (!runtime || runtime === "0x") throw new Error("No contract code at the settlement address");
+  const masked = maskImmutables(runtime, artifact.immutableReferences);
+  if (!masked.equals(maskImmutables(artifact.deployedBytecode, artifact.immutableReferences))) throw new Error("Deployed runtime code differs from this build");
+  const read = functionName => publicClient.readContract({ address: target, abi: SETTLEMENT_ABI, functionName });
+  const [onchainIssuer, onchainAsset, domain] = await Promise.all([read("approvedIssuer"), read("asset"), read("eip712Domain")]);
+  const chainId = await publicClient.getChainId();
+  if (getAddress(onchainIssuer) !== getAddress(issuer) || getAddress(onchainAsset) !== getAddress(asset)
+    || domain[1] !== SETTLEMENT_DOMAIN.name || domain[2] !== SETTLEMENT_DOMAIN.version
+    || domain[3] !== BigInt(chainId) || getAddress(domain[4]) !== target) throw new Error("Deployed authority or signing domain differs from the request");
+  return { masked, maskedRuntimeSha256: digest(masked), domain: { name: domain[1], version: domain[2] } };
+}
+
 export async function deploySettlement({ publicClient, wallet, artifact, issuer, asset, gasHeadroomBps, stage, pollMs, timeoutMs }) {
   const approvedIssuer = getAddress(issuer);
   const plan = await planDeployment({ publicClient, from: wallet.account.address, artifact, issuer: approvedIssuer, asset, gasHeadroomBps });
@@ -47,18 +64,10 @@ export async function deploySettlement({ publicClient, wallet, artifact, issuer,
   if (receipt.status !== "success" || !receipt.contractAddress) throw new Error("Deployment transaction failed");
   const confirmation = await waitForStage(publicClient, receipt, stage, { pollMs, timeoutMs });
   const address = getAddress(receipt.contractAddress);
-  const runtime = await publicClient.getCode({ address });
-  const masked = maskImmutables(runtime, artifact.immutableReferences);
-  if (!masked.equals(maskImmutables(artifact.deployedBytecode, artifact.immutableReferences))) throw new Error("Deployed runtime code differs from this build");
-  const read = functionName => publicClient.readContract({ address, abi: SETTLEMENT_ABI, functionName });
-  const [onchainIssuer, onchainAsset, domain] = await Promise.all([read("approvedIssuer"), read("asset"), read("eip712Domain")]);
-  const chainId = await publicClient.getChainId();
-  if (getAddress(onchainIssuer) !== approvedIssuer || getAddress(onchainAsset) !== plan.token.address
-    || domain[1] !== SETTLEMENT_DOMAIN.name || domain[2] !== SETTLEMENT_DOMAIN.version
-    || domain[3] !== BigInt(chainId) || getAddress(domain[4]) !== address) throw new Error("Deployed authority or signing domain differs from the request");
-  const block = await publicClient.getBlock({ blockNumber: receipt.blockNumber });
+  const { masked, domain } = await verifyDeployment({ publicClient, address, artifact, issuer: approvedIssuer, asset: plan.token.address });
+  const [block, chainId] = await Promise.all([publicClient.getBlock({ blockNumber: receipt.blockNumber }), publicClient.getChainId()]);
   return { schemaVersion: "settlement-deployment/v2", chainId, address, approvedIssuer, asset: plan.token, deployer: wallet.account.address,
-    eip712: { name: domain[1], version: domain[2] }, transactionHash: hash, blockNumber: receipt.blockNumber.toString(),
+    eip712: domain, transactionHash: hash, blockNumber: receipt.blockNumber.toString(),
     blockHash: receipt.blockHash, blockTimestamp: block.timestamp.toString(),
     confirmation: { stage, finalizedHead: confirmation.finalizedHead?.toString() ?? null },
     gasEstimate: plan.gasEstimate.toString(), gasLimit: plan.gasLimit.toString(), gasUsed: receipt.gasUsed.toString(),
@@ -77,9 +86,9 @@ async function main(env) {
   const headroom = Number(env.LEMMAX_GAS_HEADROOM_BPS);
   const { network, chain, publicClient } = await connectMonad({ network: env.LEMMAX_MONAD_NETWORK, rpcUrl: env.LEMMAX_MONAD_RPC_URL,
     allowMainnet: env.LEMMAX_ALLOW_MAINNET === "1" });
-  const issuer = getAddress(env.LEMMAX_QUOTE_ISSUER ?? "");
+  const issuer = envAddress(env, "LEMMAX_QUOTE_ISSUER");
   // The network profile names Circle USDC; only a local run supplies its own token.
-  const asset = env.LEMMAX_SETTLEMENT_ASSET ?? MONAD_NETWORKS[network].usdc;
+  const asset = envAddress(env, "LEMMAX_SETTLEMENT_ASSET", { optional: true }) ?? MONAD_NETWORKS[network].usdc;
   if (!asset) throw new TypeError("Set LEMMAX_SETTLEMENT_ASSET for a local network");
   if (MONAD_NETWORKS[network].usdc && getAddress(asset) !== getAddress(MONAD_NETWORKS[network].usdc)) throw new TypeError("Testnet and mainnet settle only in Circle USDC");
   const deployer = env.LEMMAX_DEPLOYER_KEY ? account(env.LEMMAX_DEPLOYER_KEY) : null;

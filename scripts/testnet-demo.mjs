@@ -6,11 +6,11 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createWalletClient, erc20Abi, formatUnits, getAddress, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { compileSettlement } from "./compile-settlement.mjs";
-import { deploySettlement, planDeployment } from "./deploy-settlement.mjs";
+import { deploySettlement, planDeployment, verifyDeployment } from "./deploy-settlement.mjs";
 import { forkMinter } from "./fork-usdc.mjs";
 import { connectWhenReady, sourceHashes, startAnvil } from "./settlement-check.mjs";
 import { loadRetrievalReport } from "./verify-retrieval.mjs";
-import { MONAD_NETWORKS, connectMonad, waitForStage } from "../src/monad.mjs";
+import { MONAD_NETWORKS, connectMonad, envAddress, waitForStage } from "../src/monad.mjs";
 import { createSettlementClient } from "../src/settlement.mjs";
 import { readSettlementLogs, reconcileAttempts } from "../src/reconcile.mjs";
 import { createQuoteIssuer } from "../src/issuer.mjs";
@@ -34,9 +34,12 @@ const limit = name => BigInt(forkGas[name].gasLimit);
 function roles(env) {
   const key = name => { try { return privateKeyToAccount(env[name]); } catch { throw new TypeError(`${name} is missing or is not a private key`); } };
   const r = { deployer: key("DEPLOYER_PRIVATE_KEY"), facilitator: key("FACILITATOR_PRIVATE_KEY"), evaluator: key("EVALUATOR_PRIVATE_KEY"), buyer: key("BENCHMARK_BUYER_PRIVATE_KEY") };
-  if (env.BENCHMARK_BUYER_ADDRESS && getAddress(env.BENCHMARK_BUYER_ADDRESS) !== r.buyer.address) throw new TypeError("BENCHMARK_BUYER_ADDRESS does not match its key");
+  if (envAddress(env, "BENCHMARK_BUYER_ADDRESS", { optional: true }) && envAddress(env, "BENCHMARK_BUYER_ADDRESS") !== r.buyer.address) throw new TypeError("BENCHMARK_BUYER_ADDRESS does not match its key");
   if (r.facilitator.address === r.evaluator.address) throw new TypeError("Issuer and evaluator keys must differ");
-  return { ...r, provider: getAddress(env.LEMMA_PROVIDER_ADDRESS ?? ""),
+  const provider = envAddress(env, "LEMMA_PROVIDER_ADDRESS");
+  // The provider key is optional here (the provider only receives), but if present it must match.
+  if (env.PROVIDER_PRIVATE_KEY && key("PROVIDER_PRIVATE_KEY").address !== provider) throw new TypeError("LEMMA_PROVIDER_ADDRESS does not match PROVIDER_PRIVATE_KEY");
+  return { ...r, provider,
     caps: { maxPerAttempt: usdcAtomic(env.LEMMA_MAX_USDC_PER_RESOLUTION), dailyCap: usdcAtomic(env.LEMMA_DAILY_USDC_CAP) } };
 }
 
@@ -106,7 +109,13 @@ async function main(env) {
     const { chain, publicClient } = connection;
     const wallet = account => createWalletClient({ account, chain, transport: http(rpc, { retryCount: 0 }) });
     const artifact = compileSettlement();
-    const reuse = env.LEMMAX_SETTLEMENT_ADDRESS ? getAddress(env.LEMMAX_SETTLEMENT_ADDRESS) : null;
+    const reuse = envAddress(env, "LEMMAX_SETTLEMENT_ADDRESS", { optional: true });
+    // A reused contract must be this build with our issuer and asset, and its event history
+    // must have a known start: the public RPC reads logs 100 blocks at a time.
+    if (reuse) {
+      if (!/^[0-9]+$/.test(env.LEMMAX_SETTLEMENT_FROM_BLOCK ?? "")) throw new TypeError("Set LEMMAX_SETTLEMENT_FROM_BLOCK to the reused contract's deployment block");
+      await verifyDeployment({ publicClient, address: reuse, artifact, issuer: r.facilitator.address, asset: usdc });
+    }
     const plan = reuse ? null : await planDeployment({ publicClient, from: r.deployer.address, artifact, issuer: r.facilitator.address, asset: usdc, gasHeadroomBps: HEADROOM_BPS });
     const roleAddresses = { deployer: r.deployer.address, facilitator: r.facilitator.address, evaluator: r.evaluator.address, buyer: r.buyer.address, provider: r.provider };
     const before = await balances(publicClient, usdc, roleAddresses);
@@ -138,7 +147,8 @@ async function main(env) {
     const agent = new Client({ name: "LemmaX-demo-buyer-agent", version: "0.5.0" });
     await server.connect(serverTransport); await agent.connect(clientTransport);
     const call = async (name, args) => {
-      const result = await agent.callTool({ name, arguments: args });
+      // Funding waits for Verified; the SDK's 60 s default would cut that off on a slow network.
+      const result = await agent.callTool({ name, arguments: args }, undefined, { timeout: 240000, resetTimeoutOnProgress: true });
       if (result.isError) throw new Error(`${name}: ${result.content[0].text}`);
       return result.structuredContent;
     };
@@ -153,43 +163,51 @@ async function main(env) {
       if (offerRef !== preview.offerRef) throw new Error("The agent's assessment differs from the preflight choice");
       const plans = preview.plans;
       const attempts = [];
-      const step = (attempt, name, result) => { attempt.steps[name] = { transactionHash: result.hash ?? result.transactionHash, gasUsed: String(result.gasUsed), gasLimit: String(result.gasLimit),
-        ...(target === "testnet" ? { explorer: `${EXPLORER}/tx/${result.hash ?? result.transactionHash}` } : {}) }; };
-      for (const plan of plans) {
-        const q = await call("lemma_quote_attempt", { offerRef, caseRef: plan.caseRef, profileRef: plan.profileRef, buyer: r.buyer.address });
-        const typed = q.buyerAuthorization;
-        const signature = await r.buyer.signTypedData({ ...typed, domain: { ...typed.domain, chainId: Number(typed.domain.chainId) } });
-        const funded = await call("lemma_fund_attempt", { attemptId: q.attemptId, validAfter: typed.message.validAfter, validBefore: typed.message.validBefore, signature });
-        const attempt = { ...plan, offerRef, attemptId: q.attemptId, quoteDigest: q.quoteDigest, fundingTotal: formatUsdc(q.fundingTotal), steps: {} };
-        step(attempt, "fund", funded);
-        attempts.push(attempt);
-        if (plan.label === "timeout") continue;
-        const issued = desk.issued(q.attemptId), info = await settlement.attemptInfo(q.attemptId);
-        const evaluation = await evaluator.evaluate({ quote: issued.quote, record: issued.record, salt: issued.salt, caseRef: plan.caseRef, fundedAt: info.fundedAt, chainTime: await chainTime() });
-        assert.equal(evaluation.outcome, plan.label);
-        const settled = await settlement.settle({ wallet: wallet(r.evaluator), quote: issued.quote, receipt: evaluation.receipt, signature: evaluation.signature });
-        await confirm(settled);
-        step(attempt, "settle", settled);
-        Object.assign(issued, { receipt: evaluation.receipt });
+      try {
+        const step = (attempt, name, result) => { attempt.steps[name] = { transactionHash: result.hash ?? result.transactionHash, gasUsed: String(result.gasUsed), gasLimit: String(result.gasLimit),
+          ...(target === "testnet" ? { explorer: `${EXPLORER}/tx/${result.hash ?? result.transactionHash}` } : {}) }; };
+        for (const plan of plans) {
+          const q = await call("lemma_quote_attempt", { offerRef, caseRef: plan.caseRef, profileRef: plan.profileRef, buyer: r.buyer.address });
+          const typed = q.buyerAuthorization;
+          const signature = await r.buyer.signTypedData({ ...typed, domain: { ...typed.domain, chainId: Number(typed.domain.chainId) } });
+          const funded = await call("lemma_fund_attempt", { attemptId: q.attemptId, validAfter: typed.message.validAfter, validBefore: typed.message.validBefore, signature });
+          const attempt = { ...plan, offerRef, attemptId: q.attemptId, quoteDigest: q.quoteDigest, fundingTotal: formatUsdc(q.fundingTotal), steps: {} };
+          step(attempt, "fund", funded);
+          attempts.push(attempt);
+          if (plan.label === "timeout") continue;
+          const issued = desk.issued(q.attemptId), info = await settlement.attemptInfo(q.attemptId);
+          const evaluation = await evaluator.evaluate({ quote: issued.quote, record: issued.record, salt: issued.salt, caseRef: plan.caseRef, fundedAt: info.fundedAt, chainTime: await chainTime() });
+          assert.equal(evaluation.outcome, plan.label);
+          const settled = await settlement.settle({ wallet: wallet(r.evaluator), quote: issued.quote, receipt: evaluation.receipt, signature: evaluation.signature });
+          await confirm(settled);
+          step(attempt, "settle", settled);
+          Object.assign(issued, { receipt: evaluation.receipt });
+        }
+        // The timeout attempt was funded first; nobody submits its receipt, so wait out settleBy.
+        const timeout = attempts[0], held = desk.issued(timeout.attemptId);
+        if (target === "fork") {
+          await publicClient.request({ method: "evm_setNextBlockTimestamp", params: [Number(held.quote.settleBy) + 1] });
+          await publicClient.request({ method: "evm_mine", params: [] });
+        } else {
+          while (BigInt(await chainTime()) <= BigInt(held.quote.settleBy)) await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+        const refunded = await settlement.refundTimeout({ wallet: wallet(r.evaluator), quote: held.quote });
+        await confirm(refunded);
+        step(timeout, "refundTimeout", refunded);
+      } catch (error) {
+        // Funded attempts stay refundable after settleBy by anyone holding the public quote,
+        // so a stopped run reports what it sent and the quotes still open.
+        error.partial = plain({ schemaVersion: "testnet-demo/v1", partial: true, target, chainId: chain.id, settlement: address, attempts,
+          openQuotes: attempts.filter(x => !x.steps.settle && !x.steps.refundTimeout).map(x => desk.issued(x.attemptId).quote) });
+        throw error;
       }
-      // The timeout attempt was funded first; nobody submits its receipt, so wait out settleBy.
-      const timeout = attempts[0], held = desk.issued(timeout.attemptId);
-      if (target === "fork") {
-        await publicClient.request({ method: "evm_setNextBlockTimestamp", params: [Number(held.quote.settleBy) + 1] });
-        await publicClient.request({ method: "evm_mine", params: [] });
-      } else {
-        while (BigInt(await chainTime()) <= BigInt(held.quote.settleBy)) await new Promise(resolve => setTimeout(resolve, 5000));
-      }
-      const refunded = await settlement.refundTimeout({ wallet: wallet(r.evaluator), quote: held.quote });
-      await confirm(refunded);
-      step(timeout, "refundTimeout", refunded);
       for (const attempt of attempts) attempt.state = (await call("lemma_attempt_status", { attemptId: attempt.attemptId })).state;
       // LemmaX realizes its execution charges, its only revenue under the agreed terms.
       const earned = await settlement.credit(r.facilitator.address);
       const withdrawn = await settlement.withdraw({ wallet: wallet(r.facilitator), amount: earned, destination: r.facilitator.address });
       await confirm(withdrawn);
       const ledger = await settlement.ledger();
-      const fromBlock = deployment ? BigInt(deployment.blockNumber) : BigInt(env.LEMMAX_SETTLEMENT_FROM_BLOCK ?? 0);
+      const fromBlock = deployment ? BigInt(deployment.blockNumber) : BigInt(env.LEMMAX_SETTLEMENT_FROM_BLOCK);
       const logs = await readSettlementLogs({ publicClient, address, fromBlock, toBlock: await publicClient.getBlockNumber(), maxBlockRange: 100n });
       const private_ = attempts.map(a => ({ quote: desk.issued(a.attemptId).quote, receipt: desk.issued(a.attemptId).receipt ?? null }));
       const onchainStates = Object.fromEntries(attempts.map(a => [a.attemptId, a.state]));
@@ -214,5 +232,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const text = JSON.stringify(result, null, 2) + "\n";
     if (process.env.LEMMAX_DEMO_OUTPUT) writeFileSync(process.env.LEMMAX_DEMO_OUTPUT, text);
     process.stdout.write(text);
-  } catch (error) { console.error(`Demo stopped: ${error.shortMessage ?? error.message}`); process.exitCode = 1; }
+  } catch (error) {
+    // Endpoint URLs can carry API keys; never echo them.
+    const urls = [process.env.LEMMAX_MONAD_RPC_URL, process.env.LEMMAX_FORK_RPC_URL].filter(Boolean);
+    const scrub = text => urls.reduce((t, url) => t.split(url).join("<rpc-url>"), String(text));
+    if (error.partial) {
+      const text = JSON.stringify(error.partial, null, 2) + "\n";
+      if (process.env.LEMMAX_DEMO_OUTPUT) writeFileSync(`${process.env.LEMMAX_DEMO_OUTPUT}.partial`, text);
+      process.stdout.write(text);
+    }
+    console.error(`Demo stopped: ${scrub(error.shortMessage ?? error.message)}${error.hash ? ` (transaction ${error.hash})` : ""}`);
+    process.exitCode = 1;
+  }
 }

@@ -1,4 +1,4 @@
-import { createPublicClient, defineChain, http } from "viem";
+import { createPublicClient, defineChain, getAddress, http } from "viem";
 import { monad, monadTestnet } from "viem/chains";
 
 const localChain = defineChain({ id: 31337, name: "Local Monad execution",
@@ -55,4 +55,14 @@ export async function waitForStage(publicClient, { blockNumber, blockHash }, sta
     if (Date.now() >= deadline) throw new Error(`Timed out waiting for ${stage}`);
     await new Promise(resolve => setTimeout(resolve, pollMs));
   }
+}
+
+// Reads an address from the environment without echoing a malformed value in the error.
+export function envAddress(env, name, { optional = false } = {}) {
+  const value = env[name];
+  if (value === undefined || value === "") {
+    if (optional) return null;
+    throw new TypeError(`Set ${name}`);
+  }
+  try { return getAddress(value); } catch { throw new TypeError(`${name} is not a valid address`); }
 }
