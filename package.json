@@ -25,7 +25,8 @@
     "auditor:test": "npm --prefix indexer test",
     "privy:kill-test": "node scripts/privy-kill-test.mjs",
     "privy:setup": "node scripts/privy-setup.mjs",
-    "agents:register": "node scripts/register-agents.mjs"
+    "agents:register": "node scripts/register-agents.mjs",
+    "reputation": "node scripts/publish-reputation.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
