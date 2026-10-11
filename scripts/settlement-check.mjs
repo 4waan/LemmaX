@@ -94,7 +94,9 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   const quotes = [];
   const quote = async (changes = {}) => {
     const now = (await publicClient.getBlock()).timestamp;
-    const r = { ...fixture.record, executeBy: String(now + 120n) }; const salt = newAttemptId();
+    // Amount changes apply to the private record too, so the record still binds to the quote.
+    const amounts = Object.fromEntries(["principal", "executionCap", "evaluationCap"].filter(key => key in changes).map(key => [key, changes[key]]));
+    const r = { ...fixture.record, ...amounts, executeBy: String(now + 120n) }; const salt = newAttemptId();
     const q = { ...fixture.quote, attemptId: newAttemptId(), recordCommitment: commitAttemptRecord(r, salt), asset: getAddress(token.address),
       connectorPayee: connector.address, executorPayee: executor.address, quoteExpiresAt: String(now + 60n), executeBy: String(now + 120n), settleBy: String(now + 180n), ...changes };
     bindRecordToQuote(r, salt, q); return q;
@@ -186,6 +188,52 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   const r4 = await receiptFor(q4, 1); await settle(q4, r4);
   const q5 = await quote(); await fund(q5);
 
+  // Contract v3. The issuer cannot name itself evaluator. Credits pay out automatically from
+  // MIN_PAYOUT in the settling transaction; a refused transfer defers without blocking
+  // settlement and anyone may sweep it later; owners may route payouts by signature.
+  const selfEvaluated = await quote({ evaluatorSigner: issuer.address });
+  await rejected("InvalidQuote", async () => relay(selfEvaluated, await signed(selfEvaluated), await authorize(selfEvaluated)));
+  eq(await read("MIN_PAYOUT"), 10000n);
+  const [payee, routed, blocked] = Array.from({ length: 3 }, () => privateKeyToAccount(generatePrivateKey()));
+  const large = (changes = {}) => quote({ principal: "6000", executionCap: "2000", evaluationCap: "1000", connectorPayee: payee.address, ...changes });
+  const settleOutcome = async (q, outcome) => settle(q, await receiptFor(q, outcome));
+  const qa = await large(); await fund(qa); await settleOutcome(qa, 1);
+  eq([await settlement.credit(payee.address), await balanceOf(payee.address)], ["6000", 0n]);
+  const qb = await large(); await fund(qb);
+  record("settleSuccessWithPayout", await settleOutcome(qb, 1));
+  eq([await settlement.credit(payee.address), await balanceOf(payee.address)], ["0", 12000n]);
+  const buyerHeld = await balanceOf(buyer.address), buyerCredit = BigInt(await settlement.credit(buyer.address));
+  const qc = await large(); await fund(qc); await settleOutcome(qc, 2);
+  // Eligible failure returns principal and unused caps: 6000 + 1993 + 997 to the buyer.
+  eq([await settlement.credit(buyer.address), await balanceOf(buyer.address)], ["0", buyerHeld - 9000n + buyerCredit + 8990n]);
+  let deferredPayouts = 0;
+  if (token.block) {
+    await token.block(blocked.address, true);
+    const qd = await large({ connectorPayee: blocked.address, principal: "12000" }); await fund(qd); await settleOutcome(qd, 1);
+    eq([await settlement.attemptState(qd.attemptId), await settlement.credit(blocked.address)], ["settled_success", "12000"]);
+    await token.block(blocked.address, false);
+    record("sweep", await settlement.sweep({ wallet: wallet(executor), owners: [blocked.address, payee.address] }));
+    eq([await settlement.credit(blocked.address), await balanceOf(blocked.address)], ["0", 12000n]);
+    deferredPayouts = 1;
+  }
+  const deadline = String((await publicClient.getBlock()).timestamp + 300n);
+  const instruction = await settlement.payoutInstruction({ owner: payee.address, destination: routed.address, bar: "20000", deadline });
+  const relayInstruction = (message, signature) => settlement.setPayoutInstruction({ wallet: wallet(executor), instruction: { message }, signature });
+  await rejected("InvalidAuthority", async () => relayInstruction(instruction.message, await routed.signTypedData(instruction)));
+  await rejected("InvalidInstruction", async () => relayInstruction({ ...instruction.message, bar: "9999" }, await payee.signTypedData(instruction)));
+  await rejected("InvalidInstruction", async () => relayInstruction({ ...instruction.message, destination: contract }, await payee.signTypedData(instruction)));
+  const instructionSignature = await payee.signTypedData(instruction);
+  record("setPayoutInstruction", await relayInstruction(instruction.message, instructionSignature));
+  eq([await settlement.payoutOf(payee.address), await read("payoutNonce", [payee.address])], [{ destination: routed.address, bar: "20000" }, 1n]);
+  await rejected("InvalidInstruction", () => relayInstruction(instruction.message, instructionSignature));
+  const qe = await large({ principal: "21000" }); await fund(qe); await settleOutcome(qe, 1);
+  eq([await settlement.credit(payee.address), await balanceOf(routed.address)], ["0", 21000n]);
+  // An owner holding MON can also set its instruction directly, without a signature.
+  await publicClient.request({ method: "anvil_setBalance", params: [payee.address, "0x3635c9adc5dea00000"] });
+  const direct = await settlement.payoutInstruction({ owner: payee.address, destination: payee.address, bar: "10000", deadline });
+  await settlement.setPayoutInstruction({ wallet: wallet(payee), instruction: direct });
+  eq(await settlement.payoutOf(payee.address), { destination: payee.address, bar: "10000" });
+
   const ledger = await settlement.ledger();
   eq(ledger.solvent, true);
   eq(BigInt(ledger.balance), BigInt(ledger.lockedFunds) + BigInt(ledger.totalCredit) + BigInt(ledger.unallocated));
@@ -194,7 +242,9 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   const onchainStates = Object.fromEntries(await Promise.all(quotes.map(async ({ quote: q }) => [q.attemptId, await settlement.attemptState(q.attemptId)])));
   const reconciliation = reconcileAttempts({ logs: [...logs, ...logs.slice(0, 3)], domain, attempts: quotes, onchainStates, ledger });
   eq(reconciliation.ok, true);
-  eq(reconciliation.attempts.map(a => a.state), ["settled_success", "settled_failure", "refunded_timeout", "settled_success", "funded"]);
+  eq(reconciliation.attempts.map(a => a.state), ["settled_success", "settled_failure", "refunded_timeout", "settled_success", "funded",
+    "settled_success", "settled_success", "settled_failure", ...(token.block ? ["settled_success"] : []), "settled_success"]);
+  eq([reconciliation.payouts[payee.address], reconciliation.deferred.length], ["33000", deferredPayouts]);
   eq(reconciliation.expectedLocked, ledger.lockedFunds);
   eq(reconciliation.attempts[0].allocation, allocation);
   eq(reconciliation.withdrawals[buyer.address], "140");
@@ -216,6 +266,7 @@ async function main() {
     const tokenAddress = deployedToken.contractAddress;
     const tokenCall = async (functionName, args) => publicClient.waitForTransactionReceipt({ hash: await funderWallet.writeContract({ address: tokenAddress, abi: mock.abi, functionName, args }) });
     const token = { address: tokenAddress, mint: (to, amount) => tokenCall("mint", [to, amount]),
+      block: (account, blocked) => tokenCall("blacklist", [account, blocked]),
       // Mock-only behaviour: a blocked destination and a short-paying token.
       async extras({ settlement, wallet, rejected, eq, connector, contract, quote, signed, authorize, relay }) {
         await tokenCall("blacklist", [connector.address, true]);
@@ -251,7 +302,7 @@ async function main() {
       eq(Object.keys(JSON.parse(readFileSync(join(output, "AttemptSettlement.standard-input.json"), "utf8")).sources).length > 1, true);
     } finally { rmSync(output, { recursive: true, force: true }); }
 
-    console.log(JSON.stringify({ schemaVersion: "settlement-check/v3", network: "local-anvil-monad", hardfork: "MonadTen", asset: "MockFiatToken (EIP-3009, six decimals)",
+    console.log(JSON.stringify({ schemaVersion: "settlement-check/v4", network: "local-anvil-monad", hardfork: "MonadTen", asset: "MockFiatToken (EIP-3009, six decimals)",
       anvilVersion: node.version, compiler: artifact.compiler, evmVersion: artifact.evmVersion, deployedBytecodeBytes: artifact.deployedBytecodeBytes,
       codeSha256: sourceHashes(CHECKED_SOURCES), checksPassed: checks, observedAt: Math.floor(Date.now() / 1000), gasHeadroomBps: HEADROOM_BPS, gas: result.gas,
       verified: ["Dry-run plan and broadcast deployment through the operator script", "Deployed runtime matches the build with immutables masked", "Deployment and funding waits for verified and finalized stages",
@@ -259,9 +310,12 @@ async function main() {
         "Wrong-chain, modified terms, foreign asset, expired or mismatched buyer authorization rejected", "Settlement requires the funded quote; swapped payees rejected", "Exact funding and reserve caps",
         "Success/failure allocation", "Full timeout refund", "Duplicate funding/settlement/refund rejected", "Owner credit withdrawal; withdrawal to the contract rejected",
         "Blocked destination reverts and keeps credit", "Short-paying token rejected", "Tokens sent directly stay unallocated", "Chunked event reads reconcile with private quotes and receipts",
-        "Duplicate log delivery is idempotent", "Tampered private receipt is reported"],
+        "Duplicate log delivery is idempotent", "Tampered private receipt is reported", "Issuer cannot name itself evaluator",
+        "Credit pays out automatically from the 0.01 USDC minimum inside settlement", "Refused payout defers without blocking settlement and sweep retries it",
+        "Signed payout instruction relayed by another wallet routes payouts and raises the bar", "Instruction replay, low bar, contract destination and wrong signer rejected",
+        "Owner can set its instruction directly", "Reconciliation totals automatic payouts and deferrals"],
       limitations: ["Isolated local Monad execution with a mock token, not a testnet deployment", "Local finalized lag comes from one-slot epochs, not Monad consensus",
-        "Illustrative atomic amounts, not the demonstration tariff", "Evaluator correctness and company approval are trusted", "Smart-contract buyer signatures not exercised", "Automatic withdrawal bar not implemented"] }, null, 2));
+        "Illustrative atomic amounts, not the demonstration tariff", "Evaluator correctness and company approval are trusted", "Smart-contract buyer and payout signatures not exercised"] }, null, 2));
   } finally { await node.stop(); }
 }
 

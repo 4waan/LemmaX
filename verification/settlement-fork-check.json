@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "settlement-fork-check/v1",
+  "schemaVersion": "settlement-fork-check/v2",
   "network": "local fork of Monad Testnet",
   "chainId": 10143,
-  "forkBlock": "69715607",
+  "forkBlock": "70130205",
   "asset": {
     "address": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
     "name": "USDC",
@@ -12,51 +12,64 @@
   },
   "anvilVersion": "1.8.5",
   "codeSha256": {
-    "contracts/AttemptSettlement.sol": "0a46c8eaf70162bf1fb61bbca36f1d6782fe0058c975df37c33b6488675bc236",
-    "contracts/AttemptSettlement.abi.json": "22cf34e414f0e59e88453aa977cfbda3adbe714e12c8de9fc78429a6b6aa84f0",
-    "src/attempt.mjs": "fa14a4baa09549838f8b4c24a537033e8cd420839d3262fb1dfbcf8ae46ee531",
-    "src/monad.mjs": "a8d1584bee90306f9ca07c087251580c2cb33c20b738dd5a363688466401fef6",
-    "src/settlement.mjs": "45efbadfc729e9ab4bcb80ac4ab90f5cea7e1be3cbd619dd6eeb57836cc6a28a",
-    "src/reconcile.mjs": "db7407b91eb15d550105f2d0b265b0c897dc547824a2225cc5081b796cb4cd71",
+    "contracts/AttemptSettlement.sol": "7db66a2d987f0da87c78ed23756f67a5e7283a87a307059fe3499afd02748b53",
+    "contracts/AttemptSettlement.abi.json": "916328e13fbb6434df50a466a883c6346c4bbd05cea2045dbcd0b3305438281c",
+    "src/attempt.mjs": "9f33114820e84dc59d03c888c870634a5841ed6a49f66f7f53d2c602e2b05ec0",
+    "src/monad.mjs": "2aa6b3d13c02224d22522c446f683a5fe2d3a5ae5a98590fced8dc32ccd258ed",
+    "src/settlement.mjs": "1963174b0fad8fdbab820eced5e44de3716b03b7beeeb046f40319f5fe71863e",
+    "src/reconcile.mjs": "847fe4d84860d4ad9d9d7f08f983913d57273ebeddb5d0a7aaf37f8605154adc",
     "scripts/compile-settlement.mjs": "daf55dc2c79d844cde4c8142ed3bc11396fbc8ae1b43483540f1aa040b5c9ccc",
-    "scripts/deploy-settlement.mjs": "d6d50c2ce12b38667c12bf41063a287bbf947fc13bb1c6e1ec86cb33de732cf1",
-    "scripts/settlement-check.mjs": "59ca018a4b76ec876adc7410b66a93fb27f3988073613d25f90a2f412ad6bf60",
-    "scripts/settlement-fork-check.mjs": "2f4b39ded30af9bed8ebbe8b01fdf531eed9b920fab01ec169f67958ec0abba9",
-    "scripts/fork-usdc.mjs": "c484d6f4370beeb7a7f280c136e9c0609e86f3898dcfe6c474d0d3fa19ca20c5"
+    "scripts/deploy-settlement.mjs": "d6d44d64b9aea83ad22d09a40f2fd4cd48faabb96c6a1a309d175d4260f64d77",
+    "scripts/settlement-check.mjs": "b401a9427e840d2990a99622d3a9ca1e3bb6a33c2c035a7c606feea1049d80b0",
+    "scripts/settlement-fork-check.mjs": "e60eeaa955ee4a0838c62658feda213340eba9be1b07bc2befa5561d2746673e",
+    "scripts/fork-usdc.mjs": "1a14e40d58be62076ee37f5897c7548db0b3ad2ca51b38259f0b6cf78de619c7"
   },
-  "checksPassed": 59,
-  "observedAt": 1791602191,
+  "checksPassed": 74,
+  "observedAt": 1791727395,
   "gasHeadroomBps": 1000,
   "gas": {
     "deploy": {
-      "gasUsed": "1867064",
-      "gasLimit": "2053771"
+      "gasUsed": "2478676",
+      "gasLimit": "2726544"
     },
     "fund": {
-      "gasUsed": "282458",
-      "gasLimit": "313097"
+      "gasUsed": "290745",
+      "gasLimit": "322212"
     },
     "settleSuccess": {
-      "gasUsed": "195971",
-      "gasLimit": "217961"
+      "gasUsed": "230822",
+      "gasLimit": "256297"
     },
     "settleFailure": {
-      "gasUsed": "125344",
-      "gasLimit": "140271"
+      "gasUsed": "142834",
+      "gasLimit": "159510"
     },
     "withdraw": {
       "gasUsed": "145896",
       "gasLimit": "162883"
     },
     "refundTimeout": {
-      "gasUsed": "94696",
-      "gasLimit": "106565"
+      "gasUsed": "103506",
+      "gasLimit": "116256"
+    },
+    "settleSuccessWithPayout": {
+      "gasUsed": "253534",
+      "gasLimit": "281280"
+    },
+    "sweep": {
+      "gasUsed": "172080",
+      "gasLimit": "191685"
+    },
+    "setPayoutInstruction": {
+      "gasUsed": "140815",
+      "gasLimit": "157292"
     }
   },
   "verified": [
     "Client-derived EIP-712 domain equals the deployed USDC domain separator",
     "Buyer EIP-3009 authorization accepted by Circle's FiatToken implementation",
-    "Full lifecycle, rejections, allocations, timeout, withdrawal and reconciliation against real USDC"
+    "Full lifecycle, rejections, allocations, timeout, withdrawal and reconciliation against real USDC",
+    "Automatic payouts, a payout deferred by Circle's blacklist and retried by sweep, and signed payout instructions against real USDC"
   ],
   "limitations": [
     "Local fork; no transaction reached Monad Testnet",

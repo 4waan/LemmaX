@@ -23,13 +23,14 @@ try {
   assert.equal(domainSeparator({ domain: { name, version, chainId: chain.id, verifyingContract: usdc } }), separator);
   const implementation = getAddress(`0x${(await publicClient.getStorageAt({ address: usdc, slot: IMPLEMENTATION_SLOT })).slice(-40)}`);
   const minter = await forkMinter({ publicClient, chain, rpc: node.rpc, usdc });
-  const token = { address: usdc, mint: minter.mint };
+  const token = { address: usdc, mint: minter.mint, block: minter.block };
   const result = await runLifecycle({ chain, publicClient, rpc: node.rpc, artifact: compileSettlement(), token });
-  console.log(JSON.stringify({ schemaVersion: "settlement-fork-check/v1", network: "local fork of Monad Testnet", chainId: chain.id, forkBlock: forkBlock.toString(),
+  console.log(JSON.stringify({ schemaVersion: "settlement-fork-check/v2", network: "local fork of Monad Testnet", chainId: chain.id, forkBlock: forkBlock.toString(),
     asset: { address: usdc, name, version, implementation, domainSeparator: separator }, anvilVersion: node.version,
     codeSha256: sourceHashes([...CHECKED_SOURCES.filter(path => !path.includes("MockFiatToken")), "scripts/settlement-fork-check.mjs", "scripts/fork-usdc.mjs"]),
     checksPassed: result.checks + 1, observedAt: Math.floor(Date.now() / 1000), gasHeadroomBps: HEADROOM_BPS, gas: result.gas,
     verified: ["Client-derived EIP-712 domain equals the deployed USDC domain separator", "Buyer EIP-3009 authorization accepted by Circle's FiatToken implementation",
-      "Full lifecycle, rejections, allocations, timeout, withdrawal and reconciliation against real USDC"],
+      "Full lifecycle, rejections, allocations, timeout, withdrawal and reconciliation against real USDC",
+      "Automatic payouts, a payout deferred by Circle's blacklist and retried by sweep, and signed payout instructions against real USDC"],
     limitations: ["Local fork; no transaction reached Monad Testnet", "Buyer USDC minted on the fork through an impersonated master minter", "Gas measured under local MonadTen execution of forked state"] }, null, 2));
 } finally { await node.stop(); }
