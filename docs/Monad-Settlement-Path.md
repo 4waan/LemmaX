@@ -14,20 +14,20 @@ Package version 0.6.0. Settlement uses Circle USDC on Monad. A buyer funds an at
 
 ## 2. Current architecture
 
-Two paths are implemented. They are not yet joined by a purchase path.
+Two paths are implemented, and the Phase 3 purchase path joins them.
 
 **Directory path, public and read-only.** The frozen SciFact report feeds two connectors (`src/retrieval.mjs`), the decision core (`src/beta.mjs`, `src/assessment.mjs`, `src/billing.mjs`), the public directory (`src/directory.mjs`) and the stdio MCP server (`src/mcp.mjs`). It returns observed hit rates and assessments, redacts operator contribution and reports `fundable: false`. [Retrieval and MCP](Retrieval-and-MCP.md).
 
 **Financial path, local Monad execution.** Private records, commitments, EIP-712 quotes and receipts, and the buyer's EIP-3009 funding authorization (`src/attempt.mjs`) pass through the Monad client (`src/monad.mjs`, `src/settlement.mjs`) to `AttemptSettlement.sol`. The reconciler (`src/reconcile.mjs`) matches the contract's events with the private quotes and receipts. `scripts/deploy-settlement.mjs` deploys the contract.
 
-**Missing join.** The MCP server cannot yet issue a fundable quote, collect the buyer's authorization or report settlement status. Those steps are the Phase 3 purchase path.
+**Join.** With operator keys configured, the MCP server issues fundable quotes, relays the buyer's authorization and reports attempt status (section 4).
 
 The target lifecycle for one attempt:
 
 ```text
 1  agent        -> directory    lemma_assess (implemented)
 2  directory    -> agent        pOutcome, C_reuse, rank
-3  agent        -> directory    lemma_quote_attempt (planned)
+3  agent        -> directory    lemma_quote_attempt
 4  directory    -> agent        issuer-signed quote, sealed private record
 5  buyer wallet                 signs EIP-3009 authorization, nonce = quote digest
 6  relayer      -> Monad        fund(quote, issuer signature, buyer authorization)
@@ -35,12 +35,12 @@ The target lifecycle for one attempt:
 8  executor and evaluator       run connector, check privately, sign receipt
 9  evaluator    -> Monad        settle(quote, receipt, signature)
 10 Monad        -> reconciler   AttemptOutcome, credits
-11 reconciler   -> agent        lemma_attempt_status (planned)
+11 reconciler   -> agent        lemma_attempt_status
 12 owner        -> Monad        withdraw(amount, destination)
    no valid receipt by settleBy: anyone calls refundTimeout(quote) for a full refund
 ```
 
-Steps 1, 2 and 5 to 12, apart from the planned status tool, run today against local Monad execution and a fork of Monad Testnet. Step 8 exists as the signed example in `examples/attempt.mjs`, not as a service. The public and private boundary is unchanged from the [architecture](LemmaX-Architecture.md#3-what-is-public-on-monad).
+Every step runs today against local Monad execution, a fork of Monad Testnet and Monad Testnet itself. Step 8 runs inside the demonstration runner, not as a standing service. The public and private boundary is unchanged from the [architecture](LemmaX-Architecture.md#3-what-is-public-on-monad).
 
 ## 3. Monad behaviour that shapes the implementation
 
@@ -144,7 +144,7 @@ The demonstration then ran against that contract through the MCP purchase tools,
 
 LemmaX then withdrew its 0.003 USDC of execution charges ([0x3652f0a6](https://testnet.monadvision.com/tx/0x3652f0a67d7d2e91daeb202cc355df3c4d0136cc2192c6989fe0e7e244c0c170)). The remaining credit matches the agreed allocation exactly: buyer 0.0144 USDC (the 0.008 timeout refund, 0.0007 unused caps after success and 0.0057 after failure), provider 0.005 and evaluator 0.0016. The contract balance equals that outstanding credit, nothing is locked, and reconciliation of the run's events against the private quotes and receipts reported no issues. The buyer spent 0.024 USDC; relaying cost the facilitator 0.103 MON and the evaluator 0.048 MON. [Live report](../verification/testnet-demo.json).
 
-Monad Testnet receipts report gas used equal to the transaction gas limit, consistent with charging the limit: funding 276,824 to 314,498, successful settlement 237,465, failure settlement 141,554 and refund 88,477. The public RPC limits `eth_getLogs` to 100 blocks, so the reconciler reads in 100-block chunks. An earlier, interrupted run had deployed the contract without emitting any event, so this run read events from its own first block (`LEMMAX_SETTLEMENT_FROM_BLOCK`) and reused the contract (`LEMMAX_SETTLEMENT_ADDRESS`).
+Monad Testnet receipts report gas used equal to the transaction gas limit, consistent with charging the limit: funding 276,815 to 314,498, successful settlement 237,465, failure settlement 141,554 and refund 88,477. The public RPC limits `eth_getLogs` to 100 blocks, so the reconciler reads in 100-block chunks. An earlier, interrupted run had deployed the contract without emitting any event, so this run read events from its own first block (`LEMMAX_SETTLEMENT_FROM_BLOCK`) and reused the contract (`LEMMAX_SETTLEMENT_ADDRESS`).
 
 ## 5. Plan
 

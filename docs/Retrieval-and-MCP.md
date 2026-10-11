@@ -1,6 +1,6 @@
 # Public retrieval connectors and MCP integration
 
-This slice runs two connector offers on the same frozen public corpus. It uses no training or paid model inference. It is a local integration demo, with no purchases or Monad transactions enabled.
+This slice runs two connector offers on the same frozen public corpus. It uses no training or paid model inference. By default it is a read-only local integration demo; an operator-configured server adds the purchase tools described in the [Monad settlement path](Monad-Settlement-Path.md).
 
 ## Offers and output
 
@@ -28,7 +28,7 @@ Before evaluating either offer, queries were grouped by shared gold sources or i
 
 ## Probability and pricing disclosure
 
-`public-evidence` returns observed hit rates and leaves model forecasts/cost ranks unknown. Statistical independence is not established, and no commercial tariff is selected.
+`public-evidence` returns observed hit rates and leaves model forecasts/cost ranks unknown. Statistical independence is not established, and this scenario applies no tariff; the `demo-terms-*` scenarios price the agreed USDC terms.
 
 `illustrative-workload-cost/v1` explicitly treats the 247 representatives as independent and applies a uniform Beta prior. It illustrates conditional posterior means and cost ranking using synthetic workload, tariffs and operator terms. Its independence assumption, missing calibration, `DEMO_UNITS` currency and non-fundable status are returned with the response. These are not selected production policies or a customer-specific promise.
 
@@ -78,7 +78,7 @@ Example client configuration, with paths replaced by the operator:
 }
 ```
 
-The five read-only tools are:
+The five read-only tools, always present, are:
 
 - `lemma_list_offers`: lists both offers, public profile and measured hit rates.
 - `lemma_assess`: takes `profileRef: "beir-scifact-test-source-hit5/v1"` and optional scenario reference.
@@ -92,4 +92,4 @@ The real SDK smoke check compares rankings and outcomes through a spawned stdio 
 
 ## Next boundary
 
-The directory and retrieval flow are usable locally. To turn one attempt into a Monad testnet purchase, freeze the evaluator authority, eligible-failure/timeout rules, integer quote allocations and permitted payout destinations, and connect the implemented signed receipts, private record commitments and exactly-once USDC settlement prototype to a testnet purchase path. The user selected full refund when no valid verdict reaches settlement by its deadline. [Local financial implementation](Attempt-and-Settlement.md). Withdrawal bar semantics and live subscription entitlement checks remain separate open decisions. The public benchmark should not substitute for another team's actual integration task.
+The directory and retrieval flow are usable locally, and the operator's purchase path has run attempts on Monad Testnet under agreed terms. [Live run](Monad-Settlement-Path.md#live-run-on-monad-testnet). Automatic payouts and live subscription entitlement checks are the next steps. The public benchmark should not substitute for another team's actual integration task.
