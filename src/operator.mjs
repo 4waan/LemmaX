@@ -1,7 +1,7 @@
-import { createWalletClient, http } from "viem";
+import { createWalletClient, http, toEventSelector } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { connectMonad, envAddress, waitForStage } from "./monad.mjs";
-import { createSettlementClient } from "./settlement.mjs";
+import { MONAD_NETWORKS, connectMonad, envAddress, waitForStage, watchCommitStages } from "./monad.mjs";
+import { SETTLEMENT_ABI, createSettlementClient } from "./settlement.mjs";
 import { createQuoteIssuer } from "./issuer.mjs";
 import { createPurchaseDesk } from "./purchase.mjs";
 import { usdcAtomic } from "./terms.mjs";
@@ -36,6 +36,16 @@ export async function createOperatorDesk({ env, data }) {
   const relayer = createWalletClient({ account: issuerAccount, chain, transport: http(rpcUrl, { retryCount: 0 }) });
   const chainTime = async () => (await publicClient.getBlock()).timestamp.toString();
   const confirm = result => waitForStage(publicClient, result, "verified", { pollMs: 300, timeoutMs: 180000 });
-  const desk = createPurchaseDesk({ issuer, settlement, relayer, data, chainTime, confirm });
+  const stages = commitStageStream({ env, network, address: settlement.address });
+  const desk = createPurchaseDesk({ issuer, settlement, relayer, data, chainTime, confirm, stages });
   return { desk, network, chainId: chain.id, settlement: settlement.address };
+}
+
+// Funding follows Monad's commit states over WebSocket when an endpoint is known; the
+// subscription covers only the settlement contract's AttemptCommitted event.
+export function commitStageStream({ env, network, address }) {
+  const wsUrl = env.LEMMAX_MONAD_WS_URL ?? MONAD_NETWORKS[network]?.ws;
+  if (!wsUrl) return null;
+  const topic = toEventSelector(SETTLEMENT_ABI.find(item => item.type === "event" && item.name === "AttemptCommitted"));
+  return () => watchCommitStages({ wsUrl, address, topics: [topic] });
 }

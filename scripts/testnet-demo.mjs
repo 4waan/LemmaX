@@ -16,6 +16,7 @@ import { readSettlementLogs, reconcileAttempts } from "../src/reconcile.mjs";
 import { createQuoteIssuer } from "../src/issuer.mjs";
 import { createEvaluator } from "../src/evaluator.mjs";
 import { createPurchaseDesk, plain } from "../src/purchase.mjs";
+import { commitStageStream } from "../src/operator.mjs";
 import { createMcpServer } from "../src/mcp.mjs";
 import { createPublicDirectory } from "../src/directory.mjs";
 import { SCIFACT_PROFILE, createSciFactIndex, loadSciFact } from "../src/scifact.mjs";
@@ -141,7 +142,9 @@ async function main(env) {
     const issuer = createQuoteIssuer({ account: r.facilitator, domain, token, caps: r.caps,
       payees: { connector: r.provider, executor: r.facilitator.address, evaluator: r.evaluator.address, evaluatorSigner: r.evaluator.address } });
     const evaluator = createEvaluator({ account: r.evaluator, domain, index, data });
-    const desk = createPurchaseDesk({ issuer, settlement, relayer: wallet(r.facilitator), data, chainTime, confirm });
+    // The fork has no monadLogs stream, so it confirms by polling.
+    const stages = target === "testnet" ? commitStageStream({ env, network: "testnet", address }) : null;
+    const desk = createPurchaseDesk({ issuer, settlement, relayer: wallet(r.facilitator), data, chainTime, confirm, stages });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const server = createMcpServer(createPublicDirectory({ report, index, data }), desk);
     const agent = new Client({ name: "LemmaX-demo-buyer-agent", version: "0.5.0" });

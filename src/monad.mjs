@@ -5,9 +5,9 @@ const localChain = defineChain({ id: 31337, name: "Local Monad execution",
   nativeCurrency: { name: "Test", symbol: "TEST", decimals: 18 }, rpcUrls: { default: { http: ["http://127.0.0.1:8545"] } } });
 // Circle-issued USDC (six decimals) is the settlement asset; local checks deploy a mock.
 export const MONAD_NETWORKS = Object.freeze({
-  local: Object.freeze({ chain: localChain, mainnet: false, usdc: null }),
-  testnet: Object.freeze({ chain: monadTestnet, mainnet: false, usdc: "0x534b2f3A21130d7a60830c2Df862319e593943A3" }),
-  mainnet: Object.freeze({ chain: monad, mainnet: true, usdc: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603" }),
+  local: Object.freeze({ chain: localChain, mainnet: false, usdc: null, ws: null }),
+  testnet: Object.freeze({ chain: monadTestnet, mainnet: false, usdc: "0x534b2f3A21130d7a60830c2Df862319e593943A3", ws: "wss://testnet-rpc.monad.xyz" }),
+  mainnet: Object.freeze({ chain: monad, mainnet: true, usdc: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603", ws: "wss://rpc.monad.xyz" }),
 });
 export const CONFIRMATION_STAGES = Object.freeze(["included", "finalized", "verified"]);
 // A finalized block's execution state root is agreed three blocks later.
