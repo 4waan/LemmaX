@@ -33,6 +33,15 @@ function authorizationArgs({ validAfter, validBefore, signature }) {
   if (typeof signature !== "string" || !/^0x(?:[0-9a-fA-F]{2})+$/.test(signature)) throw new TypeError("Buyer authorization signature must be hex bytes");
   return { validAfter: BigInt(atomic(validAfter)), validBefore: BigInt(atomic(validBefore)), signature };
 }
+// Monad charges the gas limit, not the gas used, so an implausible estimate must never
+// become the limit. Ceilings sit well above measured use (fund about 315k, settle about
+// 240k before payouts) and below what a runaway call could burn.
+export const GAS_CEILINGS = Object.freeze({ fund: 400_000n, settle: 450_000n, refundTimeout: 200_000n, withdraw: 150_000n });
+export function gasCeiling(functionName) {
+  const ceiling = GAS_CEILINGS[functionName];
+  if (ceiling === undefined) throw new TypeError(`No gas ceiling for ${functionName}`);
+  return ceiling;
+}
 function revertReason(error) {
   const revert = error instanceof BaseError ? error.walk(e => e instanceof ContractFunctionRevertedError) : null;
   return revert?.reason ?? revert?.data?.errorName ?? "unknown_revert";
@@ -47,6 +56,15 @@ export function createSettlementClient({ publicClient, address, gasHeadroomBps }
   gasLimitFor(1n, gasHeadroomBps);
   const read = (functionName, args = []) => publicClient.readContract({ address: contract, abi: SETTLEMENT_ABI, functionName, args });
   let token = null;
+  // One transaction at a time per sending wallet: the nonce stays in order, and each
+  // estimate sees the state left by the previous transaction instead of racing it.
+  const queues = new Map();
+  function serialized(wallet, task) {
+    const key = getAddress(wallet.account.address);
+    const run = (queues.get(key) ?? Promise.resolve()).then(task, task);
+    queues.set(key, run.catch(() => {}));
+    return run;
+  }
   async function asset() {
     if (!token) {
       const tokenAddress = getAddress(await read("asset"));
@@ -56,17 +74,21 @@ export function createSettlementClient({ publicClient, address, gasHeadroomBps }
     }
     return token;
   }
-  async function write(wallet, functionName, args) {
-    const call = { address: contract, abi: SETTLEMENT_ABI, functionName, args, account: wallet.account };
-    let estimate;
-    try { estimate = await publicClient.estimateContractGas(call); }
-    catch (error) { throw new SettlementRejected(functionName, revertReason(error)); }
-    const gas = gasLimitFor(estimate, gasHeadroomBps);
-    const hash = await wallet.writeContract({ ...call, chain: wallet.chain, gas });
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    if (receipt.status !== "success") throw new SettlementRejected(functionName, "reverted_after_inclusion");
-    return { functionName, hash, blockNumber: receipt.blockNumber, blockHash: receipt.blockHash,
-      gasLimit: gas, gasEstimate: estimate, gasUsed: receipt.gasUsed };
+  function write(wallet, functionName, args) {
+    const ceiling = gasCeiling(functionName);
+    return serialized(wallet, async () => {
+      const call = { address: contract, abi: SETTLEMENT_ABI, functionName, args, account: wallet.account };
+      let estimate;
+      try { estimate = await publicClient.estimateContractGas(call); }
+      catch (error) { throw new SettlementRejected(functionName, revertReason(error)); }
+      const gas = gasLimitFor(estimate, gasHeadroomBps);
+      if (gas > ceiling) throw new SettlementRejected(functionName, "gas_above_ceiling");
+      const hash = await wallet.writeContract({ ...call, chain: wallet.chain, gas });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      if (receipt.status !== "success") throw Object.assign(new SettlementRejected(functionName, "reverted_after_inclusion"), { hash });
+      return { functionName, hash, blockNumber: receipt.blockNumber, blockHash: receipt.blockHash,
+        gasLimit: gas, gasEstimate: estimate, gasUsed: receipt.gasUsed };
+    });
   }
   return Object.freeze({
     address: contract,

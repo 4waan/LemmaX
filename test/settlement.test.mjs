@@ -4,7 +4,7 @@ import { recoverTypedDataAddress } from "viem";
 import { attemptFixture, FIXTURE_TOKEN } from "./fixtures/attempt.mjs";
 import { fundingAuthorizationTypedData, newAttemptId, quoteDigest, signingDomain } from "../src/attempt.mjs";
 import { connectMonad, gasLimitFor, waitForStage, MONAD_NETWORKS } from "../src/monad.mjs";
-import { SETTLEMENT_ABI, fundingTotal, quoteArgs, receiptArgs } from "../src/settlement.mjs";
+import { GAS_CEILINGS, SETTLEMENT_ABI, SettlementRejected, createSettlementClient, fundingTotal, quoteArgs, receiptArgs } from "../src/settlement.mjs";
 import { reconcileAttempts } from "../src/reconcile.mjs";
 import { compileSettlement } from "../scripts/compile-settlement.mjs";
 import { maskImmutables } from "../scripts/deploy-settlement.mjs";
@@ -130,4 +130,22 @@ test("Reconciliation reports mismatched bindings, receipts, states and ledger ga
   assert.deepEqual(check([funded, { ...funded, quoteDigest: newAttemptId() }]).issues, [{ issue: "conflicting_duplicate_log", key: `${funded.transactionHash}:${funded.logIndex}` }]);
   assert.deepEqual(check([funded], { ledger: { solvent: false, lockedFunds: "129" } }).issues.map(i => i.issue), ["contract_insolvent", "locked_funds_below_expected"]);
   assert.equal(check([]).attempts[0].state, "none");
+});
+
+test("Writes from one wallet run one at a time and never exceed the per-function gas ceiling", async () => {
+  const events = [], estimates = { withdraw: 60_000n };
+  const publicClient = {
+    async estimateContractGas({ functionName }) { events.push(`estimate:${functionName}`); return estimates[functionName]; },
+    async waitForTransactionReceipt({ hash }) { await new Promise(resolve => setTimeout(resolve, 10)); events.push(`mined:${hash}`); return { status: "success", blockNumber: 1n, blockHash: hash, gasUsed: 1n }; },
+  };
+  let sent = 0;
+  const wallet = { account: { address: "0x2000000000000000000000000000000000000002" }, chain: null,
+    async writeContract({ gas }) { sent += 1; events.push(`send:${gas}`); return `0x${String(sent).padStart(64, "0")}`; } };
+  const client = createSettlementClient({ publicClient, address: "0x1000000000000000000000000000000000000001", gasHeadroomBps: 1000 });
+  const destination = "0x3000000000000000000000000000000000000003";
+  await Promise.all([client.withdraw({ wallet, amount: "1", destination }), client.withdraw({ wallet, amount: "2", destination })]);
+  assert.deepEqual(events.map(e => e.split(":")[0]), ["estimate", "send", "mined", "estimate", "send", "mined"]);
+  estimates.withdraw = GAS_CEILINGS.withdraw;
+  await assert.rejects(client.withdraw({ wallet, amount: "1", destination }), e => e instanceof SettlementRejected && e.reason === "gas_above_ceiling");
+  assert.equal(sent, 2);
 });
