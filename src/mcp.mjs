@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ASSESSMENT_SCENARIOS } from "./directory.mjs";
 import { SettlementRejected } from "./settlement.mjs";
+import { verifyAttempt } from "./audit.mjs";
 import { DEADLINE_PROFILES } from "./terms.mjs";
 
 const VERSION = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
@@ -11,8 +12,9 @@ const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
 const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
 
 // The read-only tools serve frozen public benchmark data. Purchase tools exist only when
-// the operator passes a purchase desk configured with its own keys and caps.
-export function createMcpServer(directory, desk = null) {
+// the operator passes a purchase desk configured with its own keys and caps. With the
+// Envio auditor configured, anyone can check an attempt against the published rules.
+export function createMcpServer(directory, desk = null, { audit = null } = {}) {
   const server = new McpServer({ name: "LemmaX-public-benchmark-demo", version: VERSION });
   function tool(name, description, schema, action, annotations = READ_ONLY) {
     server.registerTool(name, { description, inputSchema: schema.strict(), annotations }, async (args, extra) => {
@@ -44,6 +46,10 @@ export function createMcpServer(directory, desk = null) {
   tool("lemma_run_benchmark_case", "Replay one known public benchmark case with its frozen same-ID exclusion. Reports observed labeled relevance; replay adds no new evidence.", z.object({
     offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
   }), args => directory.runBenchmarkCase(args));
+  if (audit) {
+    tool("lemma_verify_attempt", "Check one attempt against LemmaX's published rulebook using the public Envio auditor: state, who was paid what, and any rule findings. Reads public chain data only.",
+      z.object({ attemptId: bytes32 }), args => verifyAttempt(audit, args.attemptId), { ...READ_ONLY, openWorldHint: true });
+  }
   if (desk) {
     tool("lemma_quote_attempt", "Issue a signed USDC quote for one bounded retrieval attempt on a public benchmark case. Returns the quote, the EIP-3009 authorization the buyer wallet signs, and the private record to keep. Counts against the operator's caps.", z.object({
       offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
