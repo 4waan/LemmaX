@@ -14,12 +14,15 @@ export const FUNDING_STEPS = Object.freeze(["Relayed", "Proposed", "Voted", "Fin
 // authorization, then follows the transaction to Verified. With `stages` (a monadLogs
 // watcher factory) each commit state is reported as it happens; without it, or if the
 // subscription fails, `confirm` polls instead. State is in memory.
-export function createPurchaseDesk({ issuer, settlement, relayer, data, chainTime, confirm, stages = null, stageTimeoutMs = 60000 }) {
+// `chooseEvaluator` lets the operator assign a rostered evaluator per quote (the agent
+// cannot pick one); by default every quote names the issuer's main evaluator.
+export function createPurchaseDesk({ issuer, settlement, relayer, data, chainTime, confirm, stages = null, stageTimeoutMs = 60000, chooseEvaluator = () => undefined }) {
   const quotes = new Map(), funding = new Set();
   return Object.freeze({
     async quote({ offerRef, caseRef, profileRef, buyer }) {
       if (!data.gold.has(caseRef)) throw new TypeError("Unknown public benchmark case");
-      const issued = await issuer.issue({ offerRef, caseRef, query: data.queries.get(caseRef), buyer, profileRef, issuedAt: await chainTime() });
+      const issued = await issuer.issue({ offerRef, caseRef, query: data.queries.get(caseRef), buyer, profileRef, issuedAt: await chainTime(),
+        evaluatorRef: chooseEvaluator({ offerRef, caseRef, profileRef, buyer }) });
       quotes.set(issued.quote.attemptId, issued);
       return plain({ attemptId: issued.quote.attemptId, profileRef, currency: "USDC", decimals: 6, fundingTotal: issuer.fundingTotal,
         quote: issued.quote, issuerSignature: issued.issuerSignature, quoteDigest: issued.quoteDigest,

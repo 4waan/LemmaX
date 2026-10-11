@@ -10,8 +10,11 @@ const DAY = 86400n;
 // Issues fundable quotes for public benchmark retrieval cases. The issuer key signs each
 // quote. Caps bound what this process issues: every issued quote counts against the daily
 // cap of its chain day, whether or not the buyer funds it. State is in memory only.
-export function createQuoteIssuer({ account, domain, token, payees, caps, terms = DEMO_TERMS }) {
+// `evaluators` names alternative rostered evaluators the operator may assign per quote.
+export function createQuoteIssuer({ account, domain, token, payees, caps, terms = DEMO_TERMS, evaluators = {} }) {
   const payee = Object.fromEntries(["connector", "executor", "evaluator", "evaluatorSigner"].map(key => [key, getAddress(payees[key])]));
+  const roster = Object.fromEntries(Object.entries(evaluators).map(([ref, e]) => [ref, { evaluator: getAddress(e.evaluator), evaluatorSigner: getAddress(e.evaluatorSigner) }]));
+  if ([payee.evaluatorSigner, ...Object.values(roster).map(e => e.evaluatorSigner)].includes(account.address)) throw new TypeError("The issuer cannot also be an evaluator");
   if (typeof caps?.maxPerAttempt !== "bigint" || typeof caps?.dailyCap !== "bigint" || caps.maxPerAttempt <= 0n || caps.dailyCap <= 0n) throw new RangeError("Issuance caps must be positive atomic amounts");
   const total = BigInt(terms.principal) + BigInt(terms.executionCap) + BigInt(terms.evaluationCap);
   if (total > caps.maxPerAttempt) throw new RangeError("Terms exceed the per-attempt cap");
@@ -20,7 +23,9 @@ export function createQuoteIssuer({ account, domain, token, payees, caps, terms 
     address: account.address,
     fundingTotal: total.toString(),
     issuedOn(day) { return (issued.get(BigInt(day)) ?? 0n).toString(); },
-    async issue({ offerRef, caseRef, query, buyer, profileRef, issuedAt }) {
+    async issue({ offerRef, caseRef, query, buyer, profileRef, issuedAt, evaluatorRef }) {
+      if (evaluatorRef !== undefined && !Object.hasOwn(roster, evaluatorRef)) throw new TypeError("Unknown evaluator");
+      const assigned = evaluatorRef === undefined ? payee : roster[evaluatorRef];
       if (!RETRIEVAL_OFFERS.some(o => o.offerRef === offerRef)) throw new TypeError("Unknown retrieval offer");
       if (typeof caseRef !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(caseRef)) throw new TypeError("Invalid benchmark case");
       const window = quoteWindow(profileRef, issuedAt);
@@ -33,7 +38,7 @@ export function createQuoteIssuer({ account, domain, token, payees, caps, terms 
       const salt = newAttemptId();
       const quote = { attemptId: newAttemptId(), recordCommitment: commitAttemptRecord(record, salt), policyHash: SETTLEMENT_POLICY_HASH,
         issuer: account.address, buyer: getAddress(buyer), connectorPayee: payee.connector, executorPayee: payee.executor,
-        evaluatorPayee: payee.evaluator, evaluatorSigner: payee.evaluatorSigner, asset: getAddress(token.address),
+        evaluatorPayee: assigned.evaluator, evaluatorSigner: assigned.evaluatorSigner, asset: getAddress(token.address),
         principal: terms.principal, executionCap: terms.executionCap, evaluationCap: terms.evaluationCap,
         quoteExpiresAt: window.quoteExpiresAt, executeBy: window.executeBy, settleBy: window.settleBy, timeoutMode: TIMEOUT_MODES.refund_all };
       bindRecordToQuote(record, salt, quote);
