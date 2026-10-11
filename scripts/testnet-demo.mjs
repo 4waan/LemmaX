@@ -32,7 +32,7 @@ const SCENARIO = "demo-terms-llm-reads-corpus/v1", CHECK_SCENARIO = "demo-terms-
 const forkGas = JSON.parse(readFileSync(new URL("../verification/settlement-fork-check.json", import.meta.url), "utf8")).gas;
 const limit = name => BigInt(forkGas[name].gasLimit);
 
-function roles(env) {
+export function roles(env) {
   const key = name => { try { return privateKeyToAccount(env[name]); } catch { throw new TypeError(`${name} is missing or is not a private key`); } };
   const r = { deployer: key("DEPLOYER_PRIVATE_KEY"), facilitator: key("FACILITATOR_PRIVATE_KEY"), evaluator: key("EVALUATOR_PRIVATE_KEY"), buyer: key("BENCHMARK_BUYER_PRIVATE_KEY") };
   if (envAddress(env, "BENCHMARK_BUYER_ADDRESS", { optional: true }) && envAddress(env, "BENCHMARK_BUYER_ADDRESS") !== r.buyer.address) throw new TypeError("BENCHMARK_BUYER_ADDRESS does not match its key");
@@ -44,7 +44,7 @@ function roles(env) {
     caps: { maxPerAttempt: usdcAtomic(env.LEMMA_MAX_USDC_PER_RESOLUTION), dailyCap: usdcAtomic(env.LEMMA_DAILY_USDC_CAP) } };
 }
 
-async function balances(publicClient, usdc, accounts) {
+export async function balances(publicClient, usdc, accounts) {
   return Object.fromEntries(await Promise.all(Object.entries(accounts).map(async ([role, address]) => [role, {
     address, mon: formatUnits(await publicClient.getBalance({ address }), 18),
     usdc: formatUnits(await publicClient.readContract({ address: usdc, abi: erc20Abi, functionName: "balanceOf", args: [address] }), 6) }])));
@@ -71,7 +71,7 @@ async function budget({ publicClient, usdc, r, plan }) {
 
 // Assess and choose the offer and cases before any chain access; a stale or unranked
 // assessment stops here instead of after a deployment has been paid for.
-function preflight(report, index, data) {
+export function preflight(report, index, data) {
   const directory = createPublicDirectory({ report, index, data });
   const assessments = Object.fromEntries([SCENARIO, CHECK_SCENARIO].map(scenarioRef => [scenarioRef,
     directory.assess({ profileRef: SCIFACT_PROFILE.profileRef, scenarioRef }).results.map(x => ({ offerRef: x.offerRef, pOutcome: x.pOutcome.mean,

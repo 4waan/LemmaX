@@ -27,7 +27,8 @@
     "privy:kill-test": "node scripts/privy-kill-test.mjs",
     "privy:setup": "node scripts/privy-setup.mjs",
     "agents:register": "node scripts/register-agents.mjs",
-    "reputation": "node scripts/publish-reputation.mjs"
+    "reputation": "node scripts/publish-reputation.mjs",
+    "demo:loop": "node scripts/trust-loop.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
