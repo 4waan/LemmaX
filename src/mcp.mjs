@@ -15,9 +15,13 @@ const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
 export function createMcpServer(directory, desk = null) {
   const server = new McpServer({ name: "LemmaX-public-benchmark-demo", version: VERSION });
   function tool(name, description, schema, action, annotations = READ_ONLY) {
-    server.registerTool(name, { description, inputSchema: schema.strict(), annotations }, async args => {
+    server.registerTool(name, { description, inputSchema: schema.strict(), annotations }, async (args, extra) => {
       try {
-        const result = await action(args);
+        // Long calls report progress when the client asked for it with a progress token.
+        const token = extra?._meta?.progressToken;
+        const onProgress = token === undefined ? () => {} : ({ progress, total, message }) =>
+          extra.sendNotification({ method: "notifications/progress", params: { progressToken: token, progress, total, message } }).catch(() => {});
+        const result = await action(args, { onProgress });
         return { content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result };
       } catch (error) {
         // Only our own validation and contract or token rejections carry a reason to the caller.
@@ -45,10 +49,10 @@ export function createMcpServer(directory, desk = null) {
       offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
       profileRef: z.enum(Object.keys(DEADLINE_PROFILES)), buyer: address,
     }), args => desk.quote(args), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
-    tool("lemma_fund_attempt", "Relay the buyer's signed EIP-3009 authorization to fund a quote this server issued. Moves the buyer's USDC into escrow on Monad and waits for confirmation.", z.object({
+    tool("lemma_fund_attempt", "Relay the buyer's signed EIP-3009 authorization to fund a quote this server issued. Moves the buyer's USDC into escrow on Monad and returns at Verified, reporting each Monad commit state as progress (about two seconds on testnet).", z.object({
       attemptId: bytes32, validAfter: z.string().regex(/^(0|[1-9][0-9]{0,19})$/), validBefore: z.string().regex(/^(0|[1-9][0-9]{0,19})$/),
       signature: z.string().regex(/^0x(?:[0-9a-fA-F]{2}){65,2048}$/),
-    }), args => desk.fund(args), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
+    }), (args, options) => desk.fund(args, options), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
     tool("lemma_attempt_status", "Read an attempt's onchain state, stored quote digest and funding time.", z.object({ attemptId: bytes32 }),
       args => desk.status(args), { ...READ_ONLY, openWorldHint: true });
   }

@@ -66,3 +66,66 @@ export function envAddress(env, name, { optional = false } = {}) {
   }
   try { return getAddress(value); } catch { throw new TypeError(`${name} is not a valid address`); }
 }
+
+// Monad re-sends a block's logs at each commit state over the monadLogs subscription:
+// Proposed, Voted, Finalized, then Verified (finalized execution state root). A block
+// can skip Voted, and an abandoned proposal sends nothing more.
+export const COMMIT_STAGES = Object.freeze(["Proposed", "Voted", "Finalized", "Verified"]);
+
+// Opens a monadLogs subscription for one contract before a transaction is sent, so no
+// stage is missed, and buffers every stage seen per transaction. `until` replays the
+// buffered stages of one transaction and resolves when it reaches the target stage.
+export async function watchCommitStages({ wsUrl, address, topics = [], WebSocketImpl = globalThis.WebSocket, connectTimeoutMs = 5000, now = () => Date.now() }) {
+  if (typeof wsUrl !== "string" || !/^wss?:\/\/\S+$/.test(wsUrl)) throw new TypeError("Provide an explicit ws(s) URL");
+  if (typeof WebSocketImpl !== "function") throw new TypeError("No WebSocket implementation available");
+  const socket = new WebSocketImpl(wsUrl);
+  const byTransaction = new Map(), listeners = new Set();
+  let subscription = null, failure = null;
+  const fail = error => { failure ??= error; for (const listener of listeners) listener(); };
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => { reject(new Error("monadLogs subscription timed out")); try { socket.close(); } catch {} }, connectTimeoutMs);
+    socket.onerror = () => { clearTimeout(timer); reject(new Error("monadLogs connection failed")); fail(new Error("monadLogs connection failed")); };
+    socket.onclose = () => fail(new Error("monadLogs connection closed"));
+    socket.onopen = () => socket.send(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_subscribe",
+      params: ["monadLogs", { address: getAddress(address), ...(topics.length ? { topics } : {}) }] }));
+    socket.onmessage = event => {
+      let message;
+      try { message = JSON.parse(typeof event.data === "string" ? event.data : String(event.data)); } catch { return; }
+      if (message.id === 1) {
+        clearTimeout(timer);
+        if (message.error || typeof message.result !== "string") return reject(new Error("monadLogs subscription refused"));
+        subscription = message.result; return resolve();
+      }
+      const log = message.params?.subscription === subscription ? message.params.result : null;
+      if (!log || !COMMIT_STAGES.includes(log.commitState) || typeof log.transactionHash !== "string") return;
+      const key = log.transactionHash.toLowerCase();
+      if (!byTransaction.has(key)) byTransaction.set(key, []);
+      const seen = byTransaction.get(key);
+      if (seen.some(s => s.stage === log.commitState && s.blockId === log.blockId)) return;
+      seen.push({ stage: log.commitState, blockNumber: BigInt(log.blockNumber), blockId: log.blockId, at: now() });
+      for (const listener of listeners) listener();
+    };
+  });
+  return Object.freeze({
+    until(transactionHash, { target = "Verified", onStage = () => {}, timeoutMs = 60000 } = {}) {
+      const key = transactionHash.toLowerCase();
+      let reported = 0;
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => { listeners.delete(check); reject(new Error(`Timed out waiting for ${target}`)); }, timeoutMs);
+        function check() {
+          const seen = byTransaction.get(key) ?? [];
+          for (; reported < seen.length; reported++) onStage(seen[reported]);
+          const done = seen.find(s => s.stage === target);
+          if (done) {
+            clearTimeout(timer); listeners.delete(check);
+            // Report only the stages of the block that reached the target.
+            return resolve(seen.filter(s => s.blockId === done.blockId));
+          }
+          if (failure) { clearTimeout(timer); listeners.delete(check); reject(failure); }
+        }
+        listeners.add(check); check();
+      });
+    },
+    close() { try { socket.close(); } catch {} },
+  });
+}
