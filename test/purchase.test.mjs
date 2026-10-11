@@ -10,6 +10,7 @@ import { createQuoteIssuer } from "../src/issuer.mjs";
 import { createEvaluator } from "../src/evaluator.mjs";
 import { createPurchaseDesk } from "../src/purchase.mjs";
 import { createMcpServer } from "../src/mcp.mjs";
+import { operatorConfigured } from "../src/operator.mjs";
 import { SettlementRejected } from "../src/settlement.mjs";
 import { createPublicDirectory } from "../src/directory.mjs";
 import { SCIFACT_PROFILE } from "../src/scifact.mjs";
@@ -159,4 +160,11 @@ test("MCP purchase tools exist only with a desk and return specific rejection re
   assert.match(capped.content[0].text, /Daily issuance cap reached/);
   const badArgs = await client.callTool({ name: "lemma_quote_attempt", arguments: { offerRef, caseRef: "hit", profileRef: "demo-forever/v1", buyer: a.buyer.address } });
   assert.equal(badArgs.isError, true);
+});
+
+test("The MCP entry point enables paid tools only with a settlement contract and issuer key", () => {
+  assert.equal(operatorConfigured({}), false);
+  assert.equal(operatorConfigured({ LEMMAX_SETTLEMENT_ADDRESS: "0x1000000000000000000000000000000000000001" }), false);
+  assert.equal(operatorConfigured({ FACILITATOR_PRIVATE_KEY: "0x01" }), false);
+  assert.equal(operatorConfigured({ LEMMAX_SETTLEMENT_ADDRESS: "0x1000000000000000000000000000000000000001", FACILITATOR_PRIVATE_KEY: "0x01" }), true);
 });

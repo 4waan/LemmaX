@@ -1,9 +1,11 @@
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ASSESSMENT_SCENARIOS } from "./directory.mjs";
 import { SettlementRejected } from "./settlement.mjs";
 import { DEADLINE_PROFILES } from "./terms.mjs";
 
+const VERSION = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
 const READ_ONLY = Object.freeze({ readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
 const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
 const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
@@ -11,7 +13,7 @@ const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
 // The read-only tools serve frozen public benchmark data. Purchase tools exist only when
 // the operator passes a purchase desk configured with its own keys and caps.
 export function createMcpServer(directory, desk = null) {
-  const server = new McpServer({ name: "LemmaX-public-benchmark-demo", version: "0.5.0" });
+  const server = new McpServer({ name: "LemmaX-public-benchmark-demo", version: VERSION });
   function tool(name, description, schema, action, annotations = READ_ONLY) {
     server.registerTool(name, { description, inputSchema: schema.strict(), annotations }, async args => {
       try {

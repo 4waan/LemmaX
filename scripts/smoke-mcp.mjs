@@ -54,7 +54,7 @@ try {
   const source = await client.callTool({ name: "lemma_read_source", arguments: { sourceRef: firstSource } });
   assert.ok(source.structuredContent.excerpt.length > 0 && source.structuredContent.excerpt.length <= 1000);
   assert.equal(source.structuredContent.sourceVersion, SCIFACT_PROFILE.corpusSha256);
-  assert.equal(stderr, "");
+  assert.equal(stderr, "LemmaX MCP: read-only public benchmark\n");
   console.log(JSON.stringify({ schemaVersion: "mcp-smoke/v1", transport: "stdio", benchmarkReplaysChecked: checked,
     codeSha256: Object.fromEntries(["src/mcp.mjs", "src/directory.mjs", "scripts/mcp-server.mjs", "scripts/smoke-mcp.mjs"].map(path =>
       [path, digest(readFileSync(new URL(`../${path}`, import.meta.url)))])),
