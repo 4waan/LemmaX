@@ -11,6 +11,10 @@ Package version 0.6.0. Settlement uses Circle USDC on Monad. A buyer funds an at
 - **Cost basis.** Demonstration prices reflect published reference prices and measured costs, not invented figures. The terms in section 6 are agreed.
 - **Deadlines.** Two deadline profiles: a standard profile, and a short profile that makes the timeout refund demonstrable.
 - **LemmaX revenue.** LemmaX earns only the execution charge. There is no onchain success share, so the three payees (connector, executor, evaluator) are unchanged.
+- **Payouts.** Contract version 3 pays credit out automatically once it reaches the owner's bar (minimum 0.01 USDC), so no owner needs MON to collect. A signed instruction can route payouts or raise the bar.
+- **Funding feedback.** The fund tool streams Monad's commit states and returns at Verified.
+- **Trust loop.** Envio (public auditor), Privy (buyer mandate) and Mera (passkey openings, gated on setup) form one loop; the buyer's guard fails closed on a stale index. ERC-8004 identities for four agents and batched, operator-triggered feedback. [Trust loop](Trust-Loop.md).
+- **License.** MIT.
 
 ## 2. Current architecture
 
@@ -150,7 +154,7 @@ Monad Testnet receipts report gas used equal to the transaction gas limit, consi
 
 **Phase 3: testnet purchase path.** Done: the three attempts ran on Monad Testnet and reconcile with their private records, and the contract source is verified (section 4). A remote MCP transport still needs authentication before it serves anyone beyond the operator.
 
-**Phase 4: trust and identity.** Register the directory agent and evaluator in the ERC-8004 Identity Registry, which is deployed on Monad mainnet and testnet; the validation registry is still pending and remains outside the settlement path. Publish authorized feedback after settlement only under an explicit disclosure policy. Add Envio HyperIndex if a live status view needs more than the reconciler. Automate the withdrawal bar once its meaning is chosen. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
+**Phase 4: trust and identity.** Built and checked: contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner rehearsed on a fork. Remaining live steps: deploy version 3, deploy the auditor to Envio Cloud, create the Privy buyer wallet after its kill test, register the agents, run the loop on testnet and publish its feedback. The validation registry stays outside the settlement path. [Trust loop](Trust-Loop.md). [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
 
 **Phase 5: evidence and submission.** Run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness), extend the cost ledger with measured testnet gas, and prepare the technical demonstration.
 
@@ -226,5 +230,5 @@ The operator funded the deployer, facilitator and evaluator with testnet MON and
 
 ## 8. Open decisions
 
-1. **Withdrawal bar.** Accumulated-credit trigger or retained working balance, and the minimum. [Paid unit](Paid-Unit.md#reserve-credit-and-agent-controlled-withdrawal).
-2. **Indexer.** Proposal: keep the in-repo reconciler as the correctness check and add Envio only for a status view.
+1. **Withdrawal bar.** Decided: credit at or above the owner's bar pays out in full automatically; the minimum is 0.01 USDC. [Trust loop](Trust-Loop.md#1-the-monad-problem-stranded-agent-funds).
+2. **Indexer.** Decided: Envio is the public auditor whose verdicts gate the buyer's wallet; the in-repo reconciler and the local auditor remain independent checks.
