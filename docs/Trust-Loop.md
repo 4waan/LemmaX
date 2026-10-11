@@ -53,7 +53,7 @@ Limits stated plainly: enforcement happens in Privy's TEE but cannot yet be atte
 
 ## 4. Identity and reputation (ERC-8004)
 
-Four agents are registered in the ERC-8004 Identity Registry on Monad Testnet: LemmaX Directory, LemmaX Evaluator, LemmaX Evaluator-b (the labelled fault-injection evaluator) and LemmaX Retrieval Provider. Each registration file is stored onchain as a data URI and names the settlement contract, the hash-pinned rulebook, the public auditor and the disclosure policy; the registry metadata repeats the role, settlement and rulebook hash. [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004).
+Four agents are prepared for the ERC-8004 Identity Registry on Monad Testnet and are registered once the public auditor's URL exists, because the registration files record it onchain: LemmaX Directory, LemmaX Evaluator, LemmaX Evaluator-b (the labelled fault-injection evaluator) and LemmaX Retrieval Provider. Each registration file is stored onchain as a data URI and names the settlement contract, the hash-pinned rulebook, the public auditor and the disclosure policy; the registry metadata repeats the role, settlement and rulebook hash. [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004).
 
 Feedback follows the [architecture's disclosure rules](LemmaX-Architecture.md#4-settlement-and-erc-8004-reputation): nothing is published automatically per attempt. An operator command, `npm run reputation` (preview by default, `--publish` to send), posts batched records:
 

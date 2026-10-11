@@ -23,7 +23,7 @@ import { commitStageStream } from "../src/operator.mjs";
 import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, normalizedSignature } from "../src/privy-buyer.mjs";
 import { createPurchaseDesk, plain } from "../src/purchase.mjs";
 import { readSettlementLogs, reconcileAttempts } from "../src/reconcile.mjs";
-import { RULEBOOK } from "../src/rulebook.mjs";
+import { RULEBOOK, RULEBOOK_HASH } from "../src/rulebook.mjs";
 import { createSettlementClient } from "../src/settlement.mjs";
 import { SCIFACT_PROFILE, createSciFactIndex, loadSciFact } from "../src/scifact.mjs";
 import { createPublicDirectory } from "../src/directory.mjs";
@@ -100,6 +100,8 @@ async function main(env, say) {
       await verifyDeployment({ publicClient, address, artifact, issuer: r.facilitator.address, asset: usdc });
       fromBlock = BigInt(env.LEMMAX_SETTLEMENT_FROM_BLOCK);
     } else {
+      // On testnet the auditor watches one address; never deploy a new one by accident.
+      if (target === "testnet" && env.LEMMAX_DEPLOY_NEW !== "1") throw new TypeError("Set LEMMAX_SETTLEMENT_ADDRESS and LEMMAX_SETTLEMENT_FROM_BLOCK, or LEMMAX_DEPLOY_NEW=1 to deploy a new contract");
       const deployment = await deploySettlement({ publicClient, wallet: wallet(r.deployer), artifact, issuer: r.facilitator.address, asset: usdc,
         gasHeadroomBps: HEADROOM_BPS, stage: "verified", pollMs: 300, timeoutMs: 180000 });
       address = deployment.address; fromBlock = BigInt(deployment.blockNumber);
@@ -187,6 +189,15 @@ async function main(env, say) {
         Object.assign(issued, { receipt: evaluation.receipt });
         beat.steps.settle = { transactionHash: settled.hash, outcome: evaluation.outcome, charges: `${evaluation.receipt.executionUsed}/${evaluation.receipt.evaluationUsed}`, link: link(settled.hash) };
         say(`${plan.label.padEnd(16)} settled ${evaluation.outcome} at ${beat.steps.settle.charges}${plan.evaluator === "main" ? "" : " by the labelled evaluator-b"}`);
+        // The next quote must be judged on an index that has seen this settlement.
+        if (envio) {
+          const until = Date.now() + 120000;
+          while (BigInt((await envio.freshness()).progressBlock ?? 0) < settled.blockNumber) {
+            if (Date.now() > until) throw new Error("The auditor did not index the settlement within two minutes");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          beat.steps.settle.indexedAfterMs = Date.now() - (until - 120000);
+        }
       }
       const timeout = beats.find(b => b.label === "timeout"), held = desk.issued(timeout.attemptId);
       if (target === "fork") {
@@ -217,7 +228,7 @@ async function main(env, say) {
     say(`Audit: ${flagged.length ? flagged.map(f => `${f.lastVerdict} by ${f.party}`).join("; ") : "no findings"}${envio ? `; Envio and the local audit ${envioAgreement ? "agree" : "DISAGREE"}` : ""}`);
     say(`Reconciliation: ${reconciliation.ok ? "every attempt, allocation and payout matches" : "issues found"}`);
     return plain({ schemaVersion: "trust-loop/v1", target, chainId: chain.id, settlement: address, fromBlock: fromBlock.toString(), mandate,
-      auditor: envio ? "envio" : "local", rulebookHash: RULEBOOK.rulebookRef, buyer: buyerWallet.address,
+      auditor: envio ? "envio" : "local", rulebook: { ref: RULEBOOK.rulebookRef, hash: RULEBOOK_HASH }, buyer: buyerWallet.address,
       codeSha256: sourceHashes(["contracts/AttemptSettlement.sol", "src/guard.mjs", "src/privy-buyer.mjs", "src/purchase.mjs", "src/mcp.mjs", "src/rulebook.mjs",
         "indexer/src/shared/conformance.mjs", "src/local-audit.mjs", "src/reconcile.mjs", "scripts/trust-loop.mjs"]),
       beats, payouts: paid.map(p => ({ owner: p.owner, destination: p.destination, amount: p.amount, transactionHash: p.transactionHash })),

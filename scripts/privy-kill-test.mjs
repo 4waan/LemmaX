@@ -35,8 +35,12 @@ async function main(env) {
   const results = [];
   async function check(name, expected, action) {
     let observed, detail = null;
-    try { detail = await action(); observed = "allowed"; } catch (error) { observed = "refused"; detail = { status: error.status ?? null, type: error.name ?? "Error" }; }
-    results.push({ check: name, expected, observed, pass: observed === expected, ...(observed === "refused" ? { refusal: detail } : {}) });
+    try { detail = await action(); observed = "allowed"; } catch (error) {
+      // Only a policy refusal from Privy (an HTTP 4xx) counts; a network error proves nothing.
+      observed = Number(error.status) >= 400 && Number(error.status) < 500 ? "refused" : "error";
+      detail = { status: error.status ?? null, type: error.name ?? "Error" };
+    }
+    results.push({ check: name, expected, observed, pass: observed === expected, ...(observed !== "allowed" ? { refusal: detail } : {}) });
   }
 
   // Allowed: a listed digest, measured from the moment it is added to the first signature.
