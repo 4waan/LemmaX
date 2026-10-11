@@ -2,7 +2,8 @@ import { getAddress } from "viem";
 import { OUTCOMES, allocateReceipt, normalizeQuote, normalizeReceipt, quoteDigest } from "./attempt.mjs";
 import { ATTEMPT_STATES, SETTLEMENT_ABI, fundingTotal } from "./settlement.mjs";
 
-const EVENTS = new Set(["AttemptCommitted", "AttemptOutcome", "CreditWithdrawn"]);
+const EVENTS = new Set(["AttemptCommitted", "AttemptTerms", "AttemptOutcome", "CreditWithdrawn", "CreditPaid", "PayoutDeferred", "PayoutInstructionSet"]);
+const TRANSFERS = new Set(["CreditWithdrawn", "CreditPaid", "PayoutDeferred"]);
 const ZERO32 = `0x${"0".repeat(64)}`;
 
 function block(value, name) {
@@ -16,6 +17,9 @@ function logRecord(log) {
   if (log.eventName === "AttemptCommitted") return { ...base, attemptId: a.attemptId, recordCommitment: a.recordCommitment, quoteDigest: a.quoteDigest };
   if (log.eventName === "AttemptOutcome") return { ...base, attemptId: a.attemptId, state: ATTEMPT_STATES[Number(a.state)],
     evidenceCommitment: a.evidenceCommitment, executionUsed: a.executionUsed.toString(), evaluationUsed: a.evaluationUsed.toString() };
+  if (log.eventName === "AttemptTerms") return { ...base, attemptId: a.attemptId, buyer: getAddress(a.buyer), evaluatorSigner: getAddress(a.evaluatorSigner),
+    quote: Object.fromEntries(Object.entries(a.quote).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v])) };
+  if (log.eventName === "PayoutInstructionSet") return { ...base, owner: getAddress(a.owner), destination: getAddress(a.destination), bar: a.bar.toString(), nonce: a.nonce.toString() };
   return { ...base, owner: getAddress(a.owner), destination: getAddress(a.destination), amount: a.amount.toString() };
 }
 
@@ -74,6 +78,9 @@ export function reconcileAttempts({ logs, attempts, domain, onchainStates = {}, 
     expected.add(q.attemptId);
     const found = [], events = byAttempt.get(q.attemptId) ?? [];
     const committed = events.filter(e => e.eventName === "AttemptCommitted");
+    // Contract v3 also publishes the quote terms at funding; they must hash to the same digest.
+    const terms = events.filter(e => e.eventName === "AttemptTerms");
+    if (terms.some(t => { try { return quoteDigest(domain, t.quote) !== quoteDigest(domain, q); } catch { return true; } })) found.push("terms_mismatch");
     const outcomes = events.filter(e => e.eventName === "AttemptOutcome");
     if (committed.length > 1) found.push("multiple_commitments");
     if (outcomes.length > 1) found.push("multiple_outcomes");
@@ -104,13 +111,21 @@ export function reconcileAttempts({ logs, attempts, domain, onchainStates = {}, 
       terminal: outcome && { blockNumber: outcome.blockNumber, transactionHash: outcome.transactionHash },
       issues: found };
   });
-  const withdrawals = {};
-  for (const log of ordered) if (log.eventName === "CreditWithdrawn") withdrawals[log.owner] = (BigInt(withdrawals[log.owner] ?? "0") + BigInt(log.amount)).toString();
+  // Money that left the contract, per owner: manual withdrawals and automatic payouts.
+  // Deferred payouts stay as credit and are listed for retry.
+  const withdrawals = {}, payouts = {}, deferred = [];
+  const add = (table, log) => { table[log.owner] = (BigInt(table[log.owner] ?? "0") + BigInt(log.amount)).toString(); };
+  for (const log of ordered) {
+    if (!TRANSFERS.has(log.eventName)) continue;
+    if (log.eventName === "CreditWithdrawn") add(withdrawals, log);
+    else if (log.eventName === "CreditPaid") add(payouts, log);
+    else deferred.push({ owner: log.owner, destination: log.destination, amount: log.amount, transactionHash: log.transactionHash });
+  }
   if (ledger) {
     if (!ledger.solvent) issues.push({ issue: "contract_insolvent" });
     if (BigInt(ledger.lockedFunds) < expectedLocked) issues.push({ issue: "locked_funds_below_expected" });
   }
   return { ok: !issues.length && results.every(r => !r.issues.length), attempts: results,
-    expectedLocked: expectedLocked.toString(), withdrawals, issues,
+    expectedLocked: expectedLocked.toString(), withdrawals, payouts, deferred, issues,
     unmatchedAttemptIds: [...byAttempt.keys()].filter(id => !expected.has(id)) };
 }

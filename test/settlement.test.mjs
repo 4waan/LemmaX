@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { recoverTypedDataAddress } from "viem";
 import { attemptFixture, FIXTURE_TOKEN } from "./fixtures/attempt.mjs";
-import { fundingAuthorizationTypedData, newAttemptId, quoteDigest, signingDomain } from "../src/attempt.mjs";
+import { MIN_PAYOUT, fundingAuthorizationTypedData, newAttemptId, payoutInstructionTypedData, quoteDigest, signingDomain } from "../src/attempt.mjs";
 import { connectMonad, gasLimitFor, waitForStage, MONAD_NETWORKS } from "../src/monad.mjs";
 import { GAS_CEILINGS, SETTLEMENT_ABI, SettlementRejected, createSettlementClient, fundingTotal, quoteArgs, receiptArgs } from "../src/settlement.mjs";
 import { reconcileAttempts } from "../src/reconcile.mjs";
@@ -130,6 +130,29 @@ test("Reconciliation reports mismatched bindings, receipts, states and ledger ga
   assert.deepEqual(check([funded, { ...funded, quoteDigest: newAttemptId() }]).issues, [{ issue: "conflicting_duplicate_log", key: `${funded.transactionHash}:${funded.logIndex}` }]);
   assert.deepEqual(check([funded], { ledger: { solvent: false, lockedFunds: "129" } }).issues.map(i => i.issue), ["contract_insolvent", "locked_funds_below_expected"]);
   assert.equal(check([]).attempts[0].state, "none");
+  const terms = { ...committed(domain, quote), eventName: "AttemptTerms", logIndex: 1, quote: { ...quote } };
+  assert.deepEqual(issues([committed(domain, quote), terms]), []);
+  assert.deepEqual(issues([committed(domain, quote), { ...terms, quote: { ...quote, connectorPayee: quote.buyer } }]), ["terms_mismatch"]);
+});
+
+test("Reconciliation totals automatic payouts and lists deferred ones", () => {
+  const { domain, quote } = attemptFixture();
+  const result = reconcileAttempts({ domain, attempts: [{ quote }], logs: [committed(domain, quote),
+    log("CreditPaid", 11, { owner: quote.buyer, destination: quote.buyer, amount: "12000" }),
+    log("CreditPaid", 12, { owner: quote.buyer, destination: quote.connectorPayee, amount: "10000" }),
+    log("PayoutDeferred", 13, { owner: quote.connectorPayee, destination: quote.connectorPayee, amount: "15000" })] });
+  assert.deepEqual(result.payouts, { [quote.buyer]: "22000" });
+  assert.deepEqual(result.deferred.map(d => [d.owner, d.amount]), [[quote.connectorPayee, "15000"]]);
+});
+
+test("Payout instructions need the minimum bar and a destination other than the contract", () => {
+  const { domain, quote } = attemptFixture();
+  const instruction = { owner: quote.buyer, destination: quote.connectorPayee, bar: MIN_PAYOUT, nonce: "0", deadline: "2000" };
+  const typed = payoutInstructionTypedData(domain, instruction);
+  assert.deepEqual([typed.primaryType, typed.domain.name, typed.message.bar], ["PayoutInstruction", "LemmaXAttemptSettlement", "10000"]);
+  assert.throws(() => payoutInstructionTypedData(domain, { ...instruction, bar: "9999" }), /below the minimum/);
+  assert.throws(() => payoutInstructionTypedData(domain, { ...instruction, destination: domain.verifyingContract }), /cannot be the settlement contract/);
+  assert.throws(() => payoutInstructionTypedData(domain, { ...instruction, extra: "1" }), /Unexpected or missing fields/);
 });
 
 test("Writes from one wallet run one at a time and never exceed the per-function gas ceiling", async () => {

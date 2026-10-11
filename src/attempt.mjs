@@ -29,6 +29,10 @@ export const SETTLEMENT_DOMAIN = Object.freeze({ name: "LemmaXAttemptSettlement"
 export const QUOTE_TYPES = Object.freeze({ AttemptQuote: quoteFields });
 export const RECEIVE_AUTHORIZATION_TYPES = Object.freeze({ ReceiveWithAuthorization: authorizationFields });
 export const RECEIPT_TYPES = Object.freeze({ EvaluationReceipt: receiptFields });
+export const PAYOUT_INSTRUCTION_TYPES = Object.freeze({ PayoutInstruction: Object.freeze([field("owner", "address"), field("destination", "address"),
+  field("bar", "uint256"), field("nonce", "uint256"), field("deadline", "uint64")]) });
+// Contract v3 pays credit out automatically once it reaches the owner's bar, never below this.
+export const MIN_PAYOUT = "10000";
 
 function exactKeys(value, keys) {
   if (!value || typeof value !== "object" || Array.isArray(value)
@@ -194,6 +198,17 @@ export function normalizeReceipt(input) {
   }
   if (BigInt(out.completedAt) > BigInt(out.evaluatedAt)) throw new RangeError("Evaluation precedes completion");
   return out;
+}
+// An owner's standing payout instruction: where its credit goes and from what amount.
+// Anyone may relay the signed instruction, so the owner needs no MON.
+export function payoutInstructionTypedData(domain, instruction) {
+  exactKeys(instruction, ["owner", "destination", "bar", "nonce", "deadline"]);
+  const d = signingDomain(domain);
+  const message = { owner: address(instruction.owner), destination: address(instruction.destination), bar: atomic(instruction.bar),
+    nonce: atomic(instruction.nonce), deadline: atomic(instruction.deadline, UINT64) };
+  if (BigInt(message.bar) < BigInt(MIN_PAYOUT)) throw new RangeError("Payout bar is below the minimum");
+  if (message.destination === d.verifyingContract) throw new TypeError("Payout destination cannot be the settlement contract");
+  return { domain: d, types: PAYOUT_INSTRUCTION_TYPES, primaryType: "PayoutInstruction", message };
 }
 export function receiptTypedData(domain, receipt) {
   return { domain: signingDomain(domain), types: RECEIPT_TYPES, primaryType: "EvaluationReceipt", message: normalizeReceipt(receipt) };

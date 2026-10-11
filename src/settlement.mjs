@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { BaseError, ContractFunctionRevertedError, erc20Abi, getAddress, parseAbi } from "viem";
-import { atomic, bytes32, fundingAuthorizationTypedData, normalizeQuote, normalizeReceipt } from "./attempt.mjs";
+import { atomic, bytes32, fundingAuthorizationTypedData, normalizeQuote, normalizeReceipt, payoutInstructionTypedData } from "./attempt.mjs";
 import { gasLimitFor } from "./monad.mjs";
 
 export const SETTLEMENT_ABI = Object.freeze(JSON.parse(readFileSync(new URL("../contracts/AttemptSettlement.abi.json", import.meta.url), "utf8")));
@@ -34,10 +34,13 @@ function authorizationArgs({ validAfter, validBefore, signature }) {
   return { validAfter: BigInt(atomic(validAfter)), validBefore: BigInt(atomic(validBefore)), signature };
 }
 // Monad charges the gas limit, not the gas used, so an implausible estimate must never
-// become the limit. Ceilings sit well above measured use (fund about 315k, settle about
-// 240k before payouts) and below what a runaway call could burn.
-export const GAS_CEILINGS = Object.freeze({ fund: 400_000n, settle: 450_000n, refundTimeout: 200_000n, withdraw: 150_000n });
-export function gasCeiling(functionName) {
+// become the limit. Ceilings sit well above the worst case measured against real USDC on a
+// fork (a settlement may pay up to four owners, each possibly a fresh USDC account) and far
+// below what a runaway call could burn.
+export const GAS_CEILINGS = Object.freeze({ fund: 400_000n, settle: 600_000n, refundTimeout: 250_000n, withdraw: 250_000n,
+  setPayoutInstruction: 300_000n, sweepBase: 60_000n, sweepPerOwner: 100_000n });
+export function gasCeiling(functionName, args = []) {
+  if (functionName === "sweep") return GAS_CEILINGS.sweepBase + GAS_CEILINGS.sweepPerOwner * BigInt(args[0].length);
   const ceiling = GAS_CEILINGS[functionName];
   if (ceiling === undefined) throw new TypeError(`No gas ceiling for ${functionName}`);
   return ceiling;
@@ -75,7 +78,7 @@ export function createSettlementClient({ publicClient, address, gasHeadroomBps }
     return token;
   }
   function write(wallet, functionName, args) {
-    const ceiling = gasCeiling(functionName);
+    const ceiling = gasCeiling(functionName, args);
     return serialized(wallet, async () => {
       const call = { address: contract, abi: SETTLEMENT_ABI, functionName, args, account: wallet.account };
       let estimate;
@@ -106,6 +109,24 @@ export function createSettlementClient({ publicClient, address, gasHeadroomBps }
     settle({ wallet, quote, receipt, signature }) { return write(wallet, "settle", [quoteArgs(quote), receiptArgs(receipt), signature]); },
     refundTimeout({ wallet, quote }) { return write(wallet, "refundTimeout", [quoteArgs(quote)]); },
     withdraw({ wallet, amount, destination }) { return write(wallet, "withdraw", [BigInt(atomic(amount)), getAddress(destination)]); },
+    // Typed data an owner signs to route its payouts; the chain id comes from the node.
+    async payoutInstruction({ owner, destination, bar, deadline }) {
+      const [nonce, chainId] = await Promise.all([read("payoutNonce", [getAddress(owner)]), publicClient.getChainId()]);
+      return payoutInstructionTypedData({ chainId: String(chainId), verifyingContract: contract }, { owner, destination, bar: String(bar), nonce: nonce.toString(), deadline: String(deadline) });
+    },
+    setPayoutInstruction({ wallet, instruction, signature = "0x" }) {
+      const m = instruction.message;
+      return write(wallet, "setPayoutInstruction", [{ owner: getAddress(m.owner), destination: getAddress(m.destination), bar: BigInt(m.bar),
+        nonce: BigInt(m.nonce), deadline: BigInt(m.deadline) }, signature]);
+    },
+    sweep({ wallet, owners }) {
+      if (!Array.isArray(owners) || !owners.length || owners.length > 50) throw new RangeError("Sweep takes 1 to 50 owners");
+      return write(wallet, "sweep", [owners.map(o => getAddress(o))]);
+    },
+    async payoutOf(owner) {
+      const [destination, bar] = await read("payoutOf", [getAddress(owner)]);
+      return { destination: getAddress(destination), bar: bar.toString() };
+    },
     async attemptState(attemptId) { return ATTEMPT_STATES[Number(await read("attemptState", [bytes32(attemptId)]))]; },
     async attemptInfo(attemptId) {
       const [quoteDigest, fundedAt, state] = await read("attemptInfo", [bytes32(attemptId)]);
