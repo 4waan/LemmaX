@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+# LemmaX public settlement auditor on Monad Testnet. It decodes every attempt's public
+# terms, rebuilds allocations and payouts, issues conformance verdicts under the
+# hash-pinned rulebook, and validates LemmaX-format ERC-8004 feedback.
+name: lemmax-auditor
+description: Public conformance auditor for LemmaX attempt settlement on Monad Testnet
+disable_default_cross_chain: true
+# Transaction fields every handler may read: v2 terms are decoded from fund calldata.
+field_selection:
+  transaction_fields: [hash, to, input]
+chains:
+- id: 10143
+  start_block: 69718255
+  contracts:
+  - name: AttemptSettlement
+    # v2 holds the three historic attempts (terms decoded from calldata). v3 is the
+    # deployer's next CREATE address (nonce 1); the deployer sends nothing before it.
+    address:
+    - "0xfb59487E973C883E3fe4301238D485f7B248fA7f"
+    - "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7"
+    events:
+    - event: AttemptCommitted(bytes32 indexed attemptId, bytes32 recordCommitment, bytes32 quoteDigest)
+    - event: AttemptTerms(bytes32 indexed attemptId, address indexed buyer, address indexed evaluatorSigner, (bytes32,bytes32,bytes32,address,address,address,address,address,address,address,uint256,uint256,uint256,uint64,uint64,uint64,uint8) quote)
+    - event: AttemptOutcome(bytes32 indexed attemptId, uint8 state, bytes32 evidenceCommitment, uint256 executionUsed, uint256 evaluationUsed)
+    - event: CreditPaid(address indexed owner, address indexed destination, uint256 amount)
+    - event: PayoutDeferred(address indexed owner, address indexed destination, uint256 amount)
+    - event: CreditWithdrawn(address indexed owner, address indexed destination, uint256 amount)
+    - event: PayoutInstructionSet(address indexed owner, address indexed destination, uint256 bar, uint256 nonce)
+  - name: ReputationRegistry
+    address:
+    - "0x8004B663056A597Dffe9eCcC1965A193B7388713"
+    events:
+    - event: NewFeedback(uint256 indexed agentId, address indexed clientAddress, uint64 feedbackIndex, int128 value, uint8 valueDecimals, string indexed indexedTag1, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash)
+    - event: FeedbackRevoked(uint256 indexed agentId, address indexed clientAddress, uint64 indexed feedbackIndex)
