@@ -107,9 +107,9 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
     const terms = { validAfter: "0", validBefore: String(BigInt(q.quoteExpiresAt) + 1n), ...window };
     return { ...terms, signature: await buyer.signTypedData(await settlement.fundingAuthorization({ domain, quote: q, ...terms })) };
   };
-  const receiptFor = async (q, outcome) => {
+  const receiptFor = async (q, outcome, charges = {}) => {
     const now = (await publicClient.getBlock()).timestamp.toString();
-    return { ...fixture.receipt, attemptId: q.attemptId, quoteDigest: quoteDigest(domain, q), outcome, completedAt: now, evaluatedAt: now };
+    return { ...fixture.receipt, attemptId: q.attemptId, quoteDigest: quoteDigest(domain, q), outcome, completedAt: now, evaluatedAt: now, ...charges };
   };
   const signReceipt = r => evaluator.signTypedData(receiptTypedData(domain, r));
   const fund = async q => {
@@ -196,7 +196,7 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   eq(await read("MIN_PAYOUT"), 10000n);
   const [payee, routed, blocked] = Array.from({ length: 3 }, () => privateKeyToAccount(generatePrivateKey()));
   const large = (changes = {}) => quote({ principal: "6000", executionCap: "2000", evaluationCap: "1000", connectorPayee: payee.address, ...changes });
-  const settleOutcome = async (q, outcome) => settle(q, await receiptFor(q, outcome));
+  const settleOutcome = async (q, outcome, charges) => settle(q, await receiptFor(q, outcome, charges));
   const qa = await large(); await fund(qa); await settleOutcome(qa, 1);
   eq([await settlement.credit(payee.address), await balanceOf(payee.address)], ["6000", 0n]);
   const qb = await large(); await fund(qb);
@@ -229,6 +229,15 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   eq([await settlement.credit(payee.address), await balanceOf(routed.address)], ["12000", 0n]);
   const qe = await large({ principal: "21000" }); await fund(qe); await settleOutcome(qe, 1);
   eq([await settlement.credit(payee.address), await balanceOf(routed.address)], ["0", 33000n]);
+  // Exactly the minimum pays out; one settlement can pay three fresh owners at once.
+  const [exact, freshExecutor, freshEvaluator] = Array.from({ length: 3 }, () => privateKeyToAccount(generatePrivateKey()));
+  const qg = await large({ principal: "10000", connectorPayee: exact.address }); await fund(qg); await settleOutcome(qg, 1);
+  eq([await settlement.credit(exact.address), await balanceOf(exact.address)], ["0", 10000n]);
+  const triple = Array.from({ length: 1 }, () => privateKeyToAccount(generatePrivateKey()))[0];
+  const qh = await large({ principal: "10000", executionCap: "10000", evaluationCap: "10000", connectorPayee: triple.address,
+    executorPayee: freshExecutor.address, evaluatorPayee: freshEvaluator.address }); await fund(qh);
+  record("settleThreeFreshPayouts", await settleOutcome(qh, 1, { executionUsed: "10000", evaluationUsed: "10000" }));
+  eq([await balanceOf(triple.address), await balanceOf(freshExecutor.address), await balanceOf(freshEvaluator.address)], [10000n, 10000n, 10000n]);
   // An owner holding MON can also set its instruction directly, without a signature.
   await publicClient.request({ method: "anvil_setBalance", params: [payee.address, "0x3635c9adc5dea00000"] });
   const direct = await settlement.payoutInstruction({ owner: payee.address, destination: payee.address, bar: "10000", deadline });
@@ -244,7 +253,7 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   const reconciliation = reconcileAttempts({ logs: [...logs, ...logs.slice(0, 3)], domain, attempts: quotes, onchainStates, ledger });
   eq(reconciliation.ok, true);
   eq(reconciliation.attempts.map(a => a.state), ["settled_success", "settled_failure", "refunded_timeout", "settled_success", "funded",
-    "settled_success", "settled_success", "settled_failure", ...(token.block ? ["settled_success"] : []), "settled_success", "settled_success"]);
+    "settled_success", "settled_success", "settled_failure", ...(token.block ? ["settled_success"] : []), "settled_success", "settled_success", "settled_success", "settled_success"]);
   // The blocked payee's deferral was paid by sweep, so nothing is outstanding.
   eq([reconciliation.payouts[payee.address], reconciliation.deferred.length], ["45000", 0]);
   eq(reconciliation.expectedLocked, ledger.lockedFunds);
@@ -315,7 +324,8 @@ async function main() {
         "Duplicate log delivery is idempotent", "Tampered private receipt is reported", "Issuer cannot name itself evaluator",
         "Credit pays out automatically from the 0.01 USDC minimum inside settlement", "Refused payout defers without blocking settlement and sweep retries it",
         "Signed payout instruction relayed by another wallet routes payouts and raises the bar", "Instruction replay, low bar, contract destination and wrong signer rejected",
-        "Owner can set its instruction directly", "Reconciliation totals automatic payouts and deferrals"],
+        "Owner can set its instruction directly", "Exactly the minimum pays out", "One settlement pays three fresh owners within the gas ceiling",
+        "Reconciliation totals automatic payouts and lists only outstanding deferrals"],
       limitations: ["Isolated local Monad execution with a mock token, not a testnet deployment", "Local finalized lag comes from one-slot epochs, not Monad consensus",
         "Illustrative atomic amounts, not the demonstration tariff", "Evaluator correctness and company approval are trusted", "Smart-contract buyer and payout signatures not exercised"] }, null, 2));
   } finally { await node.stop(); }

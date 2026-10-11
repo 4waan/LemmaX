@@ -13,14 +13,14 @@
     "contracts/test/MockFiatToken.sol": "7bbec4af89e47e57895ea4408bb57948b99f50caadfae440b8caa2e1bc0cbcc7",
     "src/attempt.mjs": "9f33114820e84dc59d03c888c870634a5841ed6a49f66f7f53d2c602e2b05ec0",
     "src/monad.mjs": "93c8d4cf4b9d43f2a3526bd9e5fec2f2ffdabdd8b03f1434fd236bb46523a37b",
-    "src/settlement.mjs": "3e3ba8c77eb4a6c7ef59e9f9d9057dc75b18240befa82e513ee57f9ee371aea1",
+    "src/settlement.mjs": "e69ce7671895626543fa2194667e2be8bce17dea5c5cd446c71cd877e0380e1a",
     "src/reconcile.mjs": "842aae8a9288ef7b60515f3c094a6276001e817b7c540cbae5245a92e3e119b9",
     "scripts/compile-settlement.mjs": "daf55dc2c79d844cde4c8142ed3bc11396fbc8ae1b43483540f1aa040b5c9ccc",
     "scripts/deploy-settlement.mjs": "d6d44d64b9aea83ad22d09a40f2fd4cd48faabb96c6a1a309d175d4260f64d77",
-    "scripts/settlement-check.mjs": "d7bc5969ec5c9bcd2494712e8a769248dd2f8be72abc4716b791329736728794"
+    "scripts/settlement-check.mjs": "531e48f6f193e57e4103f15d3c404f136d2b57483f3760cbaa7573464cadf1d8"
   },
-  "checksPassed": 78,
-  "observedAt": 1791729120,
+  "checksPassed": 80,
+  "observedAt": 1791729507,
   "gasHeadroomBps": 1000,
   "gas": {
     "deploy": {
@@ -28,16 +28,16 @@
       "gasLimit": "2726544"
     },
     "fund": {
-      "gasUsed": "264336",
-      "gasLimit": "293163"
+      "gasUsed": "264312",
+      "gasLimit": "293136"
     },
     "settleSuccess": {
       "gasUsed": "230858",
-      "gasLimit": "316337"
+      "gasLimit": "356337"
     },
     "settleFailure": {
-      "gasUsed": "142846",
-      "gasLimit": "219524"
+      "gasUsed": "142834",
+      "gasLimit": "259510"
     },
     "withdraw": {
       "gasUsed": "126271",
@@ -45,19 +45,23 @@
     },
     "refundTimeout": {
       "gasUsed": "103530",
-      "gasLimit": "176283"
+      "gasLimit": "216283"
     },
     "settleSuccessWithPayout": {
-      "gasUsed": "233921",
-      "gasLimit": "319706"
+      "gasUsed": "233909",
+      "gasLimit": "359693"
     },
     "sweep": {
       "gasUsed": "152455",
       "gasLimit": "170098"
     },
     "setPayoutInstruction": {
-      "gasUsed": "140827",
-      "gasLimit": "217305"
+      "gasUsed": "140815",
+      "gasLimit": "257292"
+    },
+    "settleThreeFreshPayouts": {
+      "gasUsed": "349238",
+      "gasLimit": "486555"
     }
   },
   "verified": [
@@ -86,7 +90,9 @@
     "Signed payout instruction relayed by another wallet routes payouts and raises the bar",
     "Instruction replay, low bar, contract destination and wrong signer rejected",
     "Owner can set its instruction directly",
-    "Reconciliation totals automatic payouts and deferrals"
+    "Exactly the minimum pays out",
+    "One settlement pays three fresh owners within the gas ceiling",
+    "Reconciliation totals automatic payouts and lists only outstanding deferrals"
   ],
   "limitations": [
     "Isolated local Monad execution with a mock token, not a testnet deployment",
