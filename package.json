@@ -21,7 +21,8 @@
     "settlement:check": "node scripts/settlement-check.mjs",
     "settlement:fork-check": "node scripts/settlement-fork-check.mjs",
     "deploy:settlement": "node scripts/deploy-settlement.mjs",
-    "demo:testnet": "node scripts/testnet-demo.mjs"
+    "demo:testnet": "node scripts/testnet-demo.mjs",
+    "auditor:test": "npm --prefix indexer test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",

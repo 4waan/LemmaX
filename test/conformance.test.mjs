@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { MIN_PAYOUT, SETTLEMENT_POLICY_HASH, TIMEOUT_MODES } from "../src/attempt.mjs";
 import { DEADLINE_PROFILES, DEMO_TERMS } from "../src/terms.mjs";
 import { RULEBOOK, RULEBOOK_HASH, RULEBOOK_INDEX, admission, canonicalJson, outcomeVerdicts, publicAllocation, quoteVerdicts } from "../src/rulebook.mjs";
+import { FEEDBACK_SCHEMA, FEEDBACK_TAGS, acceptanceOf, conformanceOf, decodeFeedbackUri, encodeFeedbackFile, shareValue } from "../indexer/src/shared/feedback.mjs";
 
 const roles = RULEBOOK.roles;
 const [mainEvaluator, evaluatorB] = roles.evaluators;
@@ -16,6 +17,8 @@ const honest = (changes = {}) => ({ attemptId: `0x${"01".repeat(32)}`, recordCom
 const codes = verdicts => verdicts.map(v => `${v.code}:${v.severity}`);
 
 test("The published rulebook matches the agreed terms and its indexer copy byte for byte", () => {
+  assert.equal(readFileSync(new URL("../contracts/AttemptSettlement.abi.json", import.meta.url), "utf8"),
+    readFileSync(new URL("../indexer/abis/AttemptSettlement.json", import.meta.url), "utf8"));
   assert.equal(readFileSync(new URL("../rulebook/lemmax-rulebook-v1.json", import.meta.url), "utf8"),
     readFileSync(new URL("../indexer/src/shared/lemmax-rulebook-v1.json", import.meta.url), "utf8"));
   for (const key of ["termsRef", "principal", "executionCap", "evaluationCap", "executionCharge", "evaluationCharge"]) assert.equal(RULEBOOK.terms[key], DEMO_TERMS[key]);
@@ -62,4 +65,18 @@ test("Admission fails closed on a stale index, a flagged party or a blocking quo
   const otherRulebook = { [mainEvaluator.signer.toLowerCase()]: { blocking: 1, rulebookHash: `0x${"00".repeat(32)}` } };
   assert.equal(admission({ quote: q, index: RULEBOOK_INDEX, records: otherRulebook, indexLagBlocks: 0 }).admit, true);
   assert.deepEqual(admission({ quote: honest({ evaluatorSigner: roles.issuer.address }), index: RULEBOOK_INDEX, records: {}, indexLagBlocks: 0 }).reasons, ["unregistered_or_self_evaluator"]);
+});
+
+test("LemmaX feedback files round-trip as data URIs and carry only settlement-public facts", () => {
+  const file = { schemaVersion: FEEDBACK_SCHEMA, kind: "acceptance", rulebookHash: RULEBOOK_HASH, attempts: [{ attemptId: `0x${"01".repeat(32)}`, settleTx: `0x${"02".repeat(32)}` }] };
+  const encoded = encodeFeedbackFile(file);
+  assert.match(encoded.uri, /^data:application\/json;base64,/);
+  assert.deepEqual(decodeFeedbackUri(encoded.uri), { file, hash: encoded.hash });
+  assert.equal(decodeFeedbackUri("https://example.invalid/feedback.json"), null);
+  assert.throws(() => encodeFeedbackFile({ ...file, kind: "quality" }), /Not a LemmaX feedback file/);
+  assert.deepEqual(FEEDBACK_TAGS, { acceptance: "lemmax/acceptance/v1", conformance: "lemmax/conformance/v1" });
+  assert.deepEqual(shareValue(2, 3), { value: 6667, valueDecimals: 2 });
+  assert.throws(() => shareValue(1, 0), /Invalid share/);
+  const rows = [{ state: "settled_success" }, { state: "settled_failure", blocking: true }, { state: "refunded_timeout" }];
+  assert.deepEqual([acceptanceOf(rows), conformanceOf(rows)], [{ settled: 2, accepted: 1 }, { settled: 2, conforming: 1 }]);
 });
