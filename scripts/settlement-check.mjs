@@ -206,7 +206,6 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   const qc = await large(); await fund(qc); await settleOutcome(qc, 2);
   // Eligible failure returns principal and unused caps: 6000 + 1993 + 997 to the buyer.
   eq([await settlement.credit(buyer.address), await balanceOf(buyer.address)], ["0", buyerHeld - 9000n + buyerCredit + 8990n]);
-  let deferredPayouts = 0;
   if (token.block) {
     await token.block(blocked.address, true);
     const qd = await large({ connectorPayee: blocked.address, principal: "12000" }); await fund(qd); await settleOutcome(qd, 1);
@@ -214,7 +213,6 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
     await token.block(blocked.address, false);
     record("sweep", await settlement.sweep({ wallet: wallet(executor), owners: [blocked.address, payee.address] }));
     eq([await settlement.credit(blocked.address), await balanceOf(blocked.address)], ["0", 12000n]);
-    deferredPayouts = 1;
   }
   const deadline = String((await publicClient.getBlock()).timestamp + 300n);
   const instruction = await settlement.payoutInstruction({ owner: payee.address, destination: routed.address, bar: "20000", deadline });
@@ -226,8 +224,11 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   record("setPayoutInstruction", await relayInstruction(instruction.message, instructionSignature));
   eq([await settlement.payoutOf(payee.address), await read("payoutNonce", [payee.address])], [{ destination: routed.address, bar: "20000" }, 1n]);
   await rejected("InvalidInstruction", () => relayInstruction(instruction.message, instructionSignature));
+  // Credit between the minimum and the raised bar waits; crossing the bar pays all of it.
+  const qf = await large({ principal: "12000" }); await fund(qf); await settleOutcome(qf, 1);
+  eq([await settlement.credit(payee.address), await balanceOf(routed.address)], ["12000", 0n]);
   const qe = await large({ principal: "21000" }); await fund(qe); await settleOutcome(qe, 1);
-  eq([await settlement.credit(payee.address), await balanceOf(routed.address)], ["0", 21000n]);
+  eq([await settlement.credit(payee.address), await balanceOf(routed.address)], ["0", 33000n]);
   // An owner holding MON can also set its instruction directly, without a signature.
   await publicClient.request({ method: "anvil_setBalance", params: [payee.address, "0x3635c9adc5dea00000"] });
   const direct = await settlement.payoutInstruction({ owner: payee.address, destination: payee.address, bar: "10000", deadline });
@@ -243,8 +244,9 @@ export async function runLifecycle({ chain, publicClient, rpc, artifact, token }
   const reconciliation = reconcileAttempts({ logs: [...logs, ...logs.slice(0, 3)], domain, attempts: quotes, onchainStates, ledger });
   eq(reconciliation.ok, true);
   eq(reconciliation.attempts.map(a => a.state), ["settled_success", "settled_failure", "refunded_timeout", "settled_success", "funded",
-    "settled_success", "settled_success", "settled_failure", ...(token.block ? ["settled_success"] : []), "settled_success"]);
-  eq([reconciliation.payouts[payee.address], reconciliation.deferred.length], ["33000", deferredPayouts]);
+    "settled_success", "settled_success", "settled_failure", ...(token.block ? ["settled_success"] : []), "settled_success", "settled_success"]);
+  // The blocked payee's deferral was paid by sweep, so nothing is outstanding.
+  eq([reconciliation.payouts[payee.address], reconciliation.deferred.length], ["45000", 0]);
   eq(reconciliation.expectedLocked, ledger.lockedFunds);
   eq(reconciliation.attempts[0].allocation, allocation);
   eq(reconciliation.withdrawals[buyer.address], "140");

@@ -143,6 +143,10 @@ test("Reconciliation totals automatic payouts and lists deferred ones", () => {
     log("PayoutDeferred", 13, { owner: quote.connectorPayee, destination: quote.connectorPayee, amount: "15000" })] });
   assert.deepEqual(result.payouts, { [quote.buyer]: "22000" });
   assert.deepEqual(result.deferred.map(d => [d.owner, d.amount]), [[quote.connectorPayee, "15000"]]);
+  const retried = reconcileAttempts({ domain, attempts: [{ quote }], logs: [committed(domain, quote),
+    log("PayoutDeferred", 13, { owner: quote.connectorPayee, destination: quote.connectorPayee, amount: "15000" }),
+    log("CreditPaid", 14, { owner: quote.connectorPayee, destination: quote.connectorPayee, amount: "15000" })] });
+  assert.deepEqual([retried.deferred, retried.payouts], [[], { [quote.connectorPayee]: "15000" }]);
 });
 
 test("Payout instructions need the minimum bar and a destination other than the contract", () => {

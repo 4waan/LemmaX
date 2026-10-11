@@ -38,7 +38,13 @@ function authorizationArgs({ validAfter, validBefore, signature }) {
 // fork (a settlement may pay up to four owners, each possibly a fresh USDC account) and far
 // below what a runaway call could burn.
 export const GAS_CEILINGS = Object.freeze({ fund: 400_000n, settle: 600_000n, refundTimeout: 250_000n, withdraw: 250_000n,
-  setPayoutInstruction: 300_000n, sweepBase: 60_000n, sweepPerOwner: 100_000n });
+  setPayoutInstruction: 300_000n, sweepBase: 80_000n, sweepPerOwner: 150_000n });
+// A transaction that credits owners can trigger a payout that was not due at estimation,
+// when another transaction credits the same owner in between. One USDC transfer to a fresh
+// account costs well under this; without it the call would revert at its full limit.
+export const PAYOUT_ALLOWANCE = Object.freeze({ settle: 60_000n, refundTimeout: 60_000n, setPayoutInstruction: 60_000n });
+// A relayed instruction must still be valid at inclusion, with the same slack as funding.
+export const INSTRUCTION_MARGIN_SECONDS = 5n;
 export function gasCeiling(functionName, args = []) {
   if (functionName === "sweep") return GAS_CEILINGS.sweepBase + GAS_CEILINGS.sweepPerOwner * BigInt(args[0].length);
   const ceiling = GAS_CEILINGS[functionName];
@@ -84,7 +90,7 @@ export function createSettlementClient({ publicClient, address, gasHeadroomBps }
       let estimate;
       try { estimate = await publicClient.estimateContractGas(call); }
       catch (error) { throw new SettlementRejected(functionName, revertReason(error)); }
-      const gas = gasLimitFor(estimate, gasHeadroomBps);
+      const gas = gasLimitFor(estimate, gasHeadroomBps) + (PAYOUT_ALLOWANCE[functionName] ?? 0n);
       if (gas > ceiling) throw new SettlementRejected(functionName, "gas_above_ceiling");
       const hash = await wallet.writeContract({ ...call, chain: wallet.chain, gas });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
@@ -114,8 +120,10 @@ export function createSettlementClient({ publicClient, address, gasHeadroomBps }
       const [nonce, chainId] = await Promise.all([read("payoutNonce", [getAddress(owner)]), publicClient.getChainId()]);
       return payoutInstructionTypedData({ chainId: String(chainId), verifyingContract: contract }, { owner, destination, bar: String(bar), nonce: nonce.toString(), deadline: String(deadline) });
     },
-    setPayoutInstruction({ wallet, instruction, signature = "0x" }) {
+    async setPayoutInstruction({ wallet, instruction, signature = "0x" }) {
       const m = instruction.message;
+      const now = (await publicClient.getBlock()).timestamp;
+      if (now + INSTRUCTION_MARGIN_SECONDS > BigInt(m.deadline)) throw new SettlementRejected("setPayoutInstruction", "deadline_too_close");
       return write(wallet, "setPayoutInstruction", [{ owner: getAddress(m.owner), destination: getAddress(m.destination), bar: BigInt(m.bar),
         nonce: BigInt(m.nonce), deadline: BigInt(m.deadline) }, signature]);
     },

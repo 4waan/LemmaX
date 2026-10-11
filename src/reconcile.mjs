@@ -121,6 +121,12 @@ export function reconcileAttempts({ logs, attempts, domain, onchainStates = {}, 
     else if (log.eventName === "CreditPaid") add(payouts, log);
     else deferred.push({ owner: log.owner, destination: log.destination, amount: log.amount, transactionHash: log.transactionHash });
   }
+  // A deferral stays outstanding only until the owner's credit is paid or withdrawn later;
+  // each owner's latest deferral is the amount still owed.
+  const settledAfter = (owner, i) => ordered.slice(i + 1).some(l => l.owner === owner && (l.eventName === "CreditPaid" || l.eventName === "CreditWithdrawn"));
+  const outstanding = new Map();
+  ordered.forEach((log, i) => { if (log.eventName === "PayoutDeferred" && !settledAfter(log.owner, i)) outstanding.set(log.owner, { owner: log.owner, destination: log.destination, amount: log.amount, transactionHash: log.transactionHash }); });
+  deferred.splice(0, deferred.length, ...outstanding.values());
   if (ledger) {
     if (!ledger.solvent) issues.push({ issue: "contract_insolvent" });
     if (BigInt(ledger.lockedFunds) < expectedLocked) issues.push({ issue: "locked_funds_below_expected" });

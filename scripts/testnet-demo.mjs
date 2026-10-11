@@ -206,9 +206,10 @@ async function main(env) {
       }
       for (const attempt of attempts) attempt.state = (await call("lemma_attempt_status", { attemptId: attempt.attemptId })).state;
       // LemmaX realizes its execution charges, its only revenue under the agreed terms.
+      // Under contract v3 the credit may already have been paid out automatically.
       const earned = await settlement.credit(r.facilitator.address);
-      const withdrawn = await settlement.withdraw({ wallet: wallet(r.facilitator), amount: earned, destination: r.facilitator.address });
-      await confirm(withdrawn);
+      const withdrawn = earned === "0" ? { hash: null } : await settlement.withdraw({ wallet: wallet(r.facilitator), amount: earned, destination: r.facilitator.address });
+      if (withdrawn.hash) await confirm(withdrawn);
       const ledger = await settlement.ledger();
       const fromBlock = deployment ? BigInt(deployment.blockNumber) : BigInt(env.LEMMAX_SETTLEMENT_FROM_BLOCK);
       const logs = await readSettlementLogs({ publicClient, address, fromBlock, toBlock: await publicClient.getBlockNumber(), maxBlockRange: 100n });
