@@ -1,0 +1,22 @@
+name: auditor-keepalive
+# Envio Cloud's free development plan removes a deployment after seven days without
+# queries. One read of the public GraphQL API per day keeps the auditor reachable.
+# Set the repository variable LEMMAX_AUDITOR_URL to the deployment's GraphQL URL.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Query the auditor's indexing status
+        env:
+          AUDITOR_URL: ${{ vars.LEMMAX_AUDITOR_URL }}
+        run: |
+          if [ -z "$AUDITOR_URL" ]; then echo "LEMMAX_AUDITOR_URL is not set; nothing to keep alive."; exit 0; fi
+          curl --fail --silent --show-error --max-time 30 -H 'content-type: application/json' \
+            -d '{"query":"{ _meta { chainId progressBlock isReady } }"}' "$AUDITOR_URL"
