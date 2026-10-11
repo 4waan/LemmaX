@@ -24,6 +24,10 @@ export function createPurchaseDesk({ issuer, settlement, relayer, data, chainTim
     async fund({ attemptId, validAfter, validBefore, signature }) {
       const id = bytes32(attemptId), issued = quotes.get(id);
       if (!issued) throw new TypeError("Unknown quote");
+      // Only the issued window is relayed. A buyer-chosen short window could expire between
+      // estimate and inclusion, and a mined revert still pays its whole gas limit on Monad.
+      const window = issued.authorization.message;
+      if (String(validAfter) !== window.validAfter || String(validBefore) !== window.validBefore) throw new TypeError("Authorization window differs from the issued quote");
       // One relay per quote at a time; the relayer's gas is spent only on fundable quotes.
       if (funding.has(id)) throw new TypeError("Funding already in progress for this quote");
       funding.add(id);

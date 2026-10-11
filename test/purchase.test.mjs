@@ -137,6 +137,9 @@ test("MCP purchase tools exist only with a desk and return specific rejection re
   assert.equal(q.fundingTotal, "8000"); assert.equal(q.buyerAuthorization.domain.chainId, "10143");
   const signature = await a.buyer.signTypedData({ ...q.buyerAuthorization, domain: { ...q.buyerAuthorization.domain, chainId: 10143 } });
   const fund = args => client.callTool({ name: "lemma_fund_attempt", arguments: { attemptId: q.attemptId, validAfter: "0", validBefore: q.buyerAuthorization.message.validBefore, ...args } });
+  const shortWindow = await a.buyer.signTypedData({ ...q.buyerAuthorization, domain: { ...q.buyerAuthorization.domain, chainId: 10143 },
+    message: { ...q.buyerAuthorization.message, validBefore: "1001" } });
+  assert.match((await fund({ signature: shortWindow, validBefore: "1001" })).content[0].text, /Request rejected: Authorization window differs from the issued quote/);
   now = "1116";
   assert.match((await fund({ signature })).content[0].text, /Request rejected: Quote expires too soon to relay safely/);
   now = "1000";
