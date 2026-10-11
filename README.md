@@ -82,3 +82,9 @@ The user agreed connector-principal refund for eligible failure, with actual sep
 Private records, environment files and raw run directories are excluded. Before publication or push, scan staged changes and full history with gitleaks. The optional local pre-commit hook requires gitleaks; activate it with `git config core.hooksPath .githooks`.
 
 The original project license remains to be selected. No earlier repository source code or model weights were copied into this first slice.
+
+## License
+
+LemmaX is MIT licensed ([LICENSE](LICENSE)). Third-party data, packages and tools keep their own terms ([THIRD_PARTY.md](THIRD_PARTY.md)).
+
+AI tools assisted in developing this project.
