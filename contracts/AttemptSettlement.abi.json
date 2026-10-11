@@ -49,6 +49,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidInstruction",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidQuote",
     "type": "error"
   },
@@ -171,6 +176,149 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "bytes32",
+        "name": "attemptId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "evaluatorSigner",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "attemptId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "recordCommitment",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "policyHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "connectorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "executorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "evaluatorPayee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "evaluatorSigner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "principal",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "executionCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "evaluationCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "quoteExpiresAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "executeBy",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settleBy",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "timeoutMode",
+            "type": "uint8"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct AttemptSettlement.AttemptQuote",
+        "name": "quote",
+        "type": "tuple"
+      }
+    ],
+    "name": "AttemptTerms",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "destination",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreditPaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "owner",
         "type": "address"
@@ -196,6 +344,88 @@
     "inputs": [],
     "name": "EIP712DomainChanged",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "destination",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "PayoutDeferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "destination",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bar",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nonce",
+        "type": "uint256"
+      }
+    ],
+    "name": "PayoutInstructionSet",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MIN_PAYOUT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PAYOUT_TYPEHASH",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -517,6 +747,95 @@
       {
         "components": [
           {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "destination",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "bar",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nonce",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "deadline",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct AttemptSettlement.PayoutInstruction",
+        "name": "p",
+        "type": "tuple"
+      }
+    ],
+    "name": "payoutDigest",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "payoutNonce",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "payoutOf",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "destination",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bar",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
             "internalType": "bytes32",
             "name": "attemptId",
             "type": "bytes32"
@@ -784,6 +1103,51 @@
       {
         "components": [
           {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "destination",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "bar",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nonce",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "deadline",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct AttemptSettlement.PayoutInstruction",
+        "name": "p",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "setPayoutInstruction",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
             "internalType": "bytes32",
             "name": "attemptId",
             "type": "bytes32"
@@ -927,6 +1291,19 @@
       }
     ],
     "name": "settle",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "owners",
+        "type": "address[]"
+      }
+    ],
+    "name": "sweep",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
