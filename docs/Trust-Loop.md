@@ -8,7 +8,7 @@ Paying is already gasless on Monad: Monad's x402 facilitator and LemmaX both rel
 
 **Contract version 3 pays credit out automatically.** When a settlement or refund brings an owner's credit to its bar (at least 0.01 USDC), the whole credit is transferred in the same transaction, which LemmaX's relayer already pays for. A refused transfer (a blocked payee or a paused token) restores the credit and emits `PayoutDeferred`, so it can never block a settlement; anyone can retry with `sweep`. An owner may route payouts elsewhere or raise its bar with one signed `PayoutInstruction` that anyone can relay (EOA or ERC-1271 signatures). `withdraw` remains for owners who hold MON. Funding also publishes the quote's public terms in `AttemptTerms`, and the contract refuses an issuer that names itself evaluator. [Contract](../contracts/AttemptSettlement.sol).
 
-Checked locally with Monad execution rules (78 checks) and against Circle's real USDC on a fork of Monad Testnet (75 checks), including a payout deferred by Circle's own blacklist and retried by `sweep`. [Local report](../verification/settlement-check.json), [fork report](../verification/settlement-fork-check.json).
+Deployed on Monad Testnet at [`0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7`](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7) with an exact Sourcify match. Checked locally with Monad execution rules (80 checks) and against Circle's real USDC on a fork of Monad Testnet (77 checks), including a payout deferred by Circle's own blacklist and retried by `sweep`. [Local report](../verification/settlement-check.json), [fork report](../verification/settlement-fork-check.json).
 
 ## 2. Funding that reports Monad's commit states
 
