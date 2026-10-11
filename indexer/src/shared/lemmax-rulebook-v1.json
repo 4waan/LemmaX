@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "lemmax-rulebook/v1",
+  "rulebookRef": "lemmax-rulebook/v1",
+  "meaning": "Published terms, roles and verdict policy for LemmaX demonstration attempts on Monad Testnet. Verdicts check what the settlement contract cannot know. A verdict is a rule-conformance finding, not a resource-quality judgement or a compatibility probability.",
+  "chainId": 10143,
+  "asset": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
+  "terms": {
+    "termsRef": "lemmax-demo-terms/v1",
+    "principal": "5000",
+    "executionCap": "2000",
+    "evaluationCap": "1000",
+    "executionCharge": "1500",
+    "evaluationCharge": "800",
+    "chargeRule": "A settled attempt charges exactly the execution and evaluation tariff; the caps are headroom reserved for a later metered tariff."
+  },
+  "profiles": {
+    "demo-standard/v1": { "fundingSeconds": 120, "executeAfterFunding": 120, "settleAfterFunding": 480 },
+    "demo-timeout/v1": { "fundingSeconds": 60, "executeAfterFunding": 60, "settleAfterFunding": 120 }
+  },
+  "payouts": { "minimum": "10000", "rule": "Credit pays out automatically once it reaches the owner's bar, never below the minimum." },
+  "roles": {
+    "issuer": { "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05", "operator": "LemmaX", "duty": "Signs quotes and relays funding." },
+    "executor": { "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05", "operator": "LemmaX", "duty": "Runs the retrieval; earns only the execution charge." },
+    "evaluators": [
+      { "label": "LemmaX Evaluator", "signer": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77", "payee": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+        "operator": "LemmaX (operator-run demonstration evaluator)" },
+      { "label": "Evaluator-b", "signer": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd", "payee": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd",
+        "operator": "LemmaX (operator-run, labelled fault-injection evaluator for the demonstration)" }
+    ],
+    "connectors": [
+      { "label": "Retrieval Provider", "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1", "operator": "Demonstration provider" }
+    ],
+    "operatorIncomeAddresses": ["0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05"]
+  },
+  "verdicts": {
+    "blocking": ["above_tariff", "unregistered_or_self_evaluator"],
+    "recorded": ["off_terms", "off_profile", "operator_income"],
+    "informational": ["below_tariff", "opaque_call"]
+  },
+  "attribution": "Charge verdicts attach to the evaluator signer named in the funded quote. The issuer is flagged only for terms it signed. A buyer refuses new quotes naming a party with a blocking verdict under this rulebook; a new rulebook version is the remediation path."
+}
