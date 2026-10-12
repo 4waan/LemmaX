@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LemmaX</title>
+<meta name="description" content="AI agents pay for the result, not the call: USDC on Monad, the price back on a miss, and a wallet that signs only bills a public auditor cleared.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Sections">
+    <div class="brand">LemmaX</div>
+    <a href="#buy" class="on">Buy a search</a>
+    <a href="#trick">Try to trick it</a>
+    <a href="#record">Public record</a>
+    <a href="#connect">Connect an agent</a>
+    <div class="rail-foot">
+      <span id="net" class="chip">Monad Testnet</span>
+      <button id="theme" class="ghost" type="button" aria-label="Switch theme">Dark</button>
+    </div>
+  </nav>
+  <main>
+    <header class="hero">
+      <h1 id="oneliner">Pay for the result, not the call.</h1>
+      <p class="lede">An AI agent buys a search in USDC on Monad. It sees the odds first, gets the price back on a miss, and its wallet signs only bills a public auditor cleared.</p>
+      <div class="facts" id="facts"></div>
+    </header>
+
+    <section id="buy" class="card">
+      <h2>Buy a search</h2>
+      <p class="hint">Pick a claim. The agent buys one search for it and a checker decides if a right source came back.</p>
+      <div id="claims" class="claims"></div>
+      <div class="actions"><button id="buyBtn" type="button" disabled>Buy one search</button><span id="held" class="muted"></span></div>
+      <ol id="buySteps" class="steps"></ol>
+      <div id="receipt"></div>
+    </section>
+
+    <section id="trick" class="card">
+      <h2>Try to trick it</h2>
+      <p class="hint">Act like a misled agent. Nothing here can move money, and each answer names who refused.</p>
+      <div class="tricks">
+        <button type="button" data-trick="flagged_checker">Pay the checker caught overcharging</button>
+        <button type="button" data-trick="redirect_payment">Change who gets paid</button>
+        <button type="button" data-trick="skip_guard">Skip the guard</button>
+      </div>
+      <ol id="trickSteps" class="steps"></ol>
+    </section>
+
+    <section id="record" class="card">
+      <h2>Public record</h2>
+      <p class="hint">Paste an attempt id or a transaction hash to see who was paid what, and whether the rules were followed.</p>
+      <form id="lookup" class="lookup"><input id="q" placeholder="0x…" spellcheck="false" autocomplete="off"><button type="submit">Check</button></form>
+      <div id="recordOut"></div>
+    </section>
+
+    <section id="connect" class="card">
+      <h2>Connect an agent</h2>
+      <p class="hint">Add LemmaX's read-only tools to Claude Code with one line.</p>
+      <pre class="cmd"><code id="mcpLine"></code></pre>
+      <p class="muted small">Source on <a href="https://github.com/4waan/LemmaX">GitHub</a>. Demo checkers are run by LemmaX, as its published rulebook says. Testnet USDC only.</p>
+    </section>
+  </main>
+</div>
+<div id="pop" class="pop" hidden></div>
+<script src="/app.js" type="module"></script>
+</body>
+</html>
