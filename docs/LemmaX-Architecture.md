@@ -2,7 +2,7 @@
 
 This document explains what LemmaX keeps private, what it puts on Monad, and why. It separates the design choices we made from proposals that remain open.
 
-**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#live-rehearsed-not-yet) lists what is live, rehearsed and not yet done.
+**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#what-is-proved-today) distinguishes live transactions from local and fork checks.
 
 ## 1. Context and decisions
 
@@ -69,37 +69,21 @@ The selected boundary concerns the two application records. A functioning public
 
 ### Attempt commitment
 
-The commitment binds a private attempt record to the funded transaction. Proposed private contents include exact resource and adapter identity, company task and environment references, private acceptance specification, quote and license terms, strategy, and agreed limits.
+The implemented `private-attempt/v1` record names the exact offer, outcome, task profile, principal, access snapshot, terms, input digest, source version and execution limits. Its encoding, bounds and commitment construction are defined in [`src/attempt.mjs`](../src/attempt.mjs) and the [attempt guide](Attempt-and-Settlement.md#private-record-and-commitment).
 
-The contract retains the minimum public header required to enforce the financial rules. Proposed header fields include buyer, funding token, purchase amount and execution reserve where selected, payees, evaluator authority, deadline, and attempt nonce. Detailed asset-specific policy text stays private. Whether the financial policy itself identifies an asset must be reviewed.
+The record hash uses fixed ABI fields containing the schema hash, reference hashes, digests and bounded integers. The commitment binds that hash to fresh 32-byte cryptographic randomness under a separate domain. Keep the record and salt private. A bare hash of a guessable resource identifier would permit catalog enumeration; the random salt prevents that simple attack under the hash assumptions.
 
-An illustrative commitment construction is:
+The issuer signs a quote containing the commitment, buyer, token, amounts, payees, evaluator authority and deadlines. EIP-712 binds that quote to its chain and settlement contract. `bindRecordToQuote` checks the private opening and the shared amount/deadline fields before execution. The contract stores the quote digest and state; contract v3 also emits the public quote terms for audit. Detailed acceptance and resource references stay offchain.
 
-```text
-recordDigest = H(canonicalEncode(privateAttemptRecord))
-attemptCommitment = H(ABIencode(
-  domainTag,
-  chainId,
-  escrowContract,
-  buyerWallet,
-  attemptNonce,
-  publicHeaderDigest,
-  recordDigest,
-  secretRandomness
-))
-```
-
-Use an established collision-resistant hash, unambiguous encoding, and fresh cryptographically generated secret randomness, proposed as 32 bytes. Keep the opening and randomness private. A hash of a guessable asset ID alone can be matched against the catalog; the randomized outer commitment prevents that simple enumeration attack under the hash assumptions.
-
-This is a proposed construction, not a finalized cryptographic schema. Exact encoding, domain separation, and any future circuit compatibility must be fixed before implementation.
+AES-256-GCM sealing and opening helpers are implemented. The demonstration issuer keeps its records in memory; encrypted persistent custody and authenticated company access remain separate work. Future circuit compatibility has not been established.
 
 ### Settlement outcome
 
-The evaluator issues a narrowly scoped verdict binding the attempt commitment, terminal outcome, financial allocations, and verdict nonce to the chain, contract, and frozen authorization. It checks that the private record opens the funded commitment and that the selected acceptance policy was followed.
+The evaluator signs a receipt binding the attempt ID, quote digest, evidence commitment, outcome, consumed charges and execution/evaluation times. The signing domain fixes the chain and contract. The evaluator checks that the private record opens the funded commitment and that the selected acceptance policy was followed.
 
 The contract verifies issuer authority, authorized amounts and state transitions, deadline conditions, and replay protection. It then credits the agreed payouts or refunds exactly once. Financial checks cannot be delegated to model prose.
 
-Proposed record fields are attempt ID/commitment, terminal state, payout/refund accounting, and any required opaque receipt reference. A failure outcome need not publish a detailed reason, stack trace, resource ID, or diagnostic tag. Consumption fragments and intermediate failures stay private; the agreed aggregate financial allocation is enforced.
+The public outcome event records the attempt ID, terminal state, evidence commitment and consumed execution/evaluation charges. Credit and payout events expose the resulting transfers. A failure outcome need not publish a detailed reason, stack trace, resource ID, or diagnostic tag. Consumption fragments and intermediate failures stay private; the agreed aggregate financial allocation is enforced.
 
 An evaluator signature authenticates the verdict. It does not prove the evaluator ran tests honestly. The funding parties must accept the evaluator and evidence policy before funds are locked. Company approval alone does not resolve provider acceptance or conflicts of interest.
 
@@ -282,7 +266,7 @@ Each sponsor tool we use decides something in the payment path:
 - **Privy:** the buyer's server wallet. Its policy signs only quotes the buyer's guard approved. [Privy in the trust loop](Trust-Loop.md#privy-the-buyers-mandate).
 - **ERC-8004:** identities for four LemmaX agents and feedback built from settled attempts only (section 4).
 
-Other sponsor tracks were reviewed, and none of their tools is used. Documentation review does not establish bounty eligibility or award entitlement. The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#live-rehearsed-not-yet).
+Other sponsor tracks were reviewed, and none of their tools is used. Documentation review does not establish bounty eligibility or award entitlement. The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#what-is-proved-today).
 
 ## 10. Scale evidence
 
@@ -316,7 +300,7 @@ Before customer use, we still need to settle the purchased right for each custom
 
 External sources were checked during research. Where provider pages were unavailable or disagreed about deployments, the limits are stated above.
 
-Built and checked since this design was written: two retrieval connectors with a paired benchmark, the assessment library, the MCP server, contract versions 2 and 3, and the trust loop. [Evidence files](../README.md#evidence-files). None of these checks tests company adoption. No economic validation or protection against all inference from public payment metadata is established.
+Built and checked since this design was written: two retrieval connectors with a paired benchmark, the assessment library, the MCP server, contract versions 2 and 3, and the trust loop. [Evidence guide](README.md#check-a-claim-against-its-record). None of these checks tests company adoption. No economic validation or protection against all inference from public payment metadata is established.
 
 ## Implemented attempt and settlement slice
 

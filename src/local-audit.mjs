@@ -15,8 +15,9 @@ export function createLocalAudit({ publicClient, address, fromBlock, maxBlockRan
   }
   async function snapshot() {
     const head = await publicClient.getBlockNumber();
-    // One reader at a time; concurrent callers wait for the same read.
-    reading = (reading ?? Promise.resolve()).then(() => readNew(head));
+    // One reader at a time. The current caller sees a failed read; the next caller retries
+    // from readThrough instead of inheriting that failure forever.
+    reading = (reading ?? Promise.resolve()).catch(() => {}).then(() => readNew(head));
     await reading;
     const logs = cached;
     const termsById = new Map(logs.filter(l => l.eventName === "AttemptTerms").map(l => [l.attemptId, l.quote]));

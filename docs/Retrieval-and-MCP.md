@@ -62,7 +62,7 @@ The separate Python oracle checked all 300 top-five rankings for both offers. BM
 
 ## Connect an MCP client
 
-Run `node scripts/mcp-server.mjs` through a client's stdio transport, with `LEMMAX_SCIFACT_DIR` set by the operator. Keep stdout exclusively for protocol messages. The pinned [official MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) handles negotiation and transport. No HTTP listener or remote authentication is implemented in this slice.
+Run `node scripts/mcp-server.mjs` through a client's stdio transport, with `LEMMAX_SCIFACT_DIR` set by the operator. Keep stdout exclusively for protocol messages. The pinned [official MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) handles negotiation and transport. The web demo also serves these read-only tools at `/mcp` using Streamable HTTP, with an optional auditor check. Its separate purchase API uses the operator's configured demo buyer. Authenticated access to private-company resources is not implemented.
 
 Example client configuration, with paths replaced by the operator:
 

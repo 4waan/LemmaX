@@ -1,6 +1,6 @@
 # Implemented assessment boundary
 
-Package version 0.6.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP and authenticated private-company purchase transport remain open. Signed quotes/receipts and the USDC settlement contract are tested locally and on Monad Testnet. Contract version 3 is deployed there, and version 2 ran the earlier live attempts. There is no customer funding endpoint. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
+Package version 0.6.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. The public benchmark is available through stdio MCP and the web demo's read-only HTTP MCP endpoint. Operator configuration enables purchase tools over stdio; the web demo has a separate purchase API using its configured demo buyer. Authenticated private-company purchase transport remains open. Signed quotes/receipts and the USDC settlement contract are tested locally and on Monad Testnet. Contract version 3 is deployed there, and version 2 ran the earlier live attempts. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
 
 ## Inputs and authority
 

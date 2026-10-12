@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { createLimiter, createState, localMandateWallet, pickClaims, receiptFrom, walletRefusal } from "../web/live.mjs";
+import { createLimiter, createRunQueue, createState, localMandateWallet, pickClaims, receiptFrom, walletRefusal } from "../web/live.mjs";
 
 const SETTLEMENT = "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", USDC = "0x534b2f3A21130d7a60830c2Df862319e593943A3";
 
@@ -47,6 +47,81 @@ test("Per-visitor limits slide, and daily counters survive a restart", () => {
     memory.day(1).buys = 3; memory.save();
     assert.equal(createState(null).day(1).buys, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("Missing live state starts fresh, but unreadable or corrupt state cannot reset the caps", () => {
+  const dir = mkdtempSync(join(tmpdir(), "lemmax-state-"));
+  const path = join(dir, "live-state.json");
+  try {
+    assert.equal(createState(dir).day(1).buys, 0);
+    writeFileSync(path, "{");
+    assert.throws(() => createState(dir), /invalid JSON/);
+    assert.equal(readFileSync(path, "utf8"), "{");
+    for (const broken of [{}, { days: [] }, { days: { "1": { buys: -1, tricks: 0, issued: "0", visitors: [] } } },
+      { days: { "1": { buys: 1, tricks: 0, issued: "0", visitors: null } } }]) {
+      writeFileSync(path, JSON.stringify(broken));
+      assert.throws(() => createState(dir), /invalid counters/);
+    }
+    rmSync(path);
+    mkdirSync(path);
+    assert.throws(() => createState(dir), /could not be read/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("Concurrent live runs reserve daily slots inside the shared queue", async () => {
+  const state = createState(null);
+  const run = createRunQueue({ state, limits: { buys: 2, tricks: 1 }, dayNow: () => 1 });
+  let release, started;
+  const gate = new Promise(resolve => { release = resolve; });
+  const firstStarted = new Promise(resolve => { started = resolve; });
+  const executed = [];
+  const task = label => async () => { executed.push(label); };
+  const first = run("buys", "a", async () => { executed.push("first"); started(); await gate; });
+  const pending = Promise.allSettled([
+    first, run("buys", "b", task("second")), run("buys", "c", task("over-budget buy")),
+    run("tricks", "a", task("trick")), run("tricks", "d", task("over-budget trick")),
+  ]);
+  await firstStarted;
+  assert.deepEqual(executed, ["first"]);
+  release();
+  const results = await pending;
+  assert.deepEqual(results.map(r => r.status), ["fulfilled", "fulfilled", "rejected", "fulfilled", "rejected"]);
+  assert.match(results[2].reason.message, /demo budget/);
+  assert.match(results[4].reason.message, /trick budget/);
+  assert.deepEqual(executed, ["first", "second", "trick"]);
+  assert.deepEqual(state.day(1), { buys: 2, tricks: 1, issued: "0", visitors: ["a", "b"] });
+});
+
+test("Queued live runs use their start day and continue after a failed run", async () => {
+  const state = createState(null);
+  let day = 1, release, started;
+  const run = createRunQueue({ state, limits: { buys: 1, tricks: 1 }, dayNow: () => day });
+  const gate = new Promise(resolve => { release = resolve; });
+  const firstStarted = new Promise(resolve => { started = resolve; });
+  const first = run("buys", "before", async () => { started(); await gate; throw new Error("checker unavailable"); });
+  const next = run("buys", "after", async today => today.buys);
+  const pending = Promise.allSettled([first, next]);
+  await firstStarted;
+  day = 2;
+  release();
+  const results = await pending;
+  assert.equal(results[0].status, "rejected");
+  assert.match(results[0].reason.message, /checker unavailable/);
+  assert.deepEqual(results[1], { status: "fulfilled", value: 1 });
+  assert.equal(state.day(1).buys, 1);
+  assert.deepEqual(state.day(2), { buys: 1, tricks: 0, issued: "0", visitors: ["after"] });
+  await assert.rejects(run("buys", "third", async () => {}), /demo budget/);
+});
+
+test("Live daily limits reject invalid configuration and allow a disabled run kind", async () => {
+  const state = createState(null), dayNow = () => 1;
+  for (const buys of [NaN, Infinity, -1, 0.5, "3"]) {
+    assert.throws(() => createRunQueue({ state, limits: { buys, tricks: 1 }, dayNow }), /daily limit/);
+  }
+  const run = createRunQueue({ state, limits: { buys: 0, tricks: 1 }, dayNow });
+  await assert.rejects(run("buys", "a", async () => {}), /demo budget/);
+  assert.throws(() => run("other", "a", async () => {}), /Unknown live run kind/);
+  assert.equal(state.day(1).buys, 0);
 });
 
 test("The rehearsal wallet holds the same single rule as the Privy policy", async () => {

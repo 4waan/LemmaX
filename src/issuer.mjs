@@ -23,8 +23,8 @@ export function createQuoteIssuer({ account, domain, token, payees, caps, terms 
     address: account.address,
     fundingTotal: total.toString(),
     issuedOn(day) { return (issued.get(BigInt(day)) ?? 0n).toString(); },
-    // Issued totals live in memory. After a restart the operator restores a day's total from
-    // what the chain shows was funded, so a restart cannot reset the daily cap.
+    // Restore a previously recorded issuance total after a restart. Count unfunded quotes
+    // too: funded chain events alone cannot reconstruct every issued authorization.
     restore(day, amount) {
       const d = BigInt(day), a = BigInt(amount);
       if (a < 0n) throw new RangeError("Restored amount must not be negative");

@@ -71,7 +71,25 @@ export function receiptFrom({ logs, txHash, quote, outcome, credits, names }) {
 export function createState(dir) {
   const path = dir ? join(dir, "live-state.json") : null;
   let state = { days: {} };
-  if (path && existsSync(path)) { try { state = JSON.parse(readFileSync(path, "utf8")); } catch { state = { days: {} }; } }
+  if (path) {
+    let stored;
+    try { stored = readFileSync(path, "utf8"); }
+    catch (error) {
+      if (error.code !== "ENOENT") throw new Error("Live demo state could not be read", { cause: error });
+    }
+    if (stored !== undefined) {
+      try { state = JSON.parse(stored); }
+      catch (error) { throw new Error("Live demo state contains invalid JSON", { cause: error }); }
+      const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
+      const count = value => Number.isSafeInteger(value) && value >= 0;
+      if (!object(state) || !object(state.days) || !Object.entries(state.days).every(([day, record]) =>
+        /^(0|[1-9][0-9]*)$/.test(day) && count(Number(day)) && object(record) && count(record.buys) && count(record.tricks)
+        && typeof record.issued === "string" && /^(0|[1-9][0-9]*)$/.test(record.issued)
+        && Array.isArray(record.visitors) && record.visitors.every(visitor => typeof visitor === "string"))) {
+        throw new Error("Live demo state has invalid counters");
+      }
+    }
+  }
   const save = () => {
     if (!path) return;
     mkdirSync(dir, { recursive: true });
@@ -97,6 +115,32 @@ export function createLimiter({ limit, windowMs, now = () => Date.now() }) {
     recent.push(t); hits.set(visitor, recent);
     if (hits.size > 10000) for (const [k, v] of hits) if (!v.some(x => t - x < windowMs)) hits.delete(k);
     return { ok: true };
+  };
+}
+
+// Reserve a day's slot only when a run starts. The queue also keeps the relayer's nonce,
+// wallet approval set and index wait exclusive. A failed run still used its slot.
+export function createRunQueue({ state, limits, dayNow }) {
+  for (const kind of ["buys", "tricks"]) {
+    if (!Number.isSafeInteger(limits[kind]) || limits[kind] < 0) throw new RangeError(`${kind} daily limit must be a non-negative integer`);
+  }
+  const exhausted = {
+    buys: "Today's demo budget is used up. The public record and the tricks still work.",
+    tricks: "Today's trick budget is used up.",
+  };
+  let busy = Promise.resolve();
+  return (kind, visitor, task) => {
+    if (!Object.hasOwn(exhausted, kind)) throw new TypeError("Unknown live run kind");
+    const run = busy.then(async () => {
+      const today = state.day(dayNow());
+      if (today[kind] >= limits[kind]) throw new RangeError(exhausted[kind]);
+      today[kind] += 1;
+      if (visitor && !today.visitors.includes(visitor)) today.visitors.push(visitor);
+      state.save();
+      return task(today);
+    });
+    busy = run.catch(() => {});
+    return run;
   };
 }
 
@@ -192,9 +236,8 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   const state = createState(env.LEMMAX_STATE_DIR);
   const dayNow = () => Math.floor(now() / 1000 / DAY);
   issuer.restore(dayNow(), state.day(dayNow()).issued);
-  let lastSettledBlock = null, busy = Promise.resolve();
-  // One run at a time: the relayer's nonce, the guard's set and the index wait stay simple.
-  const exclusive = task => { const run = busy.then(task, task); busy = run.catch(() => {}); return run; };
+  let lastSettledBlock = null;
+  const run = createRunQueue({ state, limits: { buys: limits.buysPerDay, tricks: limits.tricksPerDay }, dayNow });
   const visitorHash = ip => createHash("sha256").update(`${dayNow()}:${ip}:${salt}`).digest("hex").slice(0, 16);
   const salt = randomBytes(16).toString("hex");
   const link = hash => `${EXPLORER}/tx/${hash}`;
@@ -214,11 +257,8 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   async function buy({ caseRef, visitor }, emit) {
     const claim = claims.find(c => c.caseRef === caseRef);
     if (!claim) throw new TypeError("Pick one of the listed claims");
-    const today = state.day(dayNow());
-    if (today.buys >= limits.buysPerDay) throw new RangeError("Today's demo budget is used up. The public record and the tricks still work.");
-    return exclusive(async () => {
+    return run("buys", visitor, async today => {
       const started = now(), t = () => now() - started;
-      today.buys += 1; if (visitor && !today.visitors.includes(visitor)) today.visitors.push(visitor); state.save();
       assigned = undefined;
       const q = await desk.quote({ offerRef: OFFER, caseRef, profileRef: "demo-standard/v1", buyer: buyerWallet.address });
       today.issued = issuer.issuedOn(dayNow()); state.save();
@@ -259,11 +299,8 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
 
   async function trick({ kind, visitor }, emit) {
     if (!TRICKS.includes(kind)) throw new TypeError("Unknown trick");
-    const today = state.day(dayNow());
-    if (today.tricks >= limits.tricksPerDay) throw new RangeError("Today's trick budget is used up.");
-    return exclusive(async () => {
+    return run("tricks", visitor, async () => {
       const started = now(), t = () => now() - started;
-      today.tricks += 1; if (visitor && !today.visitors.includes(visitor)) today.visitors.push(visitor); state.save();
       const caseRef = claims[0].caseRef;
       const issued = await trickIssuer.issue({ offerRef: OFFER, caseRef, query: data.queries.get(caseRef), buyer: buyerWallet.address, profileRef: "demo-standard/v1",
         issuedAt: await chainTime(), evaluatorRef: kind === "flagged_checker" ? "evaluator-b" : undefined });

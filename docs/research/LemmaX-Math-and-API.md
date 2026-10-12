@@ -389,7 +389,7 @@ For scale readiness, the intended query path reads admitted, versioned cohort st
 
 Verification should include independent state-by-state accounting against the cost formula, success/failure/refund variants, boundary probabilities, unknown evidence, duplicate outcomes, correlated-unit policy, and order changes under different costs. Calibration requires future or held-out real observations; syntactic correctness and passing example arithmetic cannot establish it.
 
-This documentation's illustrative full-refund cost, partial-retention cost, contribution, and preview bound were checked by direct branch accounting with decimal arithmetic. Beta interval endpoints were computed through the integer-shape binomial CDF identity and numerical bisection. No API implementation, application tests, deployment, or empirical calibration was performed.
+This research note's illustrative full-refund cost, partial-retention cost, contribution, and preview bound were checked by direct branch accounting with decimal arithmetic. Beta interval endpoints were computed through the integer-shape binomial CDF identity and numerical bisection. Those arithmetic checks did not exercise an application or deployment, or establish empirical calibration. The subsequent implementation and its recorded checks are described in the [assessment guide](../Implementation.md) and [documentation index](../README.md).
 
 ## 7. Decisions since this note
 

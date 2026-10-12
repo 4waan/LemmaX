@@ -29,3 +29,25 @@ test("The local auditor applies the shared rules to chain logs, so the guard wor
   const one = await audit.attempt(id(2));
   assert.deepEqual([one.attempt.state, one.verdicts.map(v => v.code)], ["settled_success", ["above_tariff"]]);
 });
+
+test("A failed log read rejects that snapshot and the next snapshot retries the unread blocks", async () => {
+  let offline = true;
+  const ranges = [];
+  const client = {
+    getBlockNumber: async () => 20n,
+    getContractEvents: async ({ fromBlock, toBlock }) => {
+      ranges.push([fromBlock, toBlock]);
+      if (offline) throw new Error("RPC unavailable");
+      return fromBlock <= 10n ? events : [];
+    },
+  };
+  const audit = createLocalAudit({ publicClient: client, address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: 1n });
+  await assert.rejects(audit.partyRecords([b.signer]), /RPC unavailable/);
+  assert.deepEqual(ranges, [[1n, 20n]]);
+  offline = false;
+  const { records, freshness } = await audit.partyRecords([b.signer]);
+  assert.deepEqual(ranges, [[1n, 20n], [1n, 20n]]);
+  assert.deepEqual([records[b.signer.toLowerCase()].blocking, freshness.progressBlock], [1, "20"]);
+  await audit.snapshot();
+  assert.equal(ranges.length, 2);
+});

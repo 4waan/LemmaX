@@ -10,12 +10,12 @@ Contract version 3 is the current contract. It pays credit out automatically and
 - **Keys.** The quote issuer and the evaluator use separate keys, so the two authorities are distinct onchain.
 - **Network.** The live demonstration targets Monad Testnet.
 - **Offer prices.** Both retrieval offers carry the same principal.
-- **Cost basis.** Demonstration prices reflect published reference prices and measured costs, not invented figures. Section 6 sets out the terms.
+- **Cost basis.** Demonstration prices use published reference prices and a recorded version 2 gas-cost snapshot. Version 3 payout gas changes that cost basis; section 6 separates the two.
 - **Deadlines.** Two deadline profiles: a standard profile, and a short profile that makes the timeout refund demonstrable.
 - **LemmaX revenue.** LemmaX earns only the execution charge. There is no onchain success share, so the three payees (connector, executor, evaluator) are unchanged.
-- **Payouts.** Contract version 3 pays credit out automatically once it reaches the owner's bar (minimum 0.01 USDC), so no owner needs MON to collect. A signed instruction can route payouts or raise the bar.
+- **Payouts.** Contract version 3 attempts an automatic payout once credit reaches the owner's bar (minimum 0.01 USDC). The relayer pays gas; refused transfers preserve credit. An owner needs MON to withdraw credit below the bar. A signed instruction can route payouts or raise the bar.
 - **Funding feedback.** The fund tool streams Monad's commit states and returns at Verified.
-- **Trust loop.** Envio (public auditor) and Privy (buyer mandate) form one loop with the buyer's guard, which fails closed on a stale index. ERC-8004 gives four agents identities, with batched feedback that an operator triggers. [Trust loop](Trust-Loop.md).
+- **Trust loop.** The Envio auditor and Privy mandate integrations connect to the buyer's guard, which fails closed on a stale index. The loop was rehearsed with a local auditor and wallet policy. Hosted Envio, live Privy enforcement and four ERC-8004 registrations remain pending. [Trust loop](Trust-Loop.md).
 - **License.** MIT.
 
 ## 2. Current architecture
@@ -53,7 +53,7 @@ Every step ran on Monad Testnet with contract version 2. Version 3 makes step 12
 These properties were checked against official documentation and live public RPC responses. Recheck them before a deployment, since network parameters change through upgrades.
 
 - **The gas limit is charged.** Monad charges the gas limit set in the transaction rather than the gas used. A transaction that reverts after inclusion still pays its full limit. [Gas pricing](https://docs.monad.xyz/developer-essentials/gas-pricing).
-- **Reserve balance.** Asynchronous execution reverts, while still charging gas, a native-value spend that leaves an EOA below the lower of its starting balance and 10 MON. USDC funding sends no native value, so the buyer needs no MON at all; the relaying wallets need MON only for gas. [Reserve balance](https://docs.monad.xyz/developer-essentials/reserve-balance).
+- **Reserve balance.** Monad constrains native MON spending and budgets gas across in-flight transactions. Certain undelegated accounts qualify for an emptying exception. This is not a blanket requirement for every USDC owner to hold 10 MON. USDC funding sends no native value; the buyer signs an authorization and the relayer pays MON gas. [Reserve balance](https://docs.monad.xyz/developer-essentials/reserve-balance).
 - **Commitment stages.** Blocks move through Proposed, Voted, Finalized and Verified. The RPC `latest`, `safe` and `finalized` tags map to the first three. Verified is the finalized head minus three blocks, the execution delay. Monad recommends waiting for Verified before significant offchain financial effects. [Block states](https://docs.monad.xyz/monad-arch/consensus/block-states), [developer summary](https://docs.monad.xyz/developer-essentials/summary).
 - **Timestamps.** Blocks arrive about every 300 ms but carry whole-second timestamps, so several blocks share one second. Deadlines need margin for that and for clock skew.
 - **Storage pricing.** Cold storage is charged per 128-slot page and a new storage slot carries a state-growth charge. A token transfer to an address with no balance pays that charge. [Opcode pricing](https://docs.monad.xyz/developer-essentials/opcode-pricing).
@@ -133,7 +133,7 @@ Version 2 funding includes the token transfer and still costs about 20% less tha
 
 ### Purchase path
 
-`src/terms.mjs` holds the demonstration tariff and deadline profiles as versioned data (`lemmax-demo-terms/v1`) and parses operator caps exactly, without floating point. `createQuoteIssuer` builds the private record and quote, signs the quote with the issuer key and returns the typed data the buyer wallet signs. It refuses terms above `LEMMA_MAX_USDC_PER_RESOLUTION` and stops issuing when a chain day's issued total would pass `LEMMA_DAILY_USDC_CAP`. Every issued quote counts, funded or not, and the running total is reserved before signing so concurrent requests cannot overrun it. The total lives in process memory, so a restarted issuer starts its day again. `createEvaluator` opens the record, reruns the committed retrieval task, checks authorization, source version and output limit, judges relevance against the public labels and signs the receipt with the tariff's charges. A conformance failure stays unresolved, so that attempt ends in the full timeout refund.
+`src/terms.mjs` holds the demonstration tariff and deadline profiles as versioned data (`lemmax-demo-terms/v1`) and parses operator caps exactly, without floating point. `createQuoteIssuer` builds the private record and quote, signs the quote with the issuer key and returns the typed data the buyer wallet signs. It refuses terms above `LEMMA_MAX_USDC_PER_RESOLUTION` and stops issuing when a chain day's issued total would pass `LEMMA_DAILY_USDC_CAP`. Every issued quote counts, funded or not, and the running total is reserved before signing so concurrent requests cannot overrun it. The issuer's counter lives in process memory and provides a `restore` method. The public page persists daily issued totals and restores them after a restart; other callers must provide their own persistence. `createEvaluator` opens the record, reruns the committed retrieval task, checks authorization, source version and output limit, judges relevance against the public labels and signs the receipt with the tariff's charges. A conformance failure stays unresolved, so that attempt ends in the full timeout refund.
 
 The MCP server registers three purchase tools only when the operator supplies a purchase desk. `lemma_quote_attempt` returns the signed quote, the typed data for the buyer wallet, and the private record and salt for the buyer to keep. `lemma_fund_attempt` relays the buyer's signed authorization for a quote this desk issued and waits for the Verified stage. It refuses a quote within five seconds of expiry, an attempt that is already funded, and a second relay of the same quote while one is in flight, because a funding transaction mined after expiry still pays its whole gas limit. `lemma_attempt_status` reads onchain state. A rejection returns the reason from our validation, the contract or the token. Issued quotes live in process memory. The stdio transport runs under the operator's control; a remote transport needs authentication before it is exposed. Two further assessment scenarios price the demonstration terms against the declared buyer alternatives.
 
@@ -165,7 +165,7 @@ Monad Testnet receipts report gas used equal to the transaction gas limit, consi
 
 ## 6. Demonstration terms
 
-We set these terms so that each one traces to a published reference price or a measurement. Reference prices and the MON price are snapshots; recheck them before mainnet use, and revise the versioned charges if MON approaches the break-even prices below.
+The demonstration terms use published reference prices and a recorded version 2 cost snapshot. They remain fixed in `lemmax-demo-terms/v1`; the version 3 payout path did not revise the tariff. Reference prices and the MON price are assumptions for these calculations. They do not establish current production costs or a sustainable margin for every payout pattern.
 
 ### Reference prices and measured costs
 
@@ -174,36 +174,44 @@ We set these terms so that each one traces to a published reference price or a m
 - **Building blocks.** Cohere Rerank 4 Fast costs $2.00 per 1,000 searches of up to 100 documents. OpenAI `text-embedding-3-small` and Voyage `voyage-4-lite` cost $0.02 per million tokens. A Pinecone serverless query on a small namespace uses 0.25 read units, about $0.000004. [Cohere](https://cohere.com/pricing), [OpenAI](https://developers.openai.com/api/docs/pricing), [Voyage](https://docs.voyageai.com/docs/pricing), [Pinecone](https://docs.pinecone.io/guides/manage-cost/understanding-cost).
 - **LLM reading.** Claude Haiku 5.5 lists $0.10 per million input tokens for prompts up to 100,000 tokens. [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing).
 - **Compute.** BM25 and TF-IDF scoring measured 2.5 ms mean per query. On AWS Lambda arm64 ($0.0000133334 per GB-second, $0.20 per million requests, 1 ms billing) that is about $0.0000002 per query. [AWS price list](https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSLambda/current/us-east-1/index.json).
-- **Monad gas.** The observed mainnet base fee sat at the 100 MON-gwei floor with a typical 2 MON-gwei tip; the MON price snapshot was $0.0248 (CoinGecko and CoinMarketCap). With the measured limits above, a funding relay costs 0.0319 MON, about $0.00079. A successful settlement relay costs 0.0222 MON, about $0.00055, and a failure settlement 0.0143 MON, about $0.00036. [CoinGecko](https://www.coingecko.com/en/coins/monad), [CoinMarketCap](https://coinmarketcap.com/currencies/monad/).
+- **Historical version 2 gas basis.** The terms use a total gas price of 102 MON-gwei and a MON price of $0.0248. Applied to the recorded version 2 limits, funding costs 0.0319 MON (about $0.00079), success settlement 0.0222 MON (about $0.00055), and failure settlement 0.0143 MON (about $0.00035). `OPERATOR_COST_SNAPSHOT` in [`src/terms.mjs`](../src/terms.mjs) retains the version 2 funding-and-compute estimate. These are snapshot calculations, not live quotes. [Historical gas reports](#verification), [CoinGecko](https://www.coingecko.com/en/coins/monad), [CoinMarketCap](https://coinmarketcap.com/currencies/monad/).
 
 ### Tariff, equal for both offers
 
 | Term | USDC | Atomic | Basis |
 | --- | ---: | ---: | --- |
 | Principal P | 0.005 | 5000 | Median hosted retrieval price per request |
-| Execution charge e | 0.0015 | 1500 | Funding relay gas plus compute; breaks even up to MON at about $0.047 |
+| Execution charge e | 0.0015 | 1500 | Version 2 funding-and-compute reference |
 | Execution cap E | 0.002 | 2000 | Headroom over e |
-| Evaluation charge v | 0.0008 | 800 | Settlement relay gas plus label check; breaks even up to MON at about $0.036 |
+| Evaluation charge v | 0.0008 | 800 | Version 2 settlement-and-label-check reference |
 | Evaluation cap V | 0.001 | 1000 | Headroom over v |
 | Funded total | 0.008 | 8000 | P + E + V |
 
-Success credits the connector 0.005, the executor 0.0015 and the evaluator 0.0008, and returns 0.0007 to the buyer. Eligible failure returns 0.0057 to the buyer. Timeout returns 0.008. The execution charge is LemmaX's only revenue; its contribution at the snapshot is about $0.0007 per attempt. Without an oracle, charges are fixed per versioned terms and must be revised if MON moves toward the break-even price. One faucet allowance of 10 USDC covers 1,250 funded attempts.
+Success credits the connector 0.005, the executor 0.0015 and the evaluator 0.0008, and returns 0.0007 to the buyer. Eligible failure returns 0.0057 to the buyer. Timeout returns 0.008. The execution charge is LemmaX's designated revenue. Its historical version 2 contribution estimate of about $0.0007 per funded attempt subtracts only the recorded funding relay and scoring cost. It excludes hosting, previews, timeout relays and other operating costs. One faucet allowance of 10 USDC covers 1,250 funded attempts.
+
+### Version 3 gas sensitivity
+
+The current [fork report](../verification/settlement-fork-check.json) records a funding limit of 322,274, success settlement of 356,337 and failure settlement of 259,510. Applying the same explicit assumptions of 102 MON-gwei and $0.0248 per MON gives gas costs of about $0.000815, $0.000901 and $0.000656 respectively. The calculation uses `gasLimit * 102e-9 MON * $0.0248`, since Monad charges the limit.
+
+Payout patterns change those limits. The recorded success with one payout uses 381,307 gas (about $0.000965), and settlement with three fresh-account payouts uses 494,091 gas (about $0.001250). The fixed 0.0008 evaluation charge therefore does not cover the gas of those recorded success paths under these price assumptions. Its gas-only break-even MON price is about $0.0220 for the ordinary success row and $0.0159 for the three-fresh-payout row, before label checking or other costs. The earlier $0.036 threshold applied to version 2 success settlement. No tariff or allocation policy is changed by this comparison.
+
+The recorded version 3 timeout limit is 216,283, or about $0.000547 in gas under the same assumptions. Timeout refunds all 0.008 USDC and earns no attempt fee. Customer pricing needs a cost model that includes these branches, payout patterns and current network prices.
 
 ### Buyer's direct alternative
 
-`C_reuse` needs the buyer's cost of completing the same outcome without the purchase. Two benchmark-based alternatives bracket it for the 5,183-document corpus (about 1.94 million tokens):
+`C_reuse` needs the buyer's cost of completing the same outcome without the purchase. The demonstration declares two hypothetical cost scenarios for the 5,183-document corpus (about 1.94 million tokens). Neither alternative was executed or evaluated against the retrieval benchmark, so their cost inputs do not prove equivalent result quality or measured savings:
 
 - **Own retrieval pipeline: about $0.0024 per query.** Cohere rerank, query embedding and a vector query, plus one-time corpus embedding spread over the 100-query illustrative workload. Engineering time is excluded.
 - **LLM reads the corpus: about $0.194 per query.** Claude Haiku 5.5 input in chunks under 100,000 tokens. Output tokens are excluded.
 
-The assessment library with these inputs, the representative public cohort and a uniform prior gives:
+Conditional on those declared costs, a uniform prior and treating the representative public cohort as independent, the assessment library gives:
 
 | Buyer alternative | BM25 p, expected cost | TF-IDF p, expected cost | Expected saving |
 | --- | --- | --- | --- |
 | Own pipeline, 0.0024 | 0.743, 0.0066 | 0.763, 0.0067 | negative, about -0.004 |
 | LLM reads corpus, 0.194 | 0.743, 0.0559 | 0.763, 0.0521 | positive, about 0.14 |
 
-With equal prices, TF-IDF ranks first when the alternative is expensive. When the alternative costs less than the principal, buying is not worth it and the directory says so. The demonstration agent declares the LLM-reads-corpus alternative for its main run and shows the own-pipeline case once, so both answers appear. At real prices, the fixed settlement overhead (e + v = 0.0023) is almost half the principal. Per-attempt onchain settlement suits attempts worth more than a few cents; batched settlement is the direction for sub-cent queries. Probabilities describe the public benchmark under the disclosed independence assumption, not calibrated customer outcomes.
+With these inputs, TF-IDF ranks first when the alternative is expensive. The own-pipeline scenario produces negative expected savings. The demonstration agent declares the LLM-reads-corpus scenario for its main run and shows the own-pipeline case once. The fixed demonstration overhead (e + v = 0.0023) is almost half the principal; the version 3 gas sensitivity above also shows why this tariff cannot be treated as proof of sustainable sub-cent settlement. Batching remains a proposed direction. Probabilities describe the public benchmark under the disclosed independence assumption, not calibrated customer outcomes.
 
 ### Deadline profiles
 
@@ -218,7 +226,7 @@ The buyer authorization window ends one second after the quote expires. The time
 
 ## 7. Testnet roles and funding
 
-The operator environment carries keys from the earlier Lemma deployment. Each is an ordinary EOA, so the same addresses work on Monad Testnet. Phase 3 maps them by variable name; values are never printed or committed.
+The operator environment carries keys from the earlier Lemma deployment. Each is an ordinary EOA, so the same addresses work on Monad Testnet. The table records version 2 Phase 3 roles and approximate gas budgets, rather than version 3 payout costs. Values are never printed or committed.
 
 | Variable | Phase 3 role | Needs on Monad Testnet |
 | --- | --- | --- |

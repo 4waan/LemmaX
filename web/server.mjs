@@ -31,6 +31,14 @@ async function readJson(req, limit = 4096) {
 // What a visitor may see of a failure: our own validation messages, nothing internal.
 const publicError = error => error instanceof TypeError || error instanceof RangeError ? error.message : "Something went wrong on our side. Nothing was charged beyond what the receipt shows.";
 
+// The socket is the visitor boundary unless a trusted reverse proxy replaces this header.
+// Enable forwarded addresses only when the server is reachable exclusively through it.
+export function visitorAddress(req, { trustProxy = false } = {}) {
+  const remote = String(req.socket?.remoteAddress ?? "");
+  if (!trustProxy) return remote;
+  return String(req.headers?.["x-forwarded-for"] ?? "").split(",")[0].trim() || remote;
+}
+
 export async function startServer({ env = process.env, port = Number(env.PORT ?? 8080), log = console.error } = {}) {
   const report = loadRetrievalReport();
   const data = loadSciFact(env.LEMMAX_SCIFACT_DIR);
@@ -38,7 +46,7 @@ export async function startServer({ env = process.env, port = Number(env.PORT ??
   const live = await createLiveDesk({ env, data, report });
   const buyLimit = createLimiter({ limit: Number(env.LEMMAX_LIVE_BUYS_PER_VISITOR ?? 3), windowMs: 10 * 60000 });
   const trickLimit = createLimiter({ limit: Number(env.LEMMAX_LIVE_TRICKS_PER_VISITOR ?? 12), windowMs: 10 * 60000 });
-  const visitorOf = req => live.visitorHash(String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "").split(",")[0].trim());
+  const visitorOf = req => live.visitorHash(visitorAddress(req, { trustProxy: env.LEMMAX_TRUST_PROXY === "true" }));
 
   async function stream(req, res, run) {
     res.writeHead(200, { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", "x-accel-buffering": "no", ...SECURITY });
@@ -49,8 +57,8 @@ export async function startServer({ env = process.env, port = Number(env.PORT ??
   }
 
   const server = createServer(async (req, res) => {
-    const url = new URL(req.url, "http://localhost");
     try {
+      const url = new URL(req.url, "http://localhost");
       if (url.pathname === "/healthz") return send(res, 200, { ok: true });
       if (url.pathname === "/api/status" && req.method === "GET") return send(res, 200, await live.status());
       if (url.pathname === "/api/claims" && req.method === "GET") return send(res, 200, { claims: live.claims });
