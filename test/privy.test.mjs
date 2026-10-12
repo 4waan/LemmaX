@@ -7,9 +7,9 @@ import { RECEIVE_AUTHORIZATION_TYPES, quoteDigest } from "../src/attempt.mjs";
 import { createQuoteIssuer } from "../src/issuer.mjs";
 import { createBuyerGuard } from "../src/guard.mjs";
 import { RULEBOOK, RULEBOOK_HASH } from "../src/rulebook.mjs";
-import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, mandatePolicy, normalizedSignature, p256KeyPair } from "../src/privy-buyer.mjs";
+import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, mandatePolicy, normalizedSignature, p256KeyPair, privyKeySeparation } from "../src/privy-buyer.mjs";
 import { deriveP256Key, evaluatorBAccount } from "../src/keys.mjs";
-import { usdcAtomic } from "../src/terms.mjs";
+import { DEMO_TERMS, usdcAtomic } from "../src/terms.mjs";
 
 const SETTLEMENT = "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", USDC = RULEBOOK.asset;
 const domain = { chainId: "10143", verifyingContract: SETTLEMENT };
@@ -26,6 +26,13 @@ test("Buyer-side Privy keys derive deterministically into the DER formats Privy 
   const verifier = createVerify("SHA256"); verifier.update(formatRequestForAuthorizationSignature(input));
   assert.equal(verifier.verify(createPublicKey({ key: Buffer.from(keys.guard.publicKey, "base64"), format: "der", type: "spki" }), Buffer.from(signature, "base64")), true);
   assert.throws(() => buyerPrivyKeys({}), /BENCHMARK_BUYER_PRIVATE_KEY/);
+  // Own secrets for the principal and guard keys: the agent key is unchanged, the other two differ.
+  const separated = buyerPrivyKeys({ ...env, LEMMAX_PRINCIPAL_SECRET: generatePrivateKey(), LEMMAX_GUARD_SECRET: generatePrivateKey() });
+  assert.equal(separated.agent.publicKey, keys.agent.publicKey);
+  assert.notEqual(separated.principal.publicKey, keys.principal.publicKey);
+  assert.notEqual(separated.guard.publicKey, keys.guard.publicKey);
+  assert.throws(() => buyerPrivyKeys({ ...env, LEMMAX_GUARD_SECRET: "nope" }), /LEMMAX_GUARD_SECRET/);
+  assert.deepEqual(privyKeySeparation({ LEMMAX_GUARD_SECRET: "x" }), { principal: false, guard: true });
   assert.equal(p256KeyPair(deriveP256Key(env.BENCHMARK_BUYER_PRIVATE_KEY, "lemmax/privy/agent/v1")).publicKey, keys.agent.publicKey);
   assert.notEqual(evaluatorBAccount({ EVALUATOR_PRIVATE_KEY: env.BENCHMARK_BUYER_PRIVATE_KEY }).address, privateKeyToAccount(env.BENCHMARK_BUYER_PRIVATE_KEY).address);
 });
@@ -112,6 +119,19 @@ test("The guard approves only honest, rulebook-conformant quotes from clean part
   assert.deepEqual((await guard().approve(honest)).reasons, ["index_unavailable"]);
   assert.equal((await guard({ auditRequired: false }).approve(honest)).approved, true);
   assert.deepEqual((await guard({ pinnedRulebookHash: `0x${"00".repeat(32)}` }).approve(honest)).reasons, ["rulebook_changed"]);
+  // The index must have processed the newest settlement the buyer knows of.
+  auditDown = false; lagBlocks = 2;
+  const behind = { partyRecords: async () => ({ records: {}, freshness: { lagBlocks: 2, progressBlock: "100" } }) };
+  assert.deepEqual((await guard({ audit: behind }).approve({ ...honest, indexedThrough: "101" })).reasons, ["index_behind_settlement"]);
+  assert.equal((await guard({ audit: behind }).approve({ ...honest, indexedThrough: "100" })).approved, true);
+  assert.equal((await guard({ audit: behind, auditRequired: false }).approve({ ...honest, indexedThrough: "101" })).approved, true);
+  // A correctly signed quote that departs from the published terms is refused before signing,
+  // although the auditor would only record it after the fact.
+  const offTerms = createQuoteIssuer({ account: issuerAccount, domain, token, caps: { maxPerAttempt: usdcAtomic("0.25"), dailyCap: usdcAtomic("1") },
+    payees: { connector: roles.connectors[0].address, executor: issuerAccount.address, evaluator: main.payee, evaluatorSigner: main.signer },
+    terms: { ...DEMO_TERMS, executionCap: "3000" } });
+  const i = await offTerms.issue({ offerRef: "lemmax/tfidf-source-retrieval/v1", caseRef: "c1", query: "q", buyer: buyer.address, profileRef: "demo-standard/v1", issuedAt: "1000" });
+  assert.deepEqual((await guard().approve({ quote: i.quote, issuerSignature: i.issuerSignature, buyerAuthorization: i.authorization })).reasons, ["off_terms"]);
   assert.throws(() => createQuoteIssuer({ account: issuerAccount, domain, token, caps: { maxPerAttempt: 8000n, dailyCap: 8000n },
     payees: { connector: roles.connectors[0].address, executor: issuerAccount.address, evaluator: issuerAccount.address, evaluatorSigner: issuerAccount.address } }), /cannot also be an evaluator/);
   await assert.rejects(issuer.issue({ offerRef: "lemmax/tfidf-source-retrieval/v1", caseRef: "c1", query: "q", buyer: buyer.address, profileRef: "demo-standard/v1", issuedAt: "1000", evaluatorRef: "nobody" }), /Unknown evaluator/);
