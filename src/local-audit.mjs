@@ -1,14 +1,24 @@
 import { readSettlementLogs } from "./reconcile.mjs";
 import { attemptsFromLogs } from "./reputation.mjs";
-import { RULEBOOK_HASH, RULEBOOK_INDEX, outcomeVerdicts, quoteVerdicts } from "./rulebook.mjs";
+import { RULEBOOK_HASH, RULEBOOK_INDEX, outcomeVerdicts, publicAllocation, quoteVerdicts } from "./rulebook.mjs";
 
 // The same audit, computed from chain logs with the same shared rules as the Envio indexer.
 // It serves the fork rehearsal (no hosted index there) and gives a second, independent
 // source to compare with Envio on testnet. Freshness is the log read itself: lag 0.
+// Logs already read are kept, so each snapshot reads only the blocks added since the last.
 export function createLocalAudit({ publicClient, address, fromBlock, maxBlockRange = 100n }) {
+  let cached = [], readThrough = fromBlock - 1n, reading = null;
+  async function readNew(head) {
+    if (head <= readThrough) return;
+    const fresh = await readSettlementLogs({ publicClient, address, fromBlock: readThrough + 1n, toBlock: head, maxBlockRange });
+    cached = cached.concat(fresh); readThrough = head;
+  }
   async function snapshot() {
     const head = await publicClient.getBlockNumber();
-    const logs = await readSettlementLogs({ publicClient, address, fromBlock, toBlock: head, maxBlockRange });
+    // One reader at a time; concurrent callers wait for the same read.
+    reading = (reading ?? Promise.resolve()).then(() => readNew(head));
+    await reading;
+    const logs = cached;
     const termsById = new Map(logs.filter(l => l.eventName === "AttemptTerms").map(l => [l.attemptId, l.quote]));
     const records = {};
     const bump = (party, field) => {
@@ -37,7 +47,8 @@ export function createLocalAudit({ publicClient, address, fromBlock, maxBlockRan
     async attempt(attemptId) {
       const { head, logs, verdicts } = await snapshot();
       const found = attemptsFromLogs(logs).find(a => a.attemptId === attemptId) ?? null;
-      return { attempt: found && { id: found.attemptId, state: found.state, termsSource: "event", fundTx: null, outcomeTx: found.settleTx, allocation: null },
+      const fundTx = logs.find(l => l.eventName === "AttemptCommitted" && l.attemptId === attemptId)?.transactionHash ?? null;
+      return { attempt: found && { id: found.attemptId, state: found.state, termsSource: "event", fundTx, outcomeTx: found.settleTx, allocation: publicAllocation(found.quote, found) },
         verdicts: verdicts.filter(v => v.attemptId === attemptId), freshness: { progressBlock: head.toString(), head: head.toString(), lagBlocks: 0 } };
     },
     snapshot,
