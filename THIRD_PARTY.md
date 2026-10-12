@@ -34,4 +34,3 @@ The transport uses the [official TypeScript MCP SDK](https://github.com/modelcon
 
 The auditor in `indexer/` is built with [Envio HyperIndex](https://github.com/enviodev/hyperindex) (`envio` npm package). Envio's own license is not an OSI-recognized open source license: it permits self-hosting and non-commercial use of the code generator, restricts third-party hosting, and covers generated code under Envio's terms ([Envio licensing](https://github.com/enviodev/hyperindex/blob/main/licenses/README.md)). LemmaX's handlers, schema, configuration and shared modules in `indexer/` are MIT licensed; Envio's generated code is not committed and keeps Envio's terms.
 
-[Mera](https://mera.category.xyz) by Category Labs, if used for the passkey page, is loaded as a pinned browser bundle under its upstream license.

@@ -1,14 +1,14 @@
 # LemmaX: build readiness, existing assets, and testnet validation
 
-Current implemented slice: two public retrieval connectors, paired frozen benchmark, subscription workload allocation and a read-only stdio MCP demo. [Contract, evidence and remaining boundaries](Retrieval-and-MCP.md).
+Research note, written before the build. Its status statements describe the project when the note was written. For what is built and what has run, see the [README](../../README.md) and [the trust loop](../Trust-Loop.md).
 
 Repository code and focused local checks were inspected at Lemma commit `e002b5b77eae5587b2946cfa2ab52a4ae35ab6ca` and LemmaXperiment commit `b912eb522af0f179763091d91472b975ca8f6194`. Existing LemmaXperiment working-tree changes were preserved.
 
-**Conclusion:** we can start the implementation architecture and a parameterized revenue model now. The [architecture](LemmaX-Architecture.md) and [math/API contract](LemmaX-Math-and-API.md) already define their foundations. Six decisions below determine the executable MVP. Prices, revenue forecasts, comparative model results, partner adoption, and a Monad deployment are not established.
+**Conclusion:** we can start the implementation architecture and a parameterized revenue model now. The [architecture](../LemmaX-Architecture.md) and [math/API contract](LemmaX-Math-and-API.md) already define their foundations. Six decisions below determine the executable MVP. Prices, revenue forecasts, comparative model results, partner adoption, and a Monad deployment are not established.
 
-The user confirms that no other hackathon team is currently lined up. Prepare an integration package first. Internal use by our two projects is useful evidence, but independent adoption remains an unfilled validation target. No outreach or external publication was performed in this review.
+No other hackathon team was lined up when we wrote this review, so we planned an integration package first. Internal use by our two projects is useful evidence, but independent adoption remains an unfilled validation target. No outreach or external publication was performed in this review.
 
-Repository note: this review precedes the first assessment-library implementation. See the [current README](../README.md) and [paid-unit specification](Paid-Unit.md) for implementation progress. Source paths below identify inspected sibling projects, not files vendored into this repository.
+This review precedes the first assessment-library implementation; the [paid-unit specification](../Paid-Unit.md) records what followed. Source paths below identify inspected sibling projects, not files vendored into this repository.
 
 ## 1. Decisions remaining, in dependency order
 
@@ -40,7 +40,7 @@ Use the public SciFact result as an external relevance baseline. Add a separatel
 
 Choose a company-approved evaluator execution location and signer, funding-party acceptance of its authority, verdict format, signing-key rotation, deadline, dispute access, and retention. Prefer evaluating private records within the approved company environment where practical.
 
-The user agreed full connector-principal refund for eligible failure, with only actual separately quoted, capped execution/evaluation charges retained. Unused reserve is buyer-owned credit. Resolve failure eligibility, withdrawal threshold versus retained-balance semantics, what happens without a timely verdict, and who receives each allocation. The contract must authenticate and bind the signed outcome to the funded attempt, chain, contract, quote/policy, nonce, and deadline.
+We chose full connector-principal refund for eligible failure, with only actual separately quoted, capped execution/evaluation charges retained. Unused reserve is buyer-owned credit. Resolve failure eligibility, withdrawal threshold versus retained-balance semantics, what happens without a timely verdict, and who receives each allocation. The contract must authenticate and bind the signed outcome to the funded attempt, chain, contract, quote/policy, nonce, and deadline.
 
 Publish only the randomized attempt commitment, settlement outcome, and necessary financial/authorization state. Existing public resource identifiers and evaluator report links cannot be carried over automatically. Wallets, payees, amounts, and timing can still reveal relationships; a commitment does not eliminate that metadata exposure. No ZK or FHE dependency is needed for the chosen trust model.
 
@@ -90,7 +90,7 @@ For example, a question about the public values required by UsageEscrow can have
 
 Both offers must search the same permitted corpus in each comparison. Comparing one connector on Lemma documents against another on LemmaXperiment documents confounds the resource with the workload. Report paired case outcomes, relevance metrics, end-to-end cost/latency, and access/freshness checks separately.
 
-The executed [SciFact report](../benchmarks/scifact-bm25-results.json) contains 5,183 documents and 300 test queries. The untuned lexical baseline hit a relevant source in the top five on 224 queries, or 74.67%. No paid API calls or model training were used. Separate metric recomputation passed, but the run is neither comparative model evaluation nor company acceptance evidence. It is also not an API load test.
+The executed [SciFact report](../../benchmarks/scifact-bm25-results.json) contains 5,183 documents and 300 test queries. The untuned lexical baseline hit a relevant source in the top five on 224 queries, or 74.67%. No paid API calls or model training were used. Separate metric recomputation passed, but the run is neither comparative model evaluation nor company acceptance evidence. It is also not an API load test.
 
 ## 5. Concrete Monad testnet use case
 
@@ -104,7 +104,7 @@ The executed [SciFact report](../benchmarks/scifact-bm25-results.json) contains 
 
 Monad supplies shared funding, ordering, execution, and settlement state for independently operated agents and evaluators. It does not infer compatibility, store private corpora, or certify an evaluator's judgment. Confirm current RPC/token settings from [official testnet documentation](https://docs.monad.xyz/developer-essentials/testnet) during deployment. Nothing in this review was deployed.
 
-ERC-8004 identity/reputation can be an authorized extension. The [official Monad guide](https://docs.monad.xyz/guides/erc-8004) currently marks validation as coming soon; do not make that registry a dependency. Optional indexing should serve real reconciliation and status display. Native blobs, zkML proving, and FHE remain outside this four-day dependency chain.
+ERC-8004 identity/reputation can be an authorized extension. The [official Monad guide](https://docs.monad.xyz/guides/erc-8004) currently marks validation as coming soon; do not make that registry a dependency. Optional indexing should serve real reconciliation and status display. Native blobs, zkML proving, and FHE remain outside the hackathon build.
 
 ## 6. Evidence that makes the demo useful
 
@@ -116,7 +116,7 @@ ERC-8004 identity/reputation can be an authorized extension. The [official Monad
 
 **Confidentiality:** inspect events, calldata, dashboard/indexer output, and error/log paths for private record disclosure. Permission revocation, cross-tenant access, and stale/deleted-source cases need actual tests.
 
-**Scale readiness:** run the minimum protocol already in the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness): assessment requests versus evidence/catalog growth, actual evaluator throughput/cost, retry/deduplication correctness, and settlement/indexing reconciliation. Record hardware, load, duration, achieved rate, latency/error/cost, versions, and observed limits. Do not equate transaction speed with retrieval/evaluation capacity.
+**Scale readiness:** run the minimum protocol already in the [architecture](../LemmaX-Architecture.md#minimum-evidence-of-scale-readiness): assessment requests versus evidence/catalog growth, actual evaluator throughput/cost, retry/deduplication correctness, and settlement/indexing reconciliation. Record hardware, load, duration, achieved rate, latency/error/cost, versions, and observed limits. Do not equate transaction speed with retrieval/evaluation capacity.
 
 **Independent adoption:** preserve a partner-owned integration change or runnable client, its task/profile, permissioned evidence, testnet transactions, and concrete feedback. Internal LemmaXperiment integration is valuable dogfooding, but it is not another team's adoption. Without a partner, report this limitation and provide a specific integration path.
 
@@ -140,19 +140,9 @@ Subscription billing is also in scope. Compare an authorized existing plan by in
 
 Remaining inputs are real tariffs, failure eligibility and exact consumed-charge allocation, withdrawal policy, operator costs, refresh cost/horizon, paid volumes/conversion, and support burden. We can produce the equations, ledger, and sensitivity analysis now; a credible revenue forecast waits for these measurements. Benchmark-case `p` cannot price an unrelated integration-success share.
 
-## 8. Hackathon criteria and four-day order
+## 8. Hackathon criteria
 
-The official **Trust, Identity & AI Infrastructure** rubric assigns **20% to Traction & Path Forward**. Another team integrating during the hackathon is an example of traction evidence, rather than a separate mandatory validation score. The track also weights market readiness at 25%. Check the submission deadline in the portal. The live product, public repository, access instructions, logo, and technical/pitch videos need submission preparation. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
-
-**Day 1:** resolve decisions 1 and 2, freeze cases/interface/evidence policy, and prepare the small partner integration package. Identify a suitable partner without promising adoption.
-
-**Day 2:** implement the deterministic library and HTTP/MCP flow using the reusable components; run comparable connectors and conformance checks. Record costs and unknown contexts accurately.
-
-**Day 3:** implement the minimal private-record settlement contract, verify it locally, and deploy/demo the target testnet paths. Exercise an independent integration if a team agrees.
-
-**Day 4:** run scale and reconciliation checks, collect any independent feedback, complete the cost ledger/revenue scenarios, and record the live demo and submission materials. Keep submission time outside final implementation hours.
-
-This order is a scoped proposal, not a guarantee that every optional delivery form or sponsor will fit.
+The official **Trust, Identity & AI Infrastructure** rubric assigns **20% to Traction & Path Forward**. Another team integrating during the hackathon is an example of traction evidence, rather than a separate mandatory validation score. The track also weights market readiness at 25%. The live product, public repository, access instructions, logo, and technical/pitch videos need submission preparation. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
 ## 9. Verification performed in this review
 
@@ -162,4 +152,4 @@ This order is a scoped proposal, not a guarantee that every optional delivery fo
 - LemmaXperiment paired-analysis self-test: **12 synthetic scenarios passed**. No new candidate performance result was produced.
 - Existing SciFact metric verification: query metrics and aggregates independently recomputed. No model-backed retrieval, live connector, load test, or independent customer outcome was measured in this review.
 
-Source code was not migrated or changed. No partner was contacted, funded job started, paid model API called, proof generated, or Monad contract deployed. The next discussion should resolve decision 1, then decision 2, rather than reopen the already agreed directory/privacy boundary.
+Source code was not migrated or changed in this review. No partner was contacted, funded job started, paid model API called, proof generated, or Monad contract deployed during it.

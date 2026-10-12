@@ -1,8 +1,10 @@
 # LemmaX: EIP-4844 blobs, Monad, and evidence storage
 
-This note extends the [LemmaX architecture](LemmaX-Architecture.md) and [math/API specification](LemmaX-Math-and-API.md). It records verified capabilities and proposed integration choices. No blob transactions, contracts, storage accounts, bridges, or deployments were created.
+Research note, written before the build. Its status statements describe the project when the note was written. For what is built and what has run, see the [README](../../README.md) and [the trust loop](../Trust-Loop.md).
 
-**Recommendation for discussion:** keep the four-day MVP on Monad with private, durable evidence storage and signed evaluator outcomes. Consider Ethereum blobs later for publishing authorized batches that other participants need to retrieve and replay. Native blob storage on Monad is currently unavailable. Adding the optional publication route is not an adopted product decision.
+This note extends the [LemmaX architecture](../LemmaX-Architecture.md) and [math/API specification](LemmaX-Math-and-API.md). It records verified capabilities and proposed integration choices. No blob transactions, contracts, storage accounts, bridges, or deployments were created.
+
+**Recommendation:** keep the hackathon MVP on Monad with private, durable evidence storage and signed evaluator outcomes. Consider Ethereum blobs later for publishing authorized batches that other participants need to retrieve and replay. Native blob storage on Monad is currently unavailable. Adding the optional publication route is not an adopted product decision.
 
 ## 1. What blobs actually provide
 
@@ -26,7 +28,7 @@ Monad does support the KZG point-evaluation precompile at `0x0a`, documented at 
 
 **Security consequence inferred from those interfaces:** a valid KZG opening on Monad does not prove that the associated blob was published in a finalized Ethereum block. An unpublished polynomial can also have valid openings. Supplying an Ethereum transaction hash or block hash is a reference, not an authenticated cross-chain observation.
 
-If Ethereum publication eventually affects Monad contract behavior, LemmaX must explicitly choose how Ethereum inclusion and finality are authenticated. An approved attester fits the current evaluator trust model. An independently verified light client or suitable audited bridge would introduce a different implementation and trust boundary. No such integration is selected here.
+If Ethereum publication eventually affects Monad contract behavior, LemmaX must explicitly choose how Ethereum inclusion and finality are authenticated. An approved attester fits the current evaluator trust model. An independently verified light client or a suitable bridge with a published security review would introduce a different implementation and trust boundary. No such integration is selected here.
 
 If publication is later selected, the approved evaluator can check it offchain and issue a separately signed publication receipt bound to the attempt commitment. If publication becomes an acceptance criterion, the settlement verdict can attest that criterion as part of the overall outcome. The Monad contract would continue to trust that evaluator's signature. It would not gain independent Ethereum verification from this arrangement.
 
@@ -155,12 +157,12 @@ The proposed evidence adapter would retain these fields offchain:
 
 These are proposed metadata, not a finalized JSON schema. Private references are accessible only under company policy. `POST /v1/assessments` and `lemma_assess` continue using the same outcome and cost equations. Neither requires a blob locator in its public response. HTTP outcome ingestion continues to require authorized evaluator evidence; it does not accept arbitrary public blob contents as settled truth.
 
-## 8. Four-day recommendation and remaining decision
+## 8. Recommendation and remaining decision
 
 Build the deterministic assessment and private evidence path, then demonstrate funded commitment and signed settlement on Monad. Portable evidence bundles and reproducible calculations already support the trust/provenance direction without a second chain.
 
 If the core workflow is complete and a publication benefit is established, a later optional experiment can publish a synthetic, explicitly public batch on Ethereum Sepolia, retrieve it independently, and compare costs with ordinary archived storage. That experiment would not establish production affordability, confidentiality, or hackathon eligibility.
 
-Before adopting blobs, choose what needs network-backed availability: a public directory snapshot, an authorized private batch, or neither. Then measure encoded payload size, fill rate, publication fee, finality/retrieval latency, provider compatibility, archive recovery, and actual margin impact. The common acceptance outcome for the first resource family remains the next product decision.
+Before adopting blobs, choose what needs network-backed availability: a public directory snapshot, an authorized private batch, or neither. Then measure encoded payload size, fill rate, publication fee, finality/retrieval latency, provider compatibility, archive recovery, and actual margin impact. The acceptance outcome for the first resource family has since been defined. [Paid unit](../Paid-Unit.md).
 
 **Verification status:** primary specifications, provider documentation, and current source/configuration were reviewed. The codec capacity and batching arithmetic were derived separately. No live fee quote, publication benchmark, SDK compatibility test, cross-chain proof, or deployed integration was performed. This note does not establish blob support on Monad or select a storage provider.

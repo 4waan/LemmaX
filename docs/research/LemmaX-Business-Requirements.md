@@ -1,8 +1,10 @@
 # LemmaX: business requirements and benchmark evidence
 
-This continues the [architecture](LemmaX-Architecture.md) and [mathematics/API](LemmaX-Math-and-API.md). The three candidate capabilities are invoice extraction, support classification, and knowledge retrieval. Hosted access and company-run model assets remain desired catalog forms.
+Research note, written before the build. Its status statements describe the project when the note was written. For what is built and what has run, see the [README](../../README.md) and [the trust loop](../Trust-Loop.md).
 
-**Current decision:** do not use the tentative knowledge base as trusted evidence. Use reproducible public benchmarks first, followed by tests of the actual connector and an authorized company workload. No company corpus, willingness to pay, first capability, or purchased right has been confirmed. The research below informs that decision rather than substituting a preference score for it.
+This continues the [architecture](../LemmaX-Architecture.md) and [mathematics/API](LemmaX-Math-and-API.md). The three candidate capabilities are invoice extraction, support classification, and knowledge retrieval. Hosted access and company-run model assets remain desired catalog forms.
+
+**Decision:** do not use the tentative knowledge base as trusted evidence. Use reproducible public benchmarks first, followed by tests of the actual connector and an authorized company workload. No company corpus, willingness to pay, first capability, or purchased right had been confirmed at this point; we later chose retrieval. The research below informed that choice rather than substituting a preference score for it.
 
 ## 1. What the business evidence establishes
 
@@ -64,7 +66,7 @@ The recorded run took about 3.97 seconds including index construction and all qu
 
 A separate JavaScript implementation recomputed all five metrics for every query using gold-document rank lookup instead of scanning retrieved hits. It agreed within `1e-12` on **1,500 query-level values and five aggregate values**. Seven boundary/validation fixtures cover a perfect result, missing relevant documents, rank two, cutoff positions, an empty ranking, duplicate IDs, and absent gold labels. This reduces arithmetic errors from tests written alongside the runner. It is not an independent validation of BM25 rankings or dataset representativeness. Metric conventions were checked against the [BEIR evaluator](https://raw.githubusercontent.com/beir-cellar/beir/main/beir/retrieval/evaluation.py).
 
-Artifacts: [runner](../benchmarks/scifact_bm25.py), [rankings and run manifest](../benchmarks/scifact-bm25-results.json), [metric verification report](../benchmarks/metric-verification.json). The source dataset remains in temporary storage, outside the project. Derived relevance records retain their dataset attribution and license reference; no document text is redistributed here.
+Artifacts: [runner](../../benchmarks/scifact_bm25.py), [rankings and run manifest](../../benchmarks/scifact-bm25-results.json), [metric verification report](../../benchmarks/metric-verification.json). The source dataset remains in temporary storage, outside the project. Derived relevance records retain their dataset attribution and license reference; no document text is redistributed here.
 
 **Interpretation:** this establishes a reproducible lexical baseline that another retrieval offer can be compared against. It supplies no evidence that a particular hosted or downloadable model is better, that an MCP connector works, or that a company will successfully adopt it. There are no comparative model results yet.
 
@@ -94,7 +96,7 @@ Examples of available pretrained supply include a local retrieval embedding mode
 
 For each attempt retain a cost ledger: purchase retained/refunded, consumed inference, ingestion/update/indexing, evaluator and review, deployment effort, buyer-paid chain expense, and fallback loss. Feed those measurements into the existing `C_reuse` equation. Measure LemmaX's own evaluation/storage/settlement costs separately for its contribution margin. Low model API prices do not establish a viable margin by themselves.
 
-## 6. What this means for the four-day decision
+## 6. What this means for the first capability
 
 The evidence supports different conclusions, rather than one universal winner:
 
@@ -112,4 +114,4 @@ For the hackathon, a credible outcome is a small evidence-backed directory, dete
 
 Measured: one lexical retrieval baseline and its metric arithmetic. Published evidence: named buyer workflows, dataset availability/licensing, and provider price components. Proposed: the acceptance boundaries, additional tests, and selection gate. Unknown: actual LemmaX demand, company workloads, candidate model quality, live MCP behavior, hosted/private full costs, and refund economics.
 
-No defects were found in the metric comparison. No extraction/classification benchmark, live connector test, model comparison, customer pilot, contract deployment, settlement test, or economic validation was completed in this research step. The knowledge base mentioned in conversation is not treated as an authorized or trusted dataset.
+No defects were found in the metric comparison. No extraction/classification benchmark, live connector test, model comparison, customer pilot, contract deployment, settlement test, or economic validation was completed in this research step. The tentative knowledge base is not treated as an authorized or trusted dataset.

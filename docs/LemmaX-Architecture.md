@@ -1,24 +1,22 @@
 # LemmaX: private adoption, public commitments, and settlement
 
-Current implemented slice: two public retrieval connectors, paired frozen benchmark, subscription workload allocation and a read-only stdio MCP demo. [Contract, evidence and remaining boundaries](Retrieval-and-MCP.md).
+This document explains what LemmaX keeps private, what it puts on Monad, and why. It separates the design choices we made from proposals that remain open.
 
-This document records the evaluator preference, deterministic directory scope, blob-storage research, and business/benchmark evidence.
-
-**Status:** architecture and hackathon scope document. Confirmed directions are distinguished from implementation proposals and open decisions. No contracts, deployments, prices, sponsor integrations, repository migrations, or cryptographic benchmarks are approved or implemented by this document.
+**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#live-rehearsed-not-yet) lists what is live, rehearsed and not yet done.
 
 ## 1. Context and decisions
 
-The new project is **LemmaX**. Its current product and economic boundaries are documented in the math/API specification. Earlier repository and document names remain historical references.
+The project is **LemmaX**. Its product and economic boundaries are documented in the math/API research note. Earlier repository and document names remain historical references.
 
 This document carries that context forward and supersedes the earlier proposed placement of attempt information wherever it conflicts with the privacy decisions below.
 
-The [decision mathematics and API specification](LemmaX-Math-and-API.md) defines the corrected MVP boundary. Numerical probability, expected-cost ranking, and contribution-governed service offers take precedence over earlier adoption-plan proposals.
+The [decision mathematics and API specification](research/LemmaX-Math-and-API.md) defines the corrected MVP boundary. Numerical probability, expected-cost ranking, and contribution-governed service offers take precedence over earlier adoption-plan proposals.
 
-The [blob-storage research](LemmaX-Blob-Research.md) records current Monad restrictions, optional Ethereum publication, retention and confidentiality limits, and cost allocation. Its integration recommendations remain proposals.
+The [blob-storage research](research/LemmaX-Blob-Research.md) records current Monad restrictions, optional Ethereum publication, retention and confidentiality limits, and cost allocation. Its integration recommendations remain proposals.
 
-The [business requirements and benchmark evidence](LemmaX-Business-Requirements.md) compares extraction, classification, and retrieval using published buyer workflows, evaluation requirements, data access, and cost components. It includes an executed public retrieval baseline. The tentative knowledge base is not treated as trusted or authorized evidence; no first capability is selected by that research.
+The [business requirements and benchmark evidence](research/LemmaX-Business-Requirements.md) compares extraction, classification, and retrieval using published buyer workflows, evaluation requirements, data access, and cost components. It includes an executed public retrieval baseline. The tentative knowledge base is not treated as trusted or authorized evidence. We later chose retrieval as the first capability.
 
-**Confirmed direction:**
+**Design choices:**
 
 1. Development companies are the target customers; their agents transact through company-authorized wallets.
 2. Purchase funds remain locked during adoption. Eligible unsuccessful adoption receives the agreed refund after security checks. Integration is not guaranteed.
@@ -26,22 +24,22 @@ The [business requirements and benchmark evidence](LemmaX-Business-Requirements.
 4. Consumption is measured in fragments offchain. Reputation affects subsidy eligibility or scale, not the underlying compute tariff.
 5. Private adaptations do not automatically become catalog assets.
 6. For an adoption attempt, the public application records are the **attempt commitment** and **settlement outcome**. The selected resource and detailed company record remain private.
-7. A **company-approved evaluator** is the chosen direction. Requiring external parties to verify a proof of the full private record is outside the initial scope because the user considers it excessive and more costly.
-8. Development is constrained to approximately four days, with Monad and relevant hackathon resources central to the demonstration.
-9. The agreed initial confidentiality direction uses company-controlled detailed records, conventional encryption where needed, randomized commitments, and signed evaluator verdicts. ZK and FHE are not initial requirements. Exact storage, keys, and evaluator access remain implementation decisions.
+7. A **company-approved evaluator** is the chosen direction. Requiring external parties to verify a proof of the full private record is outside the initial scope, because we judged it excessive and more costly for a first version.
+8. Monad is the settlement chain, and the demonstration runs on Monad Testnet.
+9. Our initial confidentiality direction uses company-controlled detailed records, conventional encryption where needed, randomized commitments, and signed evaluator verdicts. ZK and FHE are not initial requirements. Exact storage, keys, and evaluator access remain implementation decisions.
 10. Reuse ERC-8004 identity and selected authorized feedback. LemmaX owns acceptance policy, compatibility mathematics, private evidence, metering, and settlement. The initial workflow uses the approved evaluator directly, without a dependency on Monad's forthcoming validation registry.
 11. The MVP is a deterministic resource directory returning `P_outcome`, `C_reuse`, and contribution-governed service availability through a clear API. Generating an integration plan or managing adoption is not part of its initial assessment deliverable. Optional agent work is a separately scoped future service.
-12. The desired directory scope includes both callable model access and downloadable model weights/adapters for company-controlled execution. Sellable connectors and MCP tools are favored; general reusable code is not the preferred initial category. The first capability and the delivery forms implemented in the four-day demonstration remain open.
+12. The desired directory scope includes both callable model access and downloadable model weights/adapters for company-controlled execution. Sellable connectors and MCP tools are favored; general reusable code is not the preferred initial category. The first capability is source retrieval through MCP connectors.
 
-13. The agreed measurement unit is one bounded task case with a specific input, expected result, context, and limits. A versioned benchmark batch evaluates those cases. The commercial listing is a versioned capability offer. Benchmark-case success and company-adoption success retain different scopes.
-14. The demo must include minimal reproducible evidence that the approach can scale. Load levels, hardware, budgets, performance thresholds, and extrapolation limits must be explicit. No scale-readiness test has yet been executed for the LemmaX assessment/settlement path.
-15. The user accepted the initial retrieval quality criterion: at least one labeled relevant source among up to five ranked, authorized references, with provenance. Specific resource offers, source connectors, benchmark/cohort policy, and cost/deadline limits remain open.
-16. Per-resource probability comparison is part of the directory output. Each bar estimates success against the same declared acceptance profile and carries evidence and uncertainty. These separate success probabilities need not sum to one. The values `0.84`, `0.05`, and `0.11` supplied in discussion are illustrative, not measured resource estimates.
+13. The measurement unit is one bounded task case with a specific input, expected result, context, and limits. A versioned benchmark batch evaluates those cases. The commercial listing is a versioned capability offer. Benchmark-case success and company-adoption success retain different scopes.
+14. The demo must include minimal reproducible evidence that the approach can scale. Load levels, hardware, budgets, performance thresholds, and extrapolation limits must be explicit. The scale protocol in section 10 has not been run; a bounded local MCP probe is recorded.
+15. We adopted the initial retrieval quality criterion: at least one labeled relevant source among up to five ranked, authorized references, with provenance. The first offers are BM25 and TF-IDF connectors on the public SciFact corpus, with demonstration deadlines and tariffs in versioned terms.
+16. Per-resource probability comparison is part of the directory output. Each bar estimates success against the same declared acceptance profile and carries evidence and uncertainty. These separate success probabilities need not sum to one. The values `0.84`, `0.05`, and `0.11` are illustrative, not measured resource estimates.
 17. For a separately purchased attempt, success pays connector principal plus actual separately quoted execution/evaluation charges within their caps. Eligible failure refunds connector principal and retains only those consumed charges. Unused reserve remains buyer-owned credit.
-18. Withdrawal needs a minimum and a buyer-authorized agent-controlled bar above it. The exact minimum, whether the bar triggers withdrawal or preserves a working balance, and close-out behavior remain open. This scheduling preference does not change the amount owed to the buyer.
+18. Payouts need a minimum and an owner-controlled bar above it. Contract version 3 pays the whole credit once it reaches the bar, with a 0.01 USDC minimum, and `withdraw` closes out smaller balances. The bar never changes the amount owed.
 19. Subscription-billed resources are within scope alongside usage-billed resources. Capability/outcome and billing-plan identities remain separate. Compare costs over a common workload/horizon, account for authorized existing entitlements, and do not treat a recurring fee as a new successful-query purchase.
 
-The assessment output is now fixed as structured numerical results. The first resource offers, exact limits, evaluator operator, failure eligibility, withdrawal semantics, subscription rights/tariffs, timeout/dispute policy, subsidy funding, and sponsor choices remain open. No numerical business parameters are selected. The [paid-unit specification](Paid-Unit.md) records the agreed refund direction and proposed subscription/withdrawal boundaries.
+The assessment output is fixed as structured numerical results. The demonstration fixes the first offers, deadlines, tariff, timeout refund, payouts and sponsor tools. LemmaX operates the demonstration evaluators, as the rulebook declares. Customer failure eligibility, disputes, subscription rights and tariffs, and subsidy funding remain open. The [paid-unit specification](Paid-Unit.md) records the refund policy and payout rules.
 
 ## 2. Product and component boundary
 
@@ -61,9 +59,9 @@ The assessment component retrieves a bounded candidate set, applies deterministi
 
 The runner performs adoption and acceptance inside an approved execution boundary. A company-controlled runner or CI job is the proposed inexpensive starting point. A company-approved evaluator checks the exact frozen terms and signs the financial verdict.
 
-Monad holds escrow state, the attempt commitment, and the terminal settlement record. An optional indexer exposes useful live status and reconciliation. The detailed attempt record remains in company-controlled storage, with authorized evaluator access where necessary.
+Monad holds escrow state, the attempt commitment, and the terminal settlement record. The Envio indexer reads those public records as an auditor for the buyer ([trust loop](Trust-Loop.md)). The detailed attempt record remains in company-controlled storage, with authorized evaluator access where necessary.
 
-The [decision mathematics](LemmaX-Math-and-API.md) and [reuse review](LemmaX-Build-Readiness-and-Reuse.md) define the current buyer, operator, and implementation boundaries. Privacy limits which observations may be collected or published; it does not change the accounting identities.
+The [decision mathematics](research/LemmaX-Math-and-API.md) and [reuse review](research/LemmaX-Build-Readiness-and-Reuse.md) define the current buyer, operator, and implementation boundaries. Privacy limits which observations may be collected or published; it does not change the accounting identities.
 
 ## 3. What is public on Monad
 
@@ -117,7 +115,7 @@ ERC-8004 standardizes agent identity, feedback, and validation interfaces. Its s
 
 Standard feedback exposes the agent, client address, value, and any supplied tags or references. Submitters cannot be the target agent's owner or approved operator. Automatic publication for every private attempt is therefore not proposed. [ERC-8004 reputation interface](https://eips.ethereum.org/EIPS/eip-8004#reputation-registry).
 
-The agreed architectural relationship is:
+The architectural relationship is:
 
 ```text
 private acceptance evidence
@@ -129,7 +127,7 @@ private acceptance evidence
 
 These stages have different meanings. A refund does not establish a defective resource, an incompetent adopter, or evaluator misconduct. A successful payment does not establish honest evidence. Outcome attribution must follow the selected policy.
 
-LemmaX's relevant history and subsidy eligibility can remain private or be selectively summarized. A public reputation export is a separate disclosure decision. If used, it must have an authorized issuer, an explicit meaning, duplicate handling, and a privacy review; a reputation score is not a compatibility probability.
+LemmaX's relevant history and subsidy eligibility can remain private or be selectively summarized. A public reputation export is a separate disclosure decision. If used, it must have an authorized issuer, an explicit meaning, duplicate handling, and a privacy review; a reputation score is not a compatibility probability. LemmaX's batched feedback, built from settled attempts only, follows these rules ([identity and reputation](Trust-Loop.md#4-identity-and-reputation-erc-8004)).
 
 Monad's current guide describes identity and reputation integration, while its validation registry is still described as coming soon. The initial settlement path must not depend on that registry being available. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004).
 
@@ -195,7 +193,7 @@ Plaintext is visible to software and operators authorized to decrypt it. Encrypt
 
 ## 7. Commitments, encryption, ZK, and FHE
 
-The user's evaluator preference removes proof-only verification from the initial core path. The technologies below are retained as investigated alternatives, not selected dependencies.
+Our choice of a company-approved evaluator removes proof-only verification from the initial core path. The technologies below are retained as investigated alternatives, not selected dependencies.
 
 ### Commitments and conventional encryption
 
@@ -203,7 +201,7 @@ A randomized commitment binds the private record to an attempt while hiding its 
 
 Authenticated encryption protects stored or transmitted private records from parties without keys. Company-held keys and local execution support a low-cost first version. Detailed evidence can be disclosed to an authorized evaluator without publishing the commitment opening.
 
-**Agreed direction, proposed implementation:** local/company-controlled records, authenticated encrypted backups where needed, randomized onchain commitments, and signed evaluator verdicts. This provides the selected privacy boundary with an explicit evaluator trust assumption. Specific encryption tools and key-management arrangements remain open.
+**Chosen direction:** local/company-controlled records, authenticated encrypted backups where needed, randomized onchain commitments, and signed evaluator verdicts. This provides the selected privacy boundary with an explicit evaluator trust assumption. Records are sealed with AES-256-GCM, and company key custody remains open.
 
 ### Where ZK would add a useful guarantee
 
@@ -237,7 +235,7 @@ The current Zama architecture uses offchain FHE coprocessors and threshold-MPC k
 
 The checked OpenZeppelin integration documentation lists Ethereum mainnet and Sepolia where the FHE infrastructure is deployed. It does not establish a supported Monad deployment. EVM compatibility alone cannot supply the missing coprocessors and key-management network. Some Zama configuration/tutorial pages still describe Sepolia-only support, so concrete deployment addresses and access must be verified rather than inferred from marketing or older tutorials. [OpenZeppelin supported networks](https://docs.openzeppelin.com/relayer/zama-fhevm#supported-networks), [Zama configuration](https://docs.zama.org/protocol/solidity-guides/smart-contract).
 
-**Recommendation:** keep FHE outside the four-day delivery scope. Revisit it only after identifying an encrypted computation that local calculation or ordinary encryption cannot satisfy, and verifying an accessible service plus measured total cost. No claim of a universally cheapest or fastest cryptographic backend has been established.
+**Recommendation:** keep FHE outside the hackathon build. Revisit it only after identifying an encrypted computation that local calculation or ordinary encryption cannot satisfy, and verifying an accessible service plus measured total cost. No claim of a universally cheapest or fastest cryptographic backend has been established.
 
 ### Cost measurement if a proof is later selected
 
@@ -258,7 +256,7 @@ Measure cold and warm proving latency, peak memory, proof size, deployment size,
 
 Monad supplies public financial enforcement and a common commitment timeline. Documented EVM compatibility allows use of familiar Solidity tools. Fast blocks make funded attempts and settlement status responsive; parallel execution helps transaction throughput, rather than running private company integration tests. [Monad developer summary](https://docs.monad.xyz/developer-essentials/summary).
 
-Current documentation specifies 300 ms blocks and 600 ms consensus finality. Significant offchain financial effects should wait for the documented `Verified` stage, which follows `Finalized` by three blocks. LemmaX must choose the actual confirmation policy for releasing resources and crediting external effects. [Monad timing guidance](https://docs.monad.xyz/developer-essentials/summary#timing-considerations).
+Current documentation specifies 300 ms blocks and 600 ms consensus finality. Significant offchain financial effects should wait for the documented `Verified` stage, which follows `Finalized` by three blocks. LemmaX's fund tool returns at `Verified` before any work starts. [Monad timing guidance](https://docs.monad.xyz/developer-essentials/summary#timing-considerations).
 
 Ethereum-compatible cryptographic precompiles support appropriate Solidity verifier designs. Native P256 verification supports passkey signatures if that route is selected. These primitives do not create native encrypted storage, FHE computation, or private repository execution. [Monad precompiles](https://docs.monad.xyz/developer-essentials/precompiles).
 
@@ -266,37 +264,29 @@ Current tooling guidance names Foundry 1.8+ and Viem 2.40+. Monad charges the su
 
 **Blob availability:** Monad explicitly does not support type-3 EIP-4844 transactions. Its KZG point-evaluation precompile does not supply blob storage or authenticate Ethereum publication. [Monad transaction support](https://docs.monad.xyz/developer-essentials/summary#transaction-types), [Monad KZG precompile](https://docs.monad.xyz/developer-essentials/precompiles#kzg-commitment).
 
-The proposed initial evidence path remains durable company-controlled storage. Optional Ethereum blob publication could later distribute authorized batches during Ethereum's approximately 18-day protocol serving window, with a separate archive for continued retrieval. This would add another chain, costs, and an explicit inclusion/finality trust boundary. Keep it independent of settlement unless a future purchased service requires publication under an agreed policy. No blob route has been adopted. [Ethereum data availability](https://ethereum.org/en/developers/docs/data-availability/), [LemmaX blob research](LemmaX-Blob-Research.md).
+The proposed initial evidence path remains durable company-controlled storage. Optional Ethereum blob publication could later distribute authorized batches during Ethereum's approximately 18-day protocol serving window, with a separate archive for continued retrieval. This would add another chain, costs, and an explicit inclusion/finality trust boundary. Keep it independent of settlement unless a future purchased service requires publication under an agreed policy. No blob route has been adopted. [Ethereum data availability](https://ethereum.org/en/developers/docs/data-availability/), [LemmaX blob research](research/LemmaX-Blob-Research.md).
 
-The architecture is portable to other EVM networks. Monad's performance, primitives, ecosystem support, and the target hackathon motivate the deployment choice; no unique confidentiality property is attributed to the chain.
+The architecture is portable to other EVM networks. Monad's performance, primitives, ecosystem support, and the target hackathon motivate the deployment choice; no unique confidentiality property is attributed to the chain. Monad's gas and reserve rules also shaped contract version 3, which pays agents inside settlement so they never need MON. [Trust loop](Trust-Loop.md#1-the-monad-problem-stranded-agent-funds).
 
-## 9. Hackathon alignment and sponsor candidates
+## 9. Hackathon alignment and sponsor tools
 
-The target is **Trust, Identity & AI Infrastructure**, as verified in the official portal. Plan around the user's four-day development window and reserve time for demonstration and submission. Check the submission deadline in the portal. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
+The target is **Trust, Identity & AI Infrastructure**, as verified in the official portal. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
 The track asks for trust/provenance infrastructure, user-controlled data, and portability without dependence on one platform. Its criteria allocate 20% to technical work, 20% to design and developer experience, 15% to originality, 25% to market relevance, and 20% to traction. An API can address developer experience if its documentation and live workflow are clear. [Track criteria](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
 The listed deliverables include a public repository accessible to `metropolis@hackathon.monad.xyz`, a logo up to 3 MB, a technical video up to three minutes showing working functionality, a pitch video up to two minutes, and a live Monad mainnet or testnet demonstration. [Submission requirements](https://hackathon.monad.xyz/tracks/trust-identity-ai).
 
-Candidate integrations remain proposals:
+Each sponsor tool we use decides something in the payment path:
 
-- **Envio:** index funded commitments, terminal outcomes, refunds, and usable status into a real reconciliation view/API. Its bounty requires a working indexing pipeline, public configuration/schema/handlers or HyperSync client, application consumption, and an end-to-end demo. Actual use matters; an unused package does not establish eligibility. [Envio bounty](https://hackathon.monad.xyz/tracks/best-use-of-envio).
-- **Mera:** its separate One Passkey, Many Keys bounty is a possible fit for company-controlled private record keys. Agent access, recovery, evaluator access, and whether the relevant passkey PRF support works must be demonstrated. A wallet login alone does not establish this non-wallet use. [Sponsor tracks](https://hackathon.monad.xyz/tracks), [Mera source](https://github.com/category-labs/mera).
-- **Qwen 3.8 Max:** a possible bounded integration-gap worker, if access, quality, cost, and authorized data disclosure fit. The sponsor statement calls for actual agentic use with Monad. Model integration is not a prerequisite for deterministic assessment or settlement. [Sponsor tracks](https://hackathon.monad.xyz/tracks).
+- **Envio:** the public auditor. It indexes settlements, rebuilds who was paid what and records rule verdicts, which the buyer's guard reads before the wallet signs. Its bounty requires a working indexing pipeline, public configuration/schema/handlers or HyperSync client, application consumption, and an end-to-end demo. Actual use matters; an unused package does not establish eligibility. [Envio bounty](https://hackathon.monad.xyz/tracks/best-use-of-envio), [Envio in the trust loop](Trust-Loop.md#envio-the-public-auditor).
+- **Privy:** the buyer's server wallet. Its policy signs only quotes the buyer's guard approved. [Privy in the trust loop](Trust-Loop.md#privy-the-buyers-mandate).
+- **ERC-8004:** identities for four LemmaX agents and feedback built from settled attempts only (section 4).
 
-Choose an integration that supports an essential product behavior. No sponsor or model has been selected, and documentation review does not establish application eligibility or award entitlement.
+Other sponsor tracks were reviewed, and none of their tools is used. Documentation review does not establish bounty eligibility or award entitlement. The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#live-rehearsed-not-yet).
 
-## 10. Proposed four-day scope
+## 10. Scale evidence
 
-**Day 1:** select the first resource family and common outcome specification. Freeze the math/API contract and define private inputs, evidence admissibility, evaluator authority, refund wording, and timeout rules.
-
-**Day 2:** implement the deterministic assessment library and HTTP/MCP query, evidence snapshots, unknown-evidence handling, and contribution calculation. Verify arithmetic and comparable-outcome handling using clearly labeled examples and actual checks where available.
-
-**Day 3:** connect approved outcome evidence and one live Monad funding/settlement workflow with randomized commitments and signed verdicts. Cover success, eligible failure, duplicate verdict, wrong binding, invalid allocation, and the selected timeout behavior. Add a selected sponsor integration only if it serves this workflow.
-
-**Day 4:** validate end-to-end behavior and disclosure, measure actual costs, finish API documentation, and prepare the live demo, repository, logo, and videos. Leave submission time outside the final implementation hours.
-
-This schedule is a proposal. It excludes custom model training, generalized proof of repository integration, FHE deployment, a new liquidity pool, and a universal asset marketplace from the initial demonstration. Those features have not been selected.
+The build excludes custom model training, generalized proof of repository integration, FHE deployment, a new liquidity pool, and a universal asset marketplace.
 
 ### Minimum evidence of scale readiness
 
@@ -312,24 +302,22 @@ Use a client with arrivals independent of response completion, such as k6's arri
 
 Keep the query path separate from evidence-producing work: assessments read versioned admitted statistics and quotes, while evaluators execute cases asynchronously. Under that design, more historical case rows should not require replaying every row for each query. Cohort selection, deduplication, materialization, numerical precision, and freshness still need measurement. Keep per-attempt public record contents bounded, with detailed evidence offchain.
 
-The review artifact should contain reproducible scripts, code/data/configuration hashes, hardware and test duration, achieved rates, latency/error/cost results, correctness/failure checks, and observed limits. A signed manifest or commitment can bind those artifacts to a version; it authenticates the statement or detects changes, rather than proving honest execution. No ZK proof generation is required for this minimum evidence package. The current SciFact run covers only a local retrieval baseline and metric arithmetic. None of the scale protocol above has been run.
+The review artifact should contain reproducible scripts, code/data/configuration hashes, hardware and test duration, achieved rates, latency/error/cost results, correctness/failure checks, and observed limits. A signed manifest or commitment can bind those artifacts to a version; it authenticates the statement or detects changes, rather than proving honest execution. No ZK proof generation is required for this minimum evidence package. So far the evidence covers the paired SciFact benchmark and its metric arithmetic, a bounded local MCP probe of 200 replays, and the settlement checks. None of the scale protocol above has been run.
 
-## 11. Next decisions and verification status
+## 11. Open decisions and verification status
 
-The latest product discussion favors sellable connectors, explicitly includes MCP tools, and confirms that model assets include both hosted inference access and downloadable weights/adapters. General reusable code is not an appealing initial category to the user. These categories can overlap: a connector can expose a model capability through MCP. Supporting both forms in the desired directory does not yet select both execution paths for the four-day demonstration.
+We favor sellable connectors and MCP tools, and model assets can be hosted inference access or downloadable weights and adapters. These categories can overlap: a connector can expose a model capability through MCP. The demonstration implements one path, retrieval connectors over a public corpus served through MCP.
 
-The agreed measurement unit is a bounded task case evaluated against a common acceptance target, with versioned benchmark batches for consistent testing and versioned capability offers as commercial listings. An entire model, connector, or MCP server can contain multiple capabilities. A single tool name or valid output schema does not establish task success. The first task and purchase/refund policy remain open. [MCP tool definitions and output schemas](https://modelcontextprotocol.io/specification/2026-07-28/server/tools).
+The measurement unit is a bounded task case evaluated against a common acceptance target, with versioned benchmark batches for consistent testing and versioned capability offers as commercial listings. An entire model, connector, or MCP server can contain multiple capabilities. A single tool name or valid output schema does not establish task success. [MCP tool definitions and output schemas](https://modelcontextprotocol.io/specification/2026-07-28/server/tools).
 
-The next discussion selects the evidence-admission policy supporting the initial retrieval probability chart. The [math/API specification](LemmaX-Math-and-API.md#proposed-mvp-evidence-admission-policy) proposes reproducible benchmark evidence first, exact version/context matching, complete reporting, explicit retry/cluster rules, and separate authorized company cohorts. Public task-quality metrics, actual connector/deployment checks, and whole-attempt acceptance outcomes remain distinct evidence types. Retrieval has an executed lexical baseline and an accepted initial quality predicate; actual offers, limits, evidence policy, and market validation remain open. The evaluator's access boundary then follows the evidence needed: company-controlled CI, an independent evaluator in the company environment, or an approved external service receiving selected evidence. All can be company-approved; they have different disclosure and trust consequences.
+The public benchmark follows the evidence-admission policy proposed in the [math/API research note](research/LemmaX-Math-and-API.md#proposed-mvp-evidence-admission-policy): a frozen benchmark, exact offer and profile versions, and complete reporting. Its illustrative forecast uses one representative query per correlated group. Public task-quality metrics, actual connector/deployment checks, and whole-attempt acceptance outcomes remain distinct evidence types. Admission of private company evidence is still open. The evaluator's access boundary then follows the evidence needed: company-controlled CI, an independent evaluator in the company environment, or an approved external service receiving selected evidence. All can be company-approved; they have different disclosure and trust consequences.
 
-Before implementing, resolve the actual purchased right/service, evidence required by its acceptance policy, funding-party acceptance of the evaluator, refunds and timeouts, and retention/dispute access. Resolve these incrementally rather than treating every proposal in this document as approved.
+Before customer use, we still need to settle the purchased right for each customer offer and the evidence its acceptance policy requires. Funding parties must accept a real evaluator, and disputes and record retention need rules. No independent partner is lined up yet. Internal use of our projects is integration evidence, while another team's use remains a separate validation target. The commercial attempt, probability event, and refund event must use the same unit; benchmark-query success cannot substitute for integration or license acceptance. The [build readiness and reuse review](research/LemmaX-Build-Readiness-and-Reuse.md) records how the two earlier repositories informed this build.
 
-The [build readiness and reuse review](LemmaX-Build-Readiness-and-Reuse.md) orders the six remaining implementation decisions, inspects the two repositories beyond their top-level summaries, and proposes a bounded retrieval-service testnet demonstration. No independent partner is currently lined up. Internal use of our projects is integration evidence, while another team's use remains a separate validation target. The commercial attempt, probability event, and refund event must use the same unit; benchmark-query success cannot substitute for integration or license acceptance.
+External sources were checked during research. Where provider pages were unavailable or disagreed about deployments, the limits are stated above.
 
-Conversation-derived decisions are recorded separately from external capabilities. External sources were checked during research. The hackathon pages were read through the browser; some other provider pages were unavailable or contained differing deployment descriptions, and those limits are stated above.
-
-The architecture remains a design document. The initial retrieval research ran one public lexical benchmark and checked its metric arithmetic. The subsequent reuse review inspected both repositories and ran focused existing tests, including 37 local LemmaXperiment contract tests. These checks do not test new retrieval connectors, comparative model offers, a new Monad deployment/settlement flow, or company adoption. No economic validation or protection against all inference from public payment metadata is established.
+Built and checked since this design was written: two retrieval connectors with a paired benchmark, the assessment library, the MCP server, contract versions 2 and 3, and the trust loop. [Evidence files](../README.md#evidence-files). None of these checks tests company adoption. No economic validation or protection against all inference from public payment metadata is established.
 
 ## Implemented attempt and settlement slice
 
-Private AES-GCM record envelopes, randomized commitments, EIP-712 quotes/receipts and a USDC Solidity settlement prototype are implemented; the first prototype used the native asset. The user selected full locked-amount refund after the settlement deadline if no valid verdict is accepted. Local Monad execution tests cover both outcomes, timeout, authority, replay protection and withdrawals. The public MCP demo remains read-only; live company approval, eligibility/disputes, persistent key custody and testnet deployment remain open. [Contract and verification](Attempt-and-Settlement.md). Network profiles, confirmation stages, gas policy, reconciliation and the deployment path are in [the Monad settlement path](Monad-Settlement-Path.md).
+Private AES-GCM record envelopes, randomized commitments, EIP-712 quotes/receipts and a USDC Solidity settlement contract are implemented; the first prototype used the native asset. We refund the full locked amount after the settlement deadline if no valid verdict is accepted, so a silent checker never costs the buyer anything. Local Monad execution and fork checks cover both outcomes, timeout, authority, replay protection, withdrawals and automatic payouts. Contract version 2 ran three live attempts on Monad Testnet, and contract version 3 is deployed there. The default public MCP server stays read-only. Live company approval, customer eligibility and disputes, and persistent key custody remain open. [Contract and verification](Attempt-and-Settlement.md). Network profiles, confirmation stages, gas policy, reconciliation and the deployment path are in [the Monad settlement path](Monad-Settlement-Path.md).

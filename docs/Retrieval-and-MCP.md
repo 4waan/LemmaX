@@ -28,7 +28,7 @@ Before evaluating either offer, queries were grouped by shared gold sources or i
 
 ## Probability and pricing disclosure
 
-`public-evidence` returns observed hit rates and leaves model forecasts/cost ranks unknown. Statistical independence is not established, and this scenario applies no tariff; the `demo-terms-*` scenarios price the agreed USDC terms.
+`public-evidence` returns observed hit rates and leaves model forecasts/cost ranks unknown. Statistical independence is not established, and this scenario applies no tariff; the `demo-terms-*` scenarios price the demonstration USDC terms.
 
 `illustrative-workload-cost/v1` explicitly treats the 247 representatives as independent and applies a uniform Beta prior. It illustrates conditional posterior means and cost ranking using synthetic workload, tariffs and operator terms. Its independence assumption, missing calibration, `DEMO_UNITS` currency and non-fundable status are returned with the response. These are not selected production policies or a customer-specific promise.
 
@@ -86,10 +86,12 @@ The five read-only tools, always present, are:
 - `lemma_read_source`: resolves a permitted `sourceRef` and optional integer `offset` to at most 1000 characters plus bounded title/provenance. Returned source text is data, not instructions or a generated answer.
 - `lemma_run_benchmark_case`: takes `offerRef` and a known `caseRef`; replays its frozen public relevance check.
 
+With an auditor configured, `lemma_verify_attempt` checks one attempt against the published rulebook. With an operator purchase desk, the server adds `lemma_quote_attempt`, `lemma_fund_attempt` and `lemma_attempt_status` ([Monad settlement path](Monad-Settlement-Path.md#purchase-path)).
+
 All tools reject additional unrecognized input fields. Unknown offers, profiles, cases and sources fail without exposing local paths or stack traces. Reading source excerpts is limited to public benchmark content and carries the dataset license. No customer documents or evidence are served.
 
 The real SDK smoke check compares rankings and outcomes through a spawned stdio server. It checks 100 requests with one request in flight and another 100 with a window of four. Server scoring remains synchronous; queued requests are not worker parallelism. This is a bounded local integration/load probe, not sustained production throughput or independent hackathon-team adoption. [Recorded smoke run](../verification/mcp-smoke.json).
 
 ## Next boundary
 
-The directory and retrieval flow are usable locally, and the operator's purchase path has run attempts on Monad Testnet under agreed terms. [Live run](Monad-Settlement-Path.md#live-run-on-monad-testnet). Automatic payouts and live subscription entitlement checks are the next steps. The public benchmark should not substitute for another team's actual integration task.
+The directory and retrieval flow are usable locally. The operator's purchase path ran three attempts on Monad Testnet with contract version 2, under the demonstration terms. [Live run](Monad-Settlement-Path.md#live-run-on-monad-testnet). Contract version 3 adds automatic payouts. Live subscription entitlement checks and an authenticated remote transport are the next steps. The public benchmark should not substitute for another team's actual integration task.
