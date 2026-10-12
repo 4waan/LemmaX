@@ -29,7 +29,7 @@ Authorization-denied, stale/deleted-source and unsupported-query tests also belo
 
 A fundable quote needs exact offer/context/outcome versions, private task/input references, corpus and access snapshot, limits, buyer and payee authorization, evaluator authority, priced service and ancillary charges, refunds, timeout rules, quote expiry, and attempt nonce.
 
-Detailed fields stay private. A randomized commitment binds the record to minimal Monad financial and authorization state. A signature and commitment authenticate bindings; neither proves honest evaluator execution. Private-record/signed-quote primitives and a native-asset settlement prototype are implemented and tested locally. The public MCP demo still issues no fundable customer quotes and no testnet contract is deployed. [Implemented financial boundary](Attempt-and-Settlement.md).
+Detailed fields stay private. A randomized commitment binds the record to minimal Monad financial and authorization state. A signature and commitment authenticate bindings; neither proves honest evaluator execution. Private-record/signed-quote primitives and a USDC settlement prototype are implemented and tested locally and against testnet USDC on a fork. The contract is deployed on Monad Testnet; only an operator-configured MCP server issues fundable quotes, and none are offered to customers. [Implemented financial boundary](Attempt-and-Settlement.md).
 
 ## Attempt states
 
@@ -39,13 +39,13 @@ awaiting_evaluation -> settled_success
 awaiting_evaluation -> settled_failure
 ```
 
-Failure eligibility and allocation are evaluated under frozen terms. The user selected full locked-amount refund when no valid verdict is submitted by the settlement deadline. Unresolved evidence cannot settle; cancellation and dispute/correction rules for customer use remain open. Customer funding through the public demo remains unavailable. The local prototype supports signed, explicit native-asset funding for tests. Every terminal settlement consumes the attempt authorization exactly once.
+Failure eligibility and allocation are evaluated under frozen terms. The user selected full locked-amount refund when no valid verdict is submitted by the settlement deadline. Unresolved evidence cannot settle; cancellation and dispute/correction rules for customer use remain open. Customer funding through the public demo remains unavailable. The operator's purchase path funds attempts from the buyer's EIP-3009 authorization, as in the testnet run. Every terminal settlement consumes the attempt authorization exactly once.
 
 ## Probability and financial alignment
 
 `P_outcome` describes this success event for the named applicable population. A public benchmark query cohort describes benchmark tasks. It does not become an integration-acceptance or private-company forecast merely because the same connector is used.
 
-The first library calculates Beta posterior means and equal-tail credible intervals from already admitted snapshots, then expected completion cost and contribution. All estimator, cost and commercial inputs are supplied explicitly. The example is synthetic. The public benchmark stdio MCP transport is implemented. Private-company evidence admission, signatures, authenticated transport and settlement remain separate implementation work. [Implemented public connector boundary](Retrieval-and-MCP.md).
+The first library calculates Beta posterior means and equal-tail credible intervals from already admitted snapshots, then expected completion cost and contribution. All estimator, cost and commercial inputs are supplied explicitly. The example is synthetic. The public benchmark stdio MCP transport is implemented. Signatures and USDC settlement are implemented; private-company evidence admission and an authenticated remote transport remain separate work. [Implemented public connector boundary](Retrieval-and-MCP.md).
 
 Quoted principal, retained ancillary costs, buyer fallback and operator earned fees must be distinguished. The user agreed the following policy for a separately purchased attempt:
 

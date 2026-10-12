@@ -23,8 +23,16 @@ const receiptFields = Object.freeze([
   field("outcome", "uint8"), field("executionUsed", "uint256"), field("evaluationUsed", "uint256"),
   field("completedAt", "uint64"), field("evaluatedAt", "uint64"),
 ]);
+const authorizationFields = Object.freeze([field("from", "address"), field("to", "address"), field("value", "uint256"),
+  field("validAfter", "uint256"), field("validBefore", "uint256"), field("nonce", "bytes32")]);
+export const SETTLEMENT_DOMAIN = Object.freeze({ name: "LemmaXAttemptSettlement", version: "2" });
 export const QUOTE_TYPES = Object.freeze({ AttemptQuote: quoteFields });
+export const RECEIVE_AUTHORIZATION_TYPES = Object.freeze({ ReceiveWithAuthorization: authorizationFields });
 export const RECEIPT_TYPES = Object.freeze({ EvaluationReceipt: receiptFields });
+export const PAYOUT_INSTRUCTION_TYPES = Object.freeze({ PayoutInstruction: Object.freeze([field("owner", "address"), field("destination", "address"),
+  field("bar", "uint256"), field("nonce", "uint256"), field("deadline", "uint64")]) });
+// Contract v3 pays credit out automatically once it reaches the owner's bar, never below this.
+export const MIN_PAYOUT = "10000";
 
 function exactKeys(value, keys) {
   if (!value || typeof value !== "object" || Array.isArray(value)
@@ -127,15 +135,14 @@ export function signingDomain(input) {
   exactKeys(input, ["chainId", "verifyingContract"]);
   const chainId = BigInt(atomic(input.chainId));
   if (!chainId) throw new RangeError("Chain id must be positive");
-  return { name: "LemmaXAttemptSettlement", version: "1", chainId,
-    verifyingContract: address(input.verifyingContract) };
+  return { ...SETTLEMENT_DOMAIN, chainId, verifyingContract: address(input.verifyingContract) };
 }
 export function normalizeQuote(input) {
   exactKeys(input, quoteFields.map(f => f.name));
   const out = {};
   for (const f of quoteFields) {
     if (f.type === "bytes32") out[f.name] = bytes32(input[f.name]);
-    else if (f.type === "address") out[f.name] = address(input[f.name], f.name === "asset");
+    else if (f.type === "address") out[f.name] = address(input[f.name]);
     else if (f.type === "uint8") {
       if (!Object.values(TIMEOUT_MODES).includes(input[f.name])) throw new TypeError("Explicit timeout mode required");
       out[f.name] = input[f.name];
@@ -150,6 +157,22 @@ export function quoteTypedData(domain, quote) {
   return { domain: signingDomain(domain), types: QUOTE_TYPES, primaryType: "AttemptQuote", message: normalizeQuote(quote) };
 }
 export function quoteDigest(domain, quote) { return hashTypedData(quoteTypedData(domain, quote)); }
+// The buyer's EIP-3009 authorization pays the exact funding total to the settlement
+// contract. Its nonce is the domain-bound quote digest, so one buyer signature consents
+// to every quote term and the token refuses a second use of the same quote.
+export function fundingAuthorizationTypedData({ token, domain, quote, validAfter, validBefore }) {
+  exactKeys(token, ["name", "version", "chainId", "verifyingContract"]);
+  const q = normalizeQuote(quote), d = signingDomain(domain);
+  for (const key of ["name", "version"]) if (typeof token[key] !== "string" || !token[key] || token[key].length > 64) throw new TypeError("Token signing domain needs a name and version");
+  if (BigInt(atomic(token.chainId)) !== d.chainId) throw new TypeError("Token and settlement chains differ");
+  if (address(token.verifyingContract) !== q.asset) throw new TypeError("Authorization token differs from the quote asset");
+  const after = atomic(validAfter), before = atomic(validBefore);
+  if (BigInt(after) >= BigInt(before)) throw new RangeError("Authorization window is empty");
+  const value = (BigInt(q.principal) + BigInt(q.executionCap) + BigInt(q.evaluationCap)).toString();
+  return { domain: { name: token.name, version: token.version, chainId: d.chainId, verifyingContract: q.asset },
+    types: RECEIVE_AUTHORIZATION_TYPES, primaryType: "ReceiveWithAuthorization",
+    message: { from: q.buyer, to: d.verifyingContract, value, validAfter: after, validBefore: before, nonce: quoteDigest(domain, q) } };
+}
 export function bindRecordToQuote(record, salt, quote) {
   const r = normalizeAttemptRecord(record), q = normalizeQuote(quote);
   if (commitAttemptRecord(r, salt) !== q.recordCommitment) throw new TypeError("Record does not match quote commitment");
@@ -175,6 +198,17 @@ export function normalizeReceipt(input) {
   }
   if (BigInt(out.completedAt) > BigInt(out.evaluatedAt)) throw new RangeError("Evaluation precedes completion");
   return out;
+}
+// An owner's standing payout instruction: where its credit goes and from what amount.
+// Anyone may relay the signed instruction, so the owner needs no MON.
+export function payoutInstructionTypedData(domain, instruction) {
+  exactKeys(instruction, ["owner", "destination", "bar", "nonce", "deadline"]);
+  const d = signingDomain(domain);
+  const message = { owner: address(instruction.owner), destination: address(instruction.destination), bar: atomic(instruction.bar),
+    nonce: atomic(instruction.nonce), deadline: atomic(instruction.deadline, UINT64) };
+  if (BigInt(message.bar) < BigInt(MIN_PAYOUT)) throw new RangeError("Payout bar is below the minimum");
+  if (message.destination === d.verifyingContract) throw new TypeError("Payout destination cannot be the settlement contract");
+  return { domain: d, types: PAYOUT_INSTRUCTION_TYPES, primaryType: "PayoutInstruction", message };
 }
 export function receiptTypedData(domain, receipt) {
   return { domain: signingDomain(domain), types: RECEIPT_TYPES, primaryType: "EvaluationReceipt", message: normalizeReceipt(receipt) };

@@ -1,35 +1,104 @@
 {
-  "schemaVersion": "settlement-check/v1",
+  "schemaVersion": "settlement-check/v4",
   "network": "local-anvil-monad",
   "hardfork": "MonadTen",
+  "asset": "MockFiatToken (EIP-3009, six decimals)",
   "anvilVersion": "1.8.5",
   "compiler": "0.8.37+commit.f401782d.Emscripten.clang",
   "evmVersion": "osaka",
+  "deployedBytecodeBytes": 11025,
   "codeSha256": {
-    "contracts/AttemptSettlement.sol": "25435f156a2e570c21852f5ca356fd0b6a62422519776a8e84c6fa6a49aea3c9",
-    "contracts/test/WithdrawalReceivers.sol": "a63f49f2519aa17bd3cfa8698bdef75a2a7cf1816f60e43e7e6b1be862fc4474",
-    "src/attempt.mjs": "8681edb074f7f9a1d92f7afa394ba1e747cc5b786ff79601c630cfa35e2abfb2",
-    "scripts/compile-settlement.mjs": "dc0267cdcc0e5adfc2d1cc17ce030e1936b3c5cdc5945634efd21aeb314c7199",
-    "scripts/settlement-check.mjs": "4d834c241e189a802e89a07ee5576ed440661cc9b0007f3b8b37a60c9bcbb5fe"
+    "contracts/AttemptSettlement.sol": "7db66a2d987f0da87c78ed23756f67a5e7283a87a307059fe3499afd02748b53",
+    "contracts/AttemptSettlement.abi.json": "916328e13fbb6434df50a466a883c6346c4bbd05cea2045dbcd0b3305438281c",
+    "contracts/test/MockFiatToken.sol": "7bbec4af89e47e57895ea4408bb57948b99f50caadfae440b8caa2e1bc0cbcc7",
+    "src/attempt.mjs": "9f33114820e84dc59d03c888c870634a5841ed6a49f66f7f53d2c602e2b05ec0",
+    "src/monad.mjs": "93c8d4cf4b9d43f2a3526bd9e5fec2f2ffdabdd8b03f1434fd236bb46523a37b",
+    "src/settlement.mjs": "e69ce7671895626543fa2194667e2be8bce17dea5c5cd446c71cd877e0380e1a",
+    "src/reconcile.mjs": "842aae8a9288ef7b60515f3c094a6276001e817b7c540cbae5245a92e3e119b9",
+    "scripts/compile-settlement.mjs": "daf55dc2c79d844cde4c8142ed3bc11396fbc8ae1b43483540f1aa040b5c9ccc",
+    "scripts/deploy-settlement.mjs": "d6d44d64b9aea83ad22d09a40f2fd4cd48faabb96c6a1a309d175d4260f64d77",
+    "scripts/settlement-check.mjs": "531e48f6f193e57e4103f15d3c404f136d2b57483f3760cbaa7573464cadf1d8"
   },
-  "checksPassed": 54,
-  "observedAt": 1791555895,
+  "checksPassed": 80,
+  "observedAt": 1791729507,
+  "gasHeadroomBps": 1000,
+  "gas": {
+    "deploy": {
+      "gasUsed": "2478676",
+      "gasLimit": "2726544"
+    },
+    "fund": {
+      "gasUsed": "264312",
+      "gasLimit": "293136"
+    },
+    "settleSuccess": {
+      "gasUsed": "230858",
+      "gasLimit": "356337"
+    },
+    "settleFailure": {
+      "gasUsed": "142834",
+      "gasLimit": "259510"
+    },
+    "withdraw": {
+      "gasUsed": "126271",
+      "gasLimit": "141295"
+    },
+    "refundTimeout": {
+      "gasUsed": "103530",
+      "gasLimit": "216283"
+    },
+    "settleSuccessWithPayout": {
+      "gasUsed": "233909",
+      "gasLimit": "359693"
+    },
+    "sweep": {
+      "gasUsed": "152455",
+      "gasLimit": "170098"
+    },
+    "setPayoutInstruction": {
+      "gasUsed": "140815",
+      "gasLimit": "257292"
+    },
+    "settleThreeFreshPayouts": {
+      "gasUsed": "349238",
+      "gasLimit": "486555"
+    }
+  },
   "verified": [
+    "Dry-run plan and broadcast deployment through the operator script",
+    "Deployed runtime matches the build with immutables masked",
+    "Deployment and funding waits for verified and finalized stages",
     "JS/Solidity typed digest agreement",
-    "Issuer, buyer and evaluator authority",
-    "Wrong-chain and modified terms rejected",
+    "Issuer, buyer and evaluator authority with named errors",
+    "Buyer EIP-3009 authorization bound to the quote digest, relayed by another wallet",
+    "Wrong-chain, modified terms, foreign asset, expired or mismatched buyer authorization rejected",
+    "Settlement requires the funded quote; swapped payees rejected",
     "Exact funding and reserve caps",
     "Success/failure allocation",
     "Full timeout refund",
     "Duplicate funding/settlement/refund rejected",
-    "Owner credit withdrawal and solvency",
-    "Failed transfer restores credit",
-    "Reentrant withdrawal blocked while remaining credit exists"
+    "Owner credit withdrawal; withdrawal to the contract rejected",
+    "Blocked destination reverts and keeps credit",
+    "Short-paying token rejected",
+    "Tokens sent directly stay unallocated",
+    "Chunked event reads reconcile with private quotes and receipts",
+    "Duplicate log delivery is idempotent",
+    "Tampered private receipt is reported",
+    "Issuer cannot name itself evaluator",
+    "Credit pays out automatically from the 0.01 USDC minimum inside settlement",
+    "Refused payout defers without blocking settlement and sweep retries it",
+    "Signed payout instruction relayed by another wallet routes payouts and raises the bar",
+    "Instruction replay, low bar, contract destination and wrong signer rejected",
+    "Owner can set its instruction directly",
+    "Exactly the minimum pays out",
+    "One settlement pays three fresh owners within the gas ceiling",
+    "Reconciliation totals automatic payouts and lists only outstanding deferrals"
   ],
   "limitations": [
-    "Isolated local Monad execution, not a testnet deployment",
-    "Illustrative amounts, no commercial tariffs",
+    "Isolated local Monad execution with a mock token, not a testnet deployment",
+    "Local finalized lag comes from one-slot epochs, not Monad consensus",
+    "Illustrative atomic amounts, not the demonstration tariff",
     "Evaluator correctness and company approval are trusted",
-    "Automatic withdrawal bar and ERC-20 support not implemented"
+    "Smart-contract buyer and payout signatures not exercised"
   ]
 }

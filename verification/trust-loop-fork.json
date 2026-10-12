@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "trust-loop/v1",
+  "target": "fork",
+  "chainId": 10143,
+  "settlement": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+  "fromBlock": "70135367",
+  "mandate": "local rehearsal of the mandate",
+  "auditor": "local",
+  "rulebookHash": "lemmax-rulebook/v1",
+  "buyer": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+  "codeSha256": {
+    "contracts/AttemptSettlement.sol": "7db66a2d987f0da87c78ed23756f67a5e7283a87a307059fe3499afd02748b53",
+    "src/guard.mjs": "df8d05d320c3f4b8b876c853ca913d4a40a6887875211bdf648f6367efedbe0f",
+    "src/privy-buyer.mjs": "e9a2f984c4238e8dc587abc2d1dc420d96d2297cdddcb4c37a4025cbeb175ebf",
+    "src/purchase.mjs": "a25cb9a47adbeb3b22e0539b7d6d8367382252d6de5110229a82a60023fca39c",
+    "src/mcp.mjs": "bd63b7f6a82a8c71a93748d1a4725233c9197715b2c43161f60101d821b3367c",
+    "src/rulebook.mjs": "602494b6a290a548f5e23953b5a3aae221dcc1a8b8bdd85f17b629920d8f6bad",
+    "indexer/src/shared/conformance.mjs": "7daa9371dbb6da1bbea5db62341fe57d5bc54d4e469bc03355c4e9cca587ad07",
+    "src/local-audit.mjs": "0787c185f4550a01e2225214903fdf36052994c3a7733888c59341e2c13e234c",
+    "src/reconcile.mjs": "847fe4d84860d4ad9d9d7f08f983913d57273ebeddb5d0a7aaf37f8605154adc",
+    "scripts/trust-loop.mjs": "76ed6cdcb9905bd37e277f74aae4357f73f1a6b6863f48acd2fa3d3de2ab96fa"
+  },
+  "beats": [
+    {
+      "label": "timeout",
+      "caseRef": "1012",
+      "profileRef": "demo-timeout/v1",
+      "evaluator": "main",
+      "settle": false,
+      "steps": {
+        "fund": {
+          "transactionHash": "0xfb895259683bd7bb31d326a87fa4781251b8794bf6291529cff8f273ac5f5920",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 542,
+              "transactionHash": "0xfb895259683bd7bb31d326a87fa4781251b8794bf6291529cff8f273ac5f5920"
+            },
+            {
+              "step": "Finalized",
+              "ms": 5699
+            },
+            {
+              "step": "Verified",
+              "ms": 5700
+            }
+          ],
+          "link": "0xfb895259683bd7bb31d326a87fa4781251b8794bf6291529cff8f273ac5f5920"
+        },
+        "refundTimeout": {
+          "transactionHash": "0xc31021ea2ebb349ce02062cb814f4f363a42eb479030cf2f849141c09dfd94d7",
+          "link": "0xc31021ea2ebb349ce02062cb814f4f363a42eb479030cf2f849141c09dfd94d7"
+        }
+      },
+      "attemptId": "0x9b3ef448bdd4b2f7874b707079048ff56bd34739959a110b045d33b027bfde84"
+    },
+    {
+      "label": "success",
+      "caseRef": "100",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "main",
+      "settle": true,
+      "steps": {
+        "fund": {
+          "transactionHash": "0x0855e331004b098a3311d602e11799f74539dadc498d91d447118d47570844bf",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 805,
+              "transactionHash": "0x0855e331004b098a3311d602e11799f74539dadc498d91d447118d47570844bf"
+            },
+            {
+              "step": "Finalized",
+              "ms": 5960
+            },
+            {
+              "step": "Verified",
+              "ms": 5961
+            }
+          ],
+          "link": "0x0855e331004b098a3311d602e11799f74539dadc498d91d447118d47570844bf"
+        },
+        "settle": {
+          "transactionHash": "0x338b3bf9624275b63e1a03344ba85119b60e7a4424fdac8252987cd4e9d9d8c4",
+          "outcome": "success",
+          "charges": "1500/800",
+          "link": "0x338b3bf9624275b63e1a03344ba85119b60e7a4424fdac8252987cd4e9d9d8c4"
+        }
+      },
+      "attemptId": "0xfe148dfa2fd0ef74e1037efb79c06aa9d28b7f4e0015dd576a3cd92f7d18a2a3"
+    },
+    {
+      "label": "eligible_failure",
+      "caseRef": "1",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "main",
+      "settle": true,
+      "steps": {
+        "fund": {
+          "transactionHash": "0x7bcfce997a4a3a2a2aad5f838487b0c5aef37a163a0c24a2e2e712c6a77db406",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 819,
+              "transactionHash": "0x7bcfce997a4a3a2a2aad5f838487b0c5aef37a163a0c24a2e2e712c6a77db406"
+            },
+            {
+              "step": "Finalized",
+              "ms": 5970
+            },
+            {
+              "step": "Verified",
+              "ms": 5971
+            }
+          ],
+          "link": "0x7bcfce997a4a3a2a2aad5f838487b0c5aef37a163a0c24a2e2e712c6a77db406"
+        },
+        "settle": {
+          "transactionHash": "0x9b98e136466173356fddca23dd06ba4ce888338317b567ff7b2d89f3735d8f43",
+          "outcome": "eligible_failure",
+          "charges": "1500/800",
+          "link": "0x9b98e136466173356fddca23dd06ba4ce888338317b567ff7b2d89f3735d8f43"
+        }
+      },
+      "attemptId": "0xfc64d96249b2bd62c935563d8f9a2a8e98a0fa071440e9319099e1e48a65f1d9"
+    },
+    {
+      "label": "overcharge",
+      "caseRef": "1014",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "evaluator-b",
+      "settle": true,
+      "steps": {
+        "fund": {
+          "transactionHash": "0x9183301f25b5f645d6974d273c78fb343cf9e257e126b12208bba910dc502e5b",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 811,
+              "transactionHash": "0x9183301f25b5f645d6974d273c78fb343cf9e257e126b12208bba910dc502e5b"
+            },
+            {
+              "step": "Finalized",
+              "ms": 5959
+            },
+            {
+              "step": "Verified",
+              "ms": 5960
+            }
+          ],
+          "link": "0x9183301f25b5f645d6974d273c78fb343cf9e257e126b12208bba910dc502e5b"
+        },
+        "settle": {
+          "transactionHash": "0xf1297de0a1e4bfca30d36c6579b4b5cb1c9f23d52168c65477c147de8f7eb8bd",
+          "outcome": "success",
+          "charges": "1500/1000",
+          "link": "0xf1297de0a1e4bfca30d36c6579b4b5cb1c9f23d52168c65477c147de8f7eb8bd"
+        }
+      },
+      "attemptId": "0xe9b0e5d831667f505a4bf51aa76196463bf647d8cbbc6795c317f713b7219e44"
+    },
+    {
+      "label": "refused",
+      "caseRef": "1019",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "evaluator-b",
+      "settle": false,
+      "steps": {},
+      "attemptId": "0x26073086c080addbbf487ddc51c225750fad00cea9aaf2aaad7b44c0bbbf877c",
+      "refused": [
+        "evaluator_flagged"
+      ],
+      "walletSigned": false
+    }
+  ],
+  "payouts": [
+    {
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "destination": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "amount": "10000",
+      "transactionHash": "0xf1297de0a1e4bfca30d36c6579b4b5cb1c9f23d52168c65477c147de8f7eb8bd"
+    },
+    {
+      "owner": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "destination": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "amount": "14900",
+      "transactionHash": "0xc31021ea2ebb349ce02062cb814f4f363a42eb479030cf2f849141c09dfd94d7"
+    }
+  ],
+  "deferred": [],
+  "flagged": [
+    {
+      "party": "0xf70650a43b74ca8dfdb1f5de32f6e547608151fd",
+      "lastVerdict": "above_tariff"
+    }
+  ],
+  "envioAgreement": null,
+  "reconciliation": {
+    "ok": true,
+    "issues": [],
+    "attempts": [
+      {
+        "attemptId": "0x9b3ef448bdd4b2f7874b707079048ff56bd34739959a110b045d33b027bfde84",
+        "state": "refunded_timeout",
+        "issues": []
+      },
+      {
+        "attemptId": "0xfe148dfa2fd0ef74e1037efb79c06aa9d28b7f4e0015dd576a3cd92f7d18a2a3",
+        "state": "settled_success",
+        "issues": []
+      },
+      {
+        "attemptId": "0xfc64d96249b2bd62c935563d8f9a2a8e98a0fa071440e9319099e1e48a65f1d9",
+        "state": "settled_failure",
+        "issues": []
+      },
+      {
+        "attemptId": "0xe9b0e5d831667f505a4bf51aa76196463bf647d8cbbc6795c317f713b7219e44",
+        "state": "settled_success",
+        "issues": []
+      }
+    ]
+  },
+  "ledger": {
+    "balance": "7100",
+    "lockedFunds": "0",
+    "totalCredit": "7100",
+    "unallocated": "0",
+    "solvent": true
+  },
+  "balancesBefore": {
+    "buyer": {
+      "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "mon": "0",
+      "usdc": "20.026"
+    },
+    "provider": {
+      "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "mon": "0",
+      "usdc": "0"
+    },
+    "evaluator": {
+      "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "mon": "1",
+      "usdc": "20"
+    },
+    "evaluatorB": {
+      "address": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd",
+      "mon": "0",
+      "usdc": "0"
+    },
+    "facilitator": {
+      "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "mon": "1",
+      "usdc": "20.003"
+    }
+  },
+  "balancesAfter": {
+    "buyer": {
+      "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "mon": "0",
+      "usdc": "20.0089"
+    },
+    "provider": {
+      "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "mon": "0",
+      "usdc": "0.01"
+    },
+    "evaluator": {
+      "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "mon": "0.997583108513362911",
+      "usdc": "20"
+    },
+    "evaluatorB": {
+      "address": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd",
+      "mon": "0",
+      "usdc": "0"
+    },
+    "facilitator": {
+      "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "mon": "0.987688964964945044",
+      "usdc": "20.003"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "network": "testnet",
+  "schemaVersion": "settlement-deployment/v2",
+  "chainId": 10143,
+  "address": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+  "approvedIssuer": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+  "asset": {
+    "address": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
+    "symbol": "USDC",
+    "decimals": 6
+  },
+  "deployer": "0x4Ce5cE1F77bE49a060D7c0DCAee3835C067EBCD4",
+  "eip712": {
+    "name": "LemmaXAttemptSettlement",
+    "version": "2"
+  },
+  "transactionHash": "0x42fee0335b6324c2100eb96185ca3d0e5fb3157adb39ac6c6a6c87af0c1c9a59",
+  "blockNumber": "70137467",
+  "blockHash": "0x93274fa7cdbb6427beaa206f75c16840d8a19be4d74785606334465adb12884f",
+  "blockTimestamp": "1791729580",
+  "confirmation": {
+    "stage": "verified",
+    "finalizedHead": "70137470"
+  },
+  "gasEstimate": "2499515",
+  "gasLimit": "2749467",
+  "gasUsed": "2749467",
+  "effectiveGasPrice": "102000000000",
+  "compiler": "0.8.37+commit.f401782d.Emscripten.clang",
+  "evmVersion": "osaka",
+  "maskedRuntimeSha256": "53c5cb43a821f8e0a16959fe7ce68d4fb3fc403023df68de74f17c0483243d2a",
+  "abiSha256": "059bfcd3c7978f2bbdae1254c0f2ba06de851dec919b43ab47862b2e1e60ac75",
+  "codeSha256": {
+    "contracts/AttemptSettlement.sol": "7db66a2d987f0da87c78ed23756f67a5e7283a87a307059fe3499afd02748b53",
+    "scripts/compile-settlement.mjs": "daf55dc2c79d844cde4c8142ed3bc11396fbc8ae1b43483540f1aa040b5c9ccc",
+    "scripts/deploy-settlement.mjs": "d6d44d64b9aea83ad22d09a40f2fd4cd48faabb96c6a1a309d175d4260f64d77",
+    "src/monad.mjs": "93c8d4cf4b9d43f2a3526bd9e5fec2f2ffdabdd8b03f1434fd236bb46523a37b",
+    "src/settlement.mjs": "e69ce7671895626543fa2194667e2be8bce17dea5c5cd446c71cd877e0380e1a"
+  }
+}

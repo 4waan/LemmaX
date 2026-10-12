@@ -1,0 +1,102 @@
+# One row per attempt: its public terms, state, allocation and verdict summary.
+type Attempt {
+  id: ID!
+  settlement: String!
+  buyer: String! @index
+  issuer: String!
+  evaluatorSigner: String! @index
+  connectorPayee: String!
+  executorPayee: String!
+  evaluatorPayee: String!
+  principal: BigInt!
+  executionCap: BigInt!
+  evaluationCap: BigInt!
+  quoteExpiresAt: BigInt!
+  executeBy: BigInt!
+  settleBy: BigInt!
+  quoteDigest: String!
+  recordCommitment: String!
+  "event (v3 AttemptTerms), calldata (v2 fund input) or unavailable"
+  termsSource: String!
+  "funded, settled_success, settled_failure or refunded_timeout"
+  state: String! @index
+  fundedBlock: Int!
+  fundTx: String!
+  outcomeTx: String
+  executionUsed: BigInt
+  evaluationUsed: BigInt
+  allocation: Json
+  verdictCodes: [String!]!
+  blocking: Boolean!
+}
+
+# A rule-conformance finding under one rulebook version, attributed to one party.
+type Verdict {
+  id: ID!
+  attemptId: String! @index
+  code: String!
+  severity: String!
+  party: String! @index
+  role: String!
+  detail: String!
+  rulebookHash: String!
+  txHash: String!
+}
+
+# Per party and rulebook version; the buyer's guard refuses parties with blocking > 0.
+type PartyRecord {
+  id: ID!
+  party: String! @index
+  rulebookHash: String!
+  attempts: Int!
+  blocking: Int!
+  recorded: Int!
+  informational: Int!
+  lastVerdict: String
+  lastVerdictTx: String
+}
+
+# Money that left the contract or was deferred, per transfer.
+type Payout {
+  id: ID!
+  owner: String! @index
+  destination: String!
+  amount: BigInt!
+  "paid, deferred or withdrawn"
+  kind: String!
+  txHash: String!
+  blockNumber: Int!
+}
+
+type PayoutInstruction {
+  id: ID!
+  owner: String! @index
+  destination: String!
+  bar: BigInt!
+  nonce: BigInt!
+  txHash: String!
+}
+
+# LemmaX-format ERC-8004 feedback, checked against settled attempts.
+type ReputationRecord {
+  id: ID!
+  agentId: BigInt! @index
+  client: String! @index
+  feedbackIndex: BigInt!
+  value: BigInt!
+  valueDecimals: Int!
+  tag1: String!
+  tag2: String!
+  feedbackHash: String!
+  valid: Boolean!
+  reason: String
+  attemptIds: [String!]!
+  revoked: Boolean!
+  txHash: String!
+}
+
+# Each attempt counts at most once per feedback kind.
+type CountedAttempt {
+  id: ID!
+  feedback: String!
+}
