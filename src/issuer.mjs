@@ -23,6 +23,14 @@ export function createQuoteIssuer({ account, domain, token, payees, caps, terms 
     address: account.address,
     fundingTotal: total.toString(),
     issuedOn(day) { return (issued.get(BigInt(day)) ?? 0n).toString(); },
+    // Issued totals live in memory. After a restart the operator restores a day's total from
+    // what the chain shows was funded, so a restart cannot reset the daily cap.
+    restore(day, amount) {
+      const d = BigInt(day), a = BigInt(amount);
+      if (a < 0n) throw new RangeError("Restored amount must not be negative");
+      if (a > (issued.get(d) ?? 0n)) issued.set(d, a);
+      return (issued.get(d) ?? 0n).toString();
+    },
     async issue({ offerRef, caseRef, query, buyer, profileRef, issuedAt, evaluatorRef }) {
       if (evaluatorRef !== undefined && !Object.hasOwn(roster, evaluatorRef)) throw new TypeError("Unknown evaluator");
       const assigned = evaluatorRef === undefined ? payee : roster[evaluatorRef];

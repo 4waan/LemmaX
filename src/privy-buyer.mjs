@@ -4,10 +4,14 @@ import { RECEIVE_AUTHORIZATION_TYPES } from "./attempt.mjs";
 import { deriveP256Key } from "./keys.mjs";
 
 // The buyer's wallet is a Privy server wallet. Three P-256 authorization keys sit on the
-// buyer's side and are derived from the buyer's existing key, so nothing new is stored:
+// buyer's side:
 // - principal: owns the wallet and the mandate policy (kept offline in practice);
 // - agent: the AI agent's signer, limited by the mandate to one kind of signature;
 // - guard: owns the set of approved quote digests; neither the agent nor LemmaX holds it.
+// The agent key derives from the buyer's existing key. The principal and guard keys come
+// from their own secrets (LEMMAX_PRINCIPAL_SECRET, LEMMAX_GUARD_SECRET) when set, so a
+// leaked agent key gives no control over the policy or the approved set; without them they
+// are derived from the buyer's key too, and the report says so.
 export const PRIVY_KEY_LABELS = Object.freeze({ principal: "lemmax/privy/principal/v1", agent: "lemmax/privy/agent/v1", guard: "lemmax/privy/guard/v1" });
 
 // Privy takes base64 DER keys: PKCS8 for private keys, SPKI for public keys.
@@ -20,11 +24,19 @@ export function p256KeyPair(scalarHex) {
   return { privateKey: key.export({ type: "pkcs8", format: "der" }).toString("base64"),
     publicKey: createPublicKey(key).export({ type: "spki", format: "der" }).toString("base64") };
 }
+export const PRIVY_KEY_SECRETS = Object.freeze({ principal: "LEMMAX_PRINCIPAL_SECRET", guard: "LEMMAX_GUARD_SECRET" });
+const HEX32 = /^0x[0-9a-fA-F]{64}$/;
 export function buyerPrivyKeys(env) {
   const parent = env.BENCHMARK_BUYER_PRIVATE_KEY;
-  if (typeof parent !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(parent)) throw new TypeError("BENCHMARK_BUYER_PRIVATE_KEY is missing or is not a private key");
-  return Object.fromEntries(Object.entries(PRIVY_KEY_LABELS).map(([role, label]) => [role, p256KeyPair(deriveP256Key(parent, label))]));
+  if (typeof parent !== "string" || !HEX32.test(parent)) throw new TypeError("BENCHMARK_BUYER_PRIVATE_KEY is missing or is not a private key");
+  return Object.fromEntries(Object.entries(PRIVY_KEY_LABELS).map(([role, label]) => {
+    const name = PRIVY_KEY_SECRETS[role], own = name ? env[name] : undefined;
+    if (own !== undefined && (typeof own !== "string" || !HEX32.test(own))) throw new TypeError(`${name} must be 32 bytes of hex`);
+    return [role, p256KeyPair(deriveP256Key(own ?? parent, label))];
+  }));
 }
+// Which buyer-side keys have their own secret, for reports. Names and booleans only.
+export const privyKeySeparation = env => Object.fromEntries(Object.entries(PRIVY_KEY_SECRETS).map(([role, name]) => [role, Boolean(env[name])]));
 
 // The mandate: a single ALLOW rule. The agent may sign only a USDC ReceiveWithAuthorization
 // on this chain, paying the settlement contract at most the funding total, whose nonce is
