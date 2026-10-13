@@ -43,7 +43,7 @@ For an interactive client, use the [MCP configuration and tool contracts](docs/R
 - **Chain execution:** [`contracts/AttemptSettlement.sol`](contracts/AttemptSettlement.sol) enforces funding, settlement and payouts. [`src/settlement.mjs`](src/settlement.mjs), [`src/monad.mjs`](src/monad.mjs) and [`src/reconcile.mjs`](src/reconcile.mjs) simulate calls, confirm chain state and reconcile allocations.
 - **Buyer approval and public audit:** [`src/guard.mjs`](src/guard.mjs) approves quote digests, [`src/privy-buyer.mjs`](src/privy-buyer.mjs) connects the wallet policy, and [`src/audit.mjs`](src/audit.mjs) reads audit findings. [`indexer/`](indexer/) reconstructs settlements using the shared rules and the hash-pinned [`rulebook/`](rulebook/).
 - **Identity and feedback:** [`src/erc8004.mjs`](src/erc8004.mjs) and [`src/reputation.mjs`](src/reputation.mjs) prepare agent registrations and bounded feedback from settled attempts.
-- **Web demo:** [`web/server.mjs`](web/server.mjs) serves the page, its purchase API and a read-only HTTP MCP endpoint. [`web/live.mjs`](web/live.mjs) connects the operator's wallet, evaluator and auditor.
+- **Web app:** [`web/server.mjs`](web/server.mjs) serves the page, its purchase API and a read-only HTTP MCP endpoint. [`web/live.mjs`](web/live.mjs) connects the operator's wallet, evaluator and auditor.
 
 The entry points assemble these modules. Keep dataset admission, evaluator authority and payment authorization on their owning side of the boundary. An MCP caller must not supply trusted evidence counts, private principals, keys or arbitrary storage paths.
 
@@ -76,9 +76,9 @@ Code generation and the auditor tests do not deploy a hosted GraphQL service. Us
 
 The indexer pins Envio and Vitest. Its scoped overrides select patched Express, query parsing and WebSocket dependencies while keeping their existing major versions. When updating them, verify a clean install, code generation, types and auditor behavior together. The pinned versions and override scope live in [`indexer/package.json`](indexer/package.json).
 
-## Run funded demos deliberately
+## Run the funded web app deliberately
 
-`npm run live` initializes the operator's funded web demo on Monad Testnet. Its `/mcp` endpoint is read-only, but visitors to its purchase API use the configured demo buyer and relayer. It is not a wallet-free retrieval preview or an authenticated private-company service.
+`npm run live` initializes the operator's funded web app on Monad Testnet. Its `/mcp` endpoint is read-only, but visitors to its purchase API use the page's buyer agent and relayer. It is not a wallet-free retrieval preview or an authenticated private-company service.
 
 Set `LEMMAX_STATE_DIR` to a durable, ignored directory to preserve daily budgets across restarts. A missing state file starts a new ledger; unreadable or malformed saved state stops startup rather than resetting spending counters. Run one instance against that state directory. The counters and queue are not a distributed spending ledger.
 

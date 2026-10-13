@@ -2,7 +2,7 @@
 
 This document explains what LemmaX keeps private, what it puts on Monad, and why. It separates the design choices we made from proposals that remain open.
 
-**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#what-is-proved-today) distinguishes live transactions from local and fork checks.
+**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#measured-so-far) distinguishes live transactions from local and fork checks.
 
 ## 1. Context and decisions
 
@@ -25,21 +25,21 @@ The [business requirements and benchmark evidence](research/LemmaX-Business-Requ
 5. Private adaptations do not automatically become catalog assets.
 6. For an adoption attempt, the public application records are the **attempt commitment** and **settlement outcome**. The selected resource and detailed company record remain private.
 7. A **company-approved evaluator** is the chosen direction. Requiring external parties to verify a proof of the full private record is outside the initial scope, because we judged it excessive and more costly for a first version.
-8. Monad is the settlement chain, and the demonstration runs on Monad Testnet.
+8. Monad is the settlement chain, and LemmaX runs on Monad Testnet.
 9. Our initial confidentiality direction uses company-controlled detailed records, conventional encryption where needed, randomized commitments, and signed evaluator verdicts. ZK and FHE are not initial requirements. Exact storage, keys, and evaluator access remain implementation decisions.
 10. Reuse ERC-8004 identity and selected authorized feedback. LemmaX owns acceptance policy, compatibility mathematics, private evidence, metering, and settlement. The initial workflow uses the approved evaluator directly, without a dependency on Monad's forthcoming validation registry.
 11. The MVP is a deterministic resource directory returning `P_outcome`, `C_reuse`, and contribution-governed service availability through a clear API. Generating an integration plan or managing adoption is not part of its initial assessment deliverable. Optional agent work is a separately scoped future service.
 12. The desired directory scope includes both callable model access and downloadable model weights/adapters for company-controlled execution. Sellable connectors and MCP tools are favored; general reusable code is not the preferred initial category. The first capability is source retrieval through MCP connectors.
 
 13. The measurement unit is one bounded task case with a specific input, expected result, context, and limits. A versioned benchmark batch evaluates those cases. The commercial listing is a versioned capability offer. Benchmark-case success and company-adoption success retain different scopes.
-14. The demo must include minimal reproducible evidence that the approach can scale. Load levels, hardware, budgets, performance thresholds, and extrapolation limits must be explicit. The scale protocol in section 10 has not been run; a bounded local MCP probe is recorded.
-15. We adopted the initial retrieval quality criterion: at least one labeled relevant source among up to five ranked, authorized references, with provenance. The first offers are BM25 and TF-IDF connectors on the public SciFact corpus, with demonstration deadlines and tariffs in versioned terms.
+14. The first release must include minimal reproducible evidence that the approach can scale. Load levels, hardware, budgets, performance thresholds, and extrapolation limits must be explicit. The scale protocol in section 10 has not been run; a bounded local MCP probe is recorded.
+15. We adopted the initial retrieval quality criterion: at least one labeled relevant source among up to five ranked, authorized references, with provenance. The first offers are BM25 and TF-IDF connectors on the public SciFact corpus, with version 1 deadlines and tariffs in versioned terms.
 16. Per-resource probability comparison is part of the directory output. Each bar estimates success against the same declared acceptance profile and carries evidence and uncertainty. These separate success probabilities need not sum to one. The values `0.84`, `0.05`, and `0.11` are illustrative, not measured resource estimates.
 17. For a separately purchased attempt, success pays connector principal plus actual separately quoted execution/evaluation charges within their caps. Eligible failure refunds connector principal and retains only those consumed charges. Unused reserve remains buyer-owned credit.
 18. Payouts need a minimum and an owner-controlled bar above it. Contract version 3 pays the whole credit once it reaches the bar, with a 0.01 USDC minimum, and `withdraw` closes out smaller balances. The bar never changes the amount owed.
 19. Subscription-billed resources are within scope alongside usage-billed resources. Capability/outcome and billing-plan identities remain separate. Compare costs over a common workload/horizon, account for authorized existing entitlements, and do not treat a recurring fee as a new successful-query purchase.
 
-The assessment output is fixed as structured numerical results. The demonstration fixes the first offers, deadlines, tariff, timeout refund, payouts and integrations. LemmaX operates the demonstration evaluators, as the rulebook declares. Customer failure eligibility, disputes, subscription rights and tariffs, and subsidy funding remain open. The [paid-unit specification](Paid-Unit.md) records the refund policy and payout rules.
+The assessment output is fixed as structured numerical results. Version 1 terms fix the first offers, deadlines, tariff, timeout refund, payouts and integrations. LemmaX operates both evaluators today, as the rulebook declares. Customer failure eligibility, disputes, subscription rights and tariffs, and subsidy funding remain open. The [paid-unit specification](Paid-Unit.md) records the refund policy and payout rules.
 
 ## 2. Product and component boundary
 
@@ -260,7 +260,7 @@ Each integration decides something in the payment path:
 - **Privy:** the buyer's server wallet. Its policy signs only quotes the buyer's guard approved. [Privy in the trust loop](Trust-Loop.md#privy-the-buyers-mandate).
 - **ERC-8004:** identities for four LemmaX agents and feedback built from settled attempts only (section 4).
 
-The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#what-is-proved-today).
+The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#measured-so-far).
 
 ## 10. Scale evidence
 
@@ -268,7 +268,7 @@ The build excludes custom model training, generalized proof of repository integr
 
 ### Minimum evidence of scale readiness
 
-The demo should support a bounded statement: the implemented path met declared correctness, latency, and cost requirements at specified data sizes and arrival rates on recorded hardware. A successful small demo alone cannot establish production capacity. The following is a proposed minimal protocol, not a completed result or a selected service-level promise.
+The first release should support a bounded statement: the implemented path met declared correctness, latency, and cost requirements at specified data sizes and arrival rates on recorded hardware. A successful small run alone cannot establish production capacity. The following is a proposed minimal protocol, not a completed result or a selected service-level promise.
 
 **Assessment load and growth:** use the actual HTTP/MCP assessment path with persistence and authorization checks. Generate labeled synthetic catalog and evidence volumes for performance testing only. A feasible initial sweep is 100, 1,000, and 10,000 offers, with a separate 1,000 versus 100,000 stored-case comparison while holding the eligible candidate set fixed. Increase request arrivals through 1, 10, and 50 requests/second. These values are proposed test levels. Freeze the hardware, allowed cost, p95 latency, and error thresholds before execution. Record achieved throughput, failed and dropped requests, CPU/RAM, database work, cache behavior, and cost per successful assessment. A sweep plus a five-minute sustained run at the intended operating point is a modest first artifact, not a long-term stability test.
 

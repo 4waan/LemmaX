@@ -1,6 +1,6 @@
 # LemmaX paid unit: bounded source-retrieval attempt
 
-This is what one purchase covers: one bounded search attempt. We refund the search price on an eligible miss, because the buyer pays for a found source, not for a try. The demonstration tariff, deadline profiles and automatic payouts are fixed in versioned terms ([demonstration terms](Monad-Settlement-Path.md#6-demonstration-terms)). Customer tariffs and limits still need real pricing.
+This is what one purchase covers: one bounded search attempt. We refund the search price on an eligible miss, because the buyer pays for a found source, not for a try. The version 1 tariff, deadline profiles and automatic payouts are fixed in versioned terms ([version 1 terms](Monad-Settlement-Path.md#6-version-1-terms)). Customer tariffs and limits still need real pricing.
 
 ## What is listed and purchased
 

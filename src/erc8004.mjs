@@ -31,11 +31,11 @@ export const LEMMAX_AGENTS = Object.freeze({
   directory: { name: "LemmaX Directory", owner: "deployer",
     description: "Ranks retrieval offers for AI agents by outcome probability and expected cost, and sells outcome-conditioned retrieval attempts settled in USDC on Monad. Read-only MCP tools are public; paid tools run on an operator-configured server." },
   evaluator: { name: "LemmaX Evaluator", owner: "evaluator",
-    description: "Company-approved evaluator for LemmaX demonstration attempts. Checks each attempt against its committed record and signs the settlement receipt at the published tariff. Operator-run." },
+    description: "Checks each LemmaX search attempt against its committed record and signs the settlement receipt at the published tariff. Run by LemmaX." },
   evaluatorB: { name: "LemmaX Evaluator-b", owner: "evaluatorB",
-    description: "Labelled fault-injection evaluator for the LemmaX demonstration, used once to show the public auditor and the buyer's guard refusing an above-tariff evaluator. Operator-run." },
+    description: "Canary checker run by LemmaX. It overcharges on purpose so the public auditor's finding and the buyer guard's refusal stay checkable onchain." },
   provider: { name: "LemmaX Retrieval Provider", owner: "provider",
-    description: "Provider of LemmaX's public benchmark retrieval offers (BM25 and TF-IDF over SciFact). Receives the principal when an attempt is accepted. Demonstration provider." },
+    description: "Serves LemmaX's BM25 and TF-IDF search over the public SciFact corpus and receives the price when an attempt finds a right source. Run by LemmaX." },
 });
 
 // Registration file (ERC-8004 registration-v1) with a LemmaX extension naming the

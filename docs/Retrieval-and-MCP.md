@@ -1,6 +1,6 @@
 # Public retrieval connectors and MCP integration
 
-This slice runs two connector offers on the same frozen public corpus. It uses no training or paid model inference. By default it is a read-only local integration demo; an operator-configured server adds the purchase tools described in the [Monad settlement path](Monad-Settlement-Path.md).
+This slice runs two connector offers on the same frozen public corpus. It uses no training or paid model inference. By default it is a read-only local integration; an operator-configured server adds the purchase tools described in the [Monad settlement path](Monad-Settlement-Path.md).
 
 ## Offers and output
 
@@ -10,7 +10,7 @@ BM25 uses `k1=1.2`, `b=0.75` and ignores repeated query terms. TF-IDF uses subli
 
 Each result contains up to five references with `sourceRef`, `sourceVersion`, `location`, `rank` and a method-specific score. Scores are ranking values, not probabilities and not comparable across methods. Query input is limited to 2048 characters and 256 token occurrences. The index freezes copied source metadata and builds statistics only from documents authorized for its configured principal. Hidden documents cannot change visible IDF or scores.
 
-The demo principal is fixed to the public SciFact corpus. The library requires explicit authorization and matching source versions, but these are trusted operator inputs rather than authentication proofs. The MCP server cannot load private corpora, select a caller-supplied principal, or import paths/URLs through tools. Private/company deployments need a separate authenticated evidence and document boundary.
+The public principal is fixed to the public SciFact corpus. The library requires explicit authorization and matching source versions, but these are trusted operator inputs rather than authentication proofs. The MCP server cannot load private corpora, select a caller-supplied principal, or import paths/URLs through tools. Private/company deployments need a separate authenticated evidence and document boundary.
 
 ## Measured comparison
 

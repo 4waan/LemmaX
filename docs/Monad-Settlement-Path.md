@@ -8,9 +8,9 @@ Contract version 3 is the current contract. It pays credit out automatically and
 
 - **Asset.** Quotes and payments use USDC atomic units (six decimals), so no price oracle is needed. The contract is fixed to one token at deployment. On testnet and mainnet that token is Circle USDC. Native MON settlement is removed.
 - **Keys.** The quote issuer and the evaluator use separate keys, so the two authorities are distinct onchain.
-- **Network.** The live demonstration targets Monad Testnet.
+- **Network.** LemmaX runs on Monad Testnet.
 - **Offer prices.** Both retrieval offers carry the same principal.
-- **Cost basis.** Demonstration prices use published reference prices and a recorded version 2 gas-cost snapshot. Version 3 payout gas changes that cost basis; section 6 separates the two.
+- **Cost basis.** Version 1 prices use published reference prices and a recorded version 2 gas-cost snapshot. Version 3 payout gas changes that cost basis; section 6 separates the two.
 - **Deadlines.** Two deadline profiles: a standard profile, and a short profile that makes the timeout refund demonstrable.
 - **LemmaX revenue.** LemmaX earns only the execution charge. There is no onchain success share, so the three payees (connector, executor, evaluator) are unchanged.
 - **Payouts.** Contract version 3 attempts an automatic payout once credit reaches the owner's bar (minimum 0.01 USDC). The relayer pays gas; refused transfers preserve credit. An owner needs MON to withdraw credit below the bar. A signed instruction can route payouts or raise the bar.
@@ -20,7 +20,7 @@ Contract version 3 is the current contract. It pays credit out automatically and
 
 ## 2. Current architecture
 
-Two paths are implemented, and the Phase 3 purchase path joins them.
+Two paths are implemented, and the purchase path joins them.
 
 **Directory path, public and read-only.** The frozen SciFact report feeds two connectors (`src/retrieval.mjs`), the decision core (`src/beta.mjs`, `src/assessment.mjs`, `src/billing.mjs`), the public directory (`src/directory.mjs`) and the stdio MCP server (`src/mcp.mjs`). It returns observed hit rates and assessments, redacts operator contribution and reports `fundable: false`. [Retrieval and MCP](Retrieval-and-MCP.md).
 
@@ -133,17 +133,17 @@ Version 2 funding includes the token transfer and still costs about 20% less tha
 
 ### Purchase path
 
-`src/terms.mjs` holds the demonstration tariff and deadline profiles as versioned data (`lemmax-demo-terms/v1`) and parses operator caps exactly, without floating point. `createQuoteIssuer` builds the private record and quote, signs the quote with the issuer key and returns the typed data the buyer wallet signs. It refuses terms above `LEMMA_MAX_USDC_PER_RESOLUTION` and stops issuing when a chain day's issued total would pass `LEMMA_DAILY_USDC_CAP`. Every issued quote counts, funded or not, and the running total is reserved before signing so concurrent requests cannot overrun it. The issuer's counter lives in process memory and provides a `restore` method. The public page persists daily issued totals and restores them after a restart; other callers must provide their own persistence. `createEvaluator` opens the record, reruns the committed retrieval task, checks authorization, source version and output limit, judges relevance against the public labels and signs the receipt with the tariff's charges. A conformance failure stays unresolved, so that attempt ends in the full timeout refund.
+`src/terms.mjs` holds the version 1 tariff and deadline profiles as versioned data (`lemmax-demo-terms/v1`) and parses operator caps exactly, without floating point. `createQuoteIssuer` builds the private record and quote, signs the quote with the issuer key and returns the typed data the buyer wallet signs. It refuses terms above `LEMMA_MAX_USDC_PER_RESOLUTION` and stops issuing when a chain day's issued total would pass `LEMMA_DAILY_USDC_CAP`. Every issued quote counts, funded or not, and the running total is reserved before signing so concurrent requests cannot overrun it. The issuer's counter lives in process memory and provides a `restore` method. The public page persists daily issued totals and restores them after a restart; other callers must provide their own persistence. `createEvaluator` opens the record, reruns the committed retrieval task, checks authorization, source version and output limit, judges relevance against the public labels and signs the receipt with the tariff's charges. A conformance failure stays unresolved, so that attempt ends in the full timeout refund.
 
 The MCP server registers three purchase tools only when the operator supplies a purchase desk. `lemma_quote_attempt` returns the signed quote, the typed data for the buyer wallet, and the private record and salt for the buyer to keep. `lemma_fund_attempt` relays the buyer's signed authorization for a quote this desk issued and waits for the Verified stage. It refuses a quote within five seconds of expiry, an attempt that is already funded, and a second relay of the same quote while one is in flight, because a funding transaction mined after expiry still pays its whole gas limit. `lemma_attempt_status` reads onchain state. A rejection returns the reason from our validation, the contract or the token. Issued quotes live in process memory. The stdio transport runs under the operator's control; a remote transport needs authentication before it is exposed. Two further assessment scenarios price the demonstration terms against the declared buyer alternatives.
 
-`npm run demo:testnet` runs the demonstration through those tools. The buyer agent assesses both alternatives, then a timeout attempt is funded first, a success and an eligible failure are settled by the evaluator, the timeout attempt is refunded after its settlement deadline, LemmaX withdraws its execution charges, and the events are reconciled. `LEMMAX_DEMO_TARGET=fork` rehearses on a local fork of Monad Testnet with fork-minted funds. `LEMMAX_DEMO_TARGET=testnet` reports balances, the gas budget, the operator caps and the chosen offer and cases only, unless `LEMMAX_DEMO_BROADCAST=1`. The offer is assessed and chosen before any chain access, so a stale or unranked assessment stops the run before anything is paid for. The rehearsal with the configured role keys and Circle's USDC passed: TF-IDF ranked first under the LLM-reads-corpus alternative, all three outcomes ended as planned, LemmaX withdrew 0.003 USDC and reconciliation reported no issues. [Rehearsal report](../verification/testnet-demo-fork.json).
+`npm run demo:testnet` runs a purchase sequence through those tools. The buyer agent assesses both alternatives, then a timeout attempt is funded first, a success and an eligible failure are settled by the evaluator, the timeout attempt is refunded after its settlement deadline, LemmaX withdraws its execution charges, and the events are reconciled. `LEMMAX_DEMO_TARGET=fork` rehearses on a local fork of Monad Testnet with fork-minted funds. `LEMMAX_DEMO_TARGET=testnet` reports balances, the gas budget, the operator caps and the chosen offer and cases only, unless `LEMMAX_DEMO_BROADCAST=1`. The offer is assessed and chosen before any chain access, so a stale or unranked assessment stops the run before anything is paid for. The rehearsal with the configured role keys and Circle's USDC passed: TF-IDF ranked first under the LLM-reads-corpus alternative, all three outcomes ended as planned, LemmaX withdrew 0.003 USDC and reconciliation reported no issues. [Rehearsal report](../verification/testnet-demo-fork.json).
 
 ### Live run on Monad Testnet
 
 Contract version 2 was deployed by `DEPLOYER_PRIVATE_KEY` in transaction [0x5b25bc59ae](https://testnet.monadvision.com/tx/0x5b25bc59ae3e434d2b9f6b686eaa7c9a630697a0c8cd2d36118e2a4e4d446802). Its runtime matches the build with immutables masked, its issuer is the facilitator, its token is Circle USDC and its signing domain is version 2. Sourcify on MonadVision reports an exact match for both creation and runtime bytecode.
 
-The demonstration then ran against that contract through the MCP purchase tools, with the buyer agent declaring the LLM-reads-corpus alternative. The facilitator relayed every funding transaction and the evaluator relayed every settlement, so the buyer used no MON.
+The sequence then ran against that contract through the MCP purchase tools, with the buyer agent declaring the LLM-reads-corpus alternative. The facilitator relayed every funding transaction and the evaluator relayed every settlement, so the buyer used no MON.
 
 | Attempt | Case | Final state | Funding | Settlement or refund |
 | --- | --- | --- | --- | --- |
@@ -155,17 +155,15 @@ LemmaX then withdrew its 0.003 USDC of execution charges ([0x3652f0a6](https://t
 
 Monad Testnet receipts report gas used equal to the transaction gas limit, consistent with charging the limit: funding 276,815 to 314,498, successful settlement 237,465, failure settlement 141,554 and refund 88,477. The public RPC limits `eth_getLogs` to 100 blocks, so the reconciler reads in 100-block chunks. An earlier, interrupted run had deployed the contract without emitting any event, so this run read events from its own first block (`LEMMAX_SETTLEMENT_FROM_BLOCK`) and reused the contract (`LEMMAX_SETTLEMENT_ADDRESS`).
 
-## 5. Plan
+## 5. Roadmap
 
-**Phase 3: testnet purchase path.** Done: the three attempts ran on Monad Testnet and reconcile with their private records, and the contract source is verified (section 4). A remote MCP transport still needs authentication before it serves anyone beyond the operator.
+**Done.** Three purchases ran on Monad Testnet with contract version 2 and reconcile with their private records, and the contract source is verified (section 4). Contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner are built and checked, and the loop is rehearsed on a fork. Version 3 is deployed and source-verified. [Trust loop](Trust-Loop.md).
 
-**Phase 4: trust and identity.** Built and checked: contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner rehearsed on a fork. Version 3 is deployed and source-verified. Remaining live steps: deploy the auditor to Envio Cloud, create the Privy buyer wallet after its kill test, register the agents, run the loop on testnet and publish its feedback. The validation registry stays outside the settlement path. [Trust loop](Trust-Loop.md). [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
+**Next.** Deploy the auditor to Envio Cloud, create the Privy buyer wallet after its kill test, register the agents, run the loop on testnet and publish its feedback. Then run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness) and extend the cost ledger with measured testnet gas. A remote MCP transport for purchases needs authentication before it serves anyone beyond the operator. The validation registry stays outside the settlement path. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
 
-**Phase 5: evidence and submission.** Run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness), extend the cost ledger with measured testnet gas, and prepare the technical demonstration.
+## 6. Version 1 terms
 
-## 6. Demonstration terms
-
-The demonstration terms use published reference prices and a recorded version 2 cost snapshot. They remain fixed in `lemmax-demo-terms/v1`; the version 3 payout path did not revise the tariff. Reference prices and the MON price are assumptions for these calculations. They do not establish current production costs or a sustainable margin for every payout pattern.
+The version 1 terms use published reference prices and a recorded version 2 cost snapshot. They keep their original identifier, `lemmax-demo-terms/v1`, and remain fixed; the version 3 payout path did not revise the tariff. Reference prices and the MON price are assumptions for these calculations. They do not establish current production costs or a sustainable margin for every payout pattern.
 
 ### Reference prices and measured costs
 
@@ -199,7 +197,7 @@ The recorded version 3 timeout limit is 216,283, or about $0.000547 in gas under
 
 ### Buyer's direct alternative
 
-`C_reuse` needs the buyer's cost of completing the same outcome without the purchase. The demonstration declares two hypothetical cost scenarios for the 5,183-document corpus (about 1.94 million tokens). Neither alternative was executed or evaluated against the retrieval benchmark, so their cost inputs do not prove equivalent result quality or measured savings:
+`C_reuse` needs the buyer's cost of completing the same outcome without the purchase. The buyer agent declares two hypothetical cost scenarios for the 5,183-document corpus (about 1.94 million tokens). Neither alternative was executed or evaluated against the retrieval benchmark, so their cost inputs do not prove equivalent result quality or measured savings:
 
 - **Own retrieval pipeline: about $0.0024 per query.** Cohere rerank, query embedding and a vector query, plus one-time corpus embedding spread over the 100-query illustrative workload. Engineering time is excluded.
 - **LLM reads the corpus: about $0.194 per query.** Claude Haiku 5.5 input in chunks under 100,000 tokens. Output tokens are excluded.
@@ -211,7 +209,7 @@ Conditional on those declared costs, a uniform prior and treating the representa
 | Own pipeline, 0.0024 | 0.743, 0.0066 | 0.763, 0.0067 | negative, about -0.004 |
 | LLM reads corpus, 0.194 | 0.743, 0.0559 | 0.763, 0.0521 | positive, about 0.14 |
 
-With these inputs, TF-IDF ranks first when the alternative is expensive. The own-pipeline scenario produces negative expected savings. The demonstration agent declares the LLM-reads-corpus scenario for its main run and shows the own-pipeline case once. The fixed demonstration overhead (e + v = 0.0023) is almost half the principal; the version 3 gas sensitivity above also shows why this tariff cannot be treated as proof of sustainable sub-cent settlement. Batching remains a proposed direction. Probabilities describe the public benchmark under the disclosed independence assumption, not calibrated customer outcomes.
+With these inputs, TF-IDF ranks first when the alternative is expensive. The own-pipeline scenario produces negative expected savings. The buyer agent uses the LLM-reads-corpus scenario for its main run and shows the own-pipeline case once. The fixed demonstration overhead (e + v = 0.0023) is almost half the principal; the version 3 gas sensitivity above also shows why this tariff cannot be treated as proof of sustainable sub-cent settlement. Batching remains a proposed direction. Probabilities describe the public benchmark under the disclosed independence assumption, not calibrated customer outcomes.
 
 ### Deadline profiles
 
@@ -226,20 +224,20 @@ The buyer authorization window ends one second after the quote expires. The time
 
 ## 7. Testnet roles and funding
 
-The operator environment carries keys from the earlier Lemma deployment. Each is an ordinary EOA, so the same addresses work on Monad Testnet. The table records version 2 Phase 3 roles and approximate gas budgets, rather than version 3 payout costs. Values are never printed or committed.
+The operator environment carries keys from the earlier Lemma deployment. Each is an ordinary EOA, so the same addresses work on Monad Testnet. The table records version 2 roles and approximate gas budgets, rather than version 3 payout costs. Values are never printed or committed.
 
-| Variable | Phase 3 role | Needs on Monad Testnet |
+| Variable | Role | Needs on Monad Testnet |
 | --- | --- | --- |
 | `DEPLOYER_PRIVATE_KEY` | Deploys `AttemptSettlement` | About 0.21 MON for one deployment |
 | `FACILITATOR_PRIVATE_KEY` | Quote issuer, funding relayer, executor payee | About 0.032 MON per funded attempt |
 | `EVALUATOR_PRIVATE_KEY` | Evaluator signer and payee, settlement relayer | About 0.022 MON per settlement |
 | `PROVIDER_PRIVATE_KEY`, `LEMMA_PROVIDER_ADDRESS` | Connector payee for both offers | MON only to withdraw credit |
-| `BENCHMARK_BUYER_PRIVATE_KEY`, `BENCHMARK_BUYER_ADDRESS` | Demonstration buyer; signs EIP-3009 authorizations | USDC to fund; MON only to withdraw credit |
+| `BENCHMARK_BUYER_PRIVATE_KEY`, `BENCHMARK_BUYER_ADDRESS` | Test buyer agent; signs EIP-3009 authorizations | USDC to fund; MON only to withdraw credit |
 | `LEMMA_MAX_USDC_PER_RESOLUTION`, `LEMMA_DAILY_USDC_CAP` | Issuer refuses terms above the per-attempt total, and any quote that would take the chain day's issued total, funded or not, past the daily cap | None |
 
 The Arbitrum Sepolia variables and `RESOLUTION_WARRANTY_REGISTRY_ADDRESS` belong to the earlier deployment and are not used on Monad. The issuer and evaluator keys are distinct, so the two authorities stay separate onchain.
 
-The operator funded the deployer, facilitator and evaluator with testnet MON and the buyer with faucet USDC. Circle's public faucet lists Monad Testnet but is protected by reCAPTCHA, and the official Monad faucet blocks automated browsers, so neither is automated. A captcha-free route for USDC is Circle CCTP from Arbitrum Sepolia, which Circle's forwarding service can complete on Monad without the recipient holding MON; MON itself still has to come from a faucet.
+The operator funded the deployer, facilitator and evaluator with testnet MON and the buyer with faucet USDC. A captcha-free route for USDC is Circle CCTP from Arbitrum Sepolia, which Circle's forwarding service can complete on Monad without the recipient holding MON; MON itself still has to come from a faucet.
 
 ## 8. Decisions settled after the live run
 

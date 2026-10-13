@@ -13,9 +13,10 @@ const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
 
 // The read-only tools serve frozen public benchmark data. Purchase tools exist only when
 // the operator passes a purchase desk configured with its own keys and caps. With the
-// Envio auditor configured, anyone can check an attempt against the published rules.
-export function createMcpServer(directory, desk = null, { audit = null } = {}) {
-  const server = new McpServer({ name: "LemmaX-public-benchmark-demo", version: VERSION });
+// auditor configured, anyone can check an attempt against the published rules; the tool
+// names which auditor answers (Envio's hosted index, or the same rules over RPC logs).
+export function createMcpServer(directory, desk = null, { audit = null, auditor = "envio" } = {}) {
+  const server = new McpServer({ name: "lemmax", version: VERSION });
   function tool(name, description, schema, action, annotations = READ_ONLY) {
     server.registerTool(name, { description, inputSchema: schema.strict(), annotations }, async (args, extra) => {
       try {
@@ -47,7 +48,7 @@ export function createMcpServer(directory, desk = null, { audit = null } = {}) {
     offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
   }), args => directory.runBenchmarkCase(args));
   if (audit) {
-    tool("lemma_verify_attempt", "Check one attempt against LemmaX's published rulebook using the public Envio auditor: state, who was paid what, and any rule findings. Reads public chain data only.",
+    tool("lemma_verify_attempt", `Check one attempt against LemmaX's published rulebook using ${auditor === "envio" ? "the public Envio auditor" : "a local auditor that applies the same rules to Monad logs"}: state, who was paid what, and any rule findings. Reads public chain data only.`,
       z.object({ attemptId: bytes32 }), args => verifyAttempt(audit, args.attemptId), { ...READ_ONLY, openWorldHint: true });
   }
   if (desk) {

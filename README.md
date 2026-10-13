@@ -4,7 +4,7 @@
 
 Give an agent the evidence to decide whether a tool is worth buying, before it pays.
 
-An API price tells you what a call costs. It says little about what finishing the job will cost. A cheap search can miss the source you need, leaving you to pay for another attempt or do the work yourself. A subscription can be the better choice if you already have unused allowance.
+A cheap search that misses the source you need costs a second attempt or your own time, so a per-call price rarely tells an agent what the job will cost. A subscription can be the better choice if you already have unused allowance.
 
 LemmaX puts the outcome, the evidence and the expected completion cost beside each offer. An agent can compare buying with its own alternative, choose a resource, or decide that buying makes no sense. When it buys, the price, success test, spending caps and refund terms are signed together.
 
@@ -29,7 +29,7 @@ The [billing adapter](docs/Implementation.md#workload-billing-adapter) compares 
 
 ## A purchase with a result attached
 
-For the retrieval demo, success means finding at least one labeled relevant source in the top five. The buyer locks **0.008 USDC**, including the search price and service reserves.
+For search, success means finding at least one labeled relevant source in the top five. The buyer locks **0.008 USDC**, including the search price and service reserves.
 
 - **Hit:** the provider earns the 0.005 USDC search price. Execution and checking consume 0.0023 USDC; the unused 0.0007 returns to the buyer's credit.
 - **Eligible miss:** the search price is refunded. The same disclosed service charges remain, returning 0.0057 USDC to buyer credit.
@@ -39,7 +39,7 @@ The buyer signs one USDC authorization bound to the complete quote. LemmaX relay
 
 The funding tool reports Monad's commit stages through MCP progress and waits for Verified before returning. The confirmed chain record carries the purchase into evaluation, settlement and the next buying decision.
 
-An approved evaluator checks and signs the outcome. Detailed records stay offchain; encryption helpers and salted commitments are implemented. Public addresses, terms and amounts remain visible. LemmaX runs the demo evaluators, so their judgment remains a trust assumption. The contract enforces authorization, caps, deadlines and allocations.
+An approved evaluator checks and signs the outcome. Detailed records stay offchain; encryption helpers and salted commitments are implemented. Public addresses, terms and amounts remain visible. LemmaX runs both checkers today, and the rulebook names who holds each key, so their judgment remains a trust assumption. The contract enforces authorization, caps, deadlines and allocations.
 
 ## The record changes the next decision
 
@@ -58,7 +58,7 @@ flowchart LR
     E --> B
 ```
 
-## What is proved today
+## Measured so far
 
 The paired SciFact benchmark measured **BM25 at 224/300 hits (74.67%)** and **TF-IDF at 230/300 (76.67%)**, using no model training or paid inference calls. A hit is a labeled relevant source in the top five. These are observed benchmark rates. They are not calibrated probabilities for an arbitrary company query.
 
@@ -68,7 +68,7 @@ Three purchases ran on Monad Testnet with contract v2: a success, an eligible mi
 
 Contract v3 is deployed and source-verified at [`0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7`](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7). Its automatic payouts passed local and fork checks. The public demo page and HTTP MCP transport are implemented and rehearsed on a fork; a hosted demo is still pending. [Evidence guide](docs/README.md#check-a-claim-against-its-record).
 
-This is a testnet prototype with public benchmark tasks. Customer adoption, production savings and an independent security review have not been established.
+Status: Monad Testnet with public benchmark searches. There are no outside users, production savings or independent security review yet.
 
 ## Try the decision core
 
@@ -84,7 +84,7 @@ npm run demo:billing
 npm run benchmark:verify
 ```
 
-The demos use synthetic inputs. Benchmark verification checks the committed evidence without downloading the corpus.
+The examples use illustrative inputs. Benchmark verification checks the committed evidence without downloading the corpus.
 
 To use the retrieval tools, [prepare the public SciFact corpus](docs/Retrieval-and-MCP.md#reproduce-locally), then launch `node scripts/mcp-server.mjs` from an MCP client with `LEMMAX_SCIFACT_DIR` set. The default server is read-only and offers discovery, assessment, retrieval, source reading and benchmark replay. Purchase tools require separate operator configuration.
 
@@ -103,6 +103,6 @@ The decision core can be used independently of settlement. Start with the [devel
 
 Aryan Singh Rathore and Awaan Mustafa Siddiqui, co-founders.
 
-LemmaX is a new codebase. We [reviewed our earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md), Lemma and LemmaXperiment, before building it, and copied no source code from them. Most of the first commit is generated benchmark output; the [commit history](https://github.com/4waan/LemmaX/commits/main) records the build from there.
+LemmaX is a new codebase. We [reviewed our earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md), Lemma and LemmaXperiment, before building it, and copied no source code from them; the testnet operator keys and the `lemma_` tool names carry over from Lemma. Most of the first commit is generated benchmark output; the [commit history](https://github.com/4waan/LemmaX/commits/main) records the build from there.
 
 LemmaX is [MIT licensed](LICENSE). Third-party data, packages and tools retain [their own terms](THIRD_PARTY.md). AI tools assisted in developing the project.

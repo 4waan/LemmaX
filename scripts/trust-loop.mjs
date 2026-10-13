@@ -141,7 +141,7 @@ async function main(env, say) {
       audit: envio ?? localAudit, conditionSets, setId, auditRequired: env.LEMMAX_AUDIT_REQUIRED !== "false" });
     // The agent talks to LemmaX only through MCP.
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer(createPublicDirectory({ report, index, data }), desk, { audit: envio ?? localAudit });
+    const server = createMcpServer(createPublicDirectory({ report, index, data }), desk, { audit: envio ?? localAudit, auditor: envio ? "envio" : "local" });
     const agent = new Client({ name: "LemmaX-buyer-agent", version: "1.0.0" });
     await server.connect(serverTransport); await agent.connect(clientTransport);
     const call = async (name, args, onprogress) => {

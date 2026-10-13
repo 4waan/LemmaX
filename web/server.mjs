@@ -81,7 +81,7 @@ export async function startServer({ env = process.env, port = Number(env.PORT ??
         // Stateless: a fresh read-only server per request, so no session state is held.
         if (req.method !== "POST") return send(res, 405, { jsonrpc: "2.0", error: { code: -32000, message: "Use POST" }, id: null });
         const body = await readJson(req, 65536);
-        const mcp = createMcpServer(directory, null, { audit: live.audit });
+        const mcp = createMcpServer(directory, null, { audit: live.audit, auditor: live.auditor });
         const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
         res.on("close", () => { transport.close(); mcp.close(); });
         await mcp.connect(transport);

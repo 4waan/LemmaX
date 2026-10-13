@@ -131,8 +131,8 @@ export function createRunQueue({ state, limits, dayNow }) {
     if (!Number.isSafeInteger(limits[kind]) || limits[kind] < 0) throw new RangeError(`${kind} daily limit must be a non-negative integer`);
   }
   const exhausted = {
-    buys: "Today's demo budget is used up. The public record and the tricks still work.",
-    tricks: "Today's trick budget is used up.",
+    buys: "Today's free searches are used up. The record and the wallet tests still work.",
+    tricks: "Today's wallet tests are used up.",
   };
   let busy = Promise.resolve();
   return (kind, visitor, task) => {
@@ -160,7 +160,7 @@ export function localMandateWallet({ account, chainId, usdc, settlement, maxValu
       add: async (setId, values) => values.map(v => { const x = String(v).toLowerCase(); approved.add(x); return { id: x, value: x }; }),
       remove: async (setId, id) => { approved.delete(String(id).toLowerCase()); },
     },
-    signer: { address: account.address, label: "local rehearsal of the wallet policy",
+    signer: { address: account.address, label: "local signer holding the Privy policy rule",
       async signFundingAuthorization(typed) {
         const m = typed.message;
         if (Number(typed.domain.chainId) !== Number(chainId) || getAddress(typed.domain.verifyingContract) !== getAddress(usdc)) throw deny("wrong chain or token");
@@ -178,7 +178,7 @@ export function walletRefusal(error, mode) {
   const status = Number(error?.status) || null;
   const byPolicy = error?.policy || (status >= 400 && status < 500);
   const raw = String(error?.message ?? "refused").replace(/0x[0-9a-fA-F]{64,}/g, "0x…").slice(0, 240);
-  return { refused: true, by: mode === "privy" ? "Privy (wallet policy in its secure enclave)" : "wallet policy (local rehearsal)", status, byPolicy: Boolean(byPolicy), message: raw };
+  return { refused: true, by: mode === "privy" ? "Privy (wallet policy in its secure enclave)" : "wallet policy (local signer)", status, byPolicy: Boolean(byPolicy), message: raw };
 }
 
 export async function createLiveDesk({ env, data, report, now = () => Date.now() }) {
@@ -236,7 +236,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   const guard = createBuyerGuard({ buyer: buyerWallet.address, domain, approvedIssuer: () => settlement.approvedIssuer(), chainTime, audit, conditionSets, setId,
     auditRequired: env.LEMMAX_AUDIT_REQUIRED !== "false" });
   const names = { [getAddress(provider)]: "Provider", [issuerAccount.address]: "LemmaX", [getAddress(mainEvaluator.payee)]: "Checker",
-    [getAddress(rosterB.payee)]: "Checker B (staged fault)", [getAddress(buyerWallet.address)]: "Buyer agent" };
+    [getAddress(rosterB.payee)]: "Checker B (canary)", [getAddress(buyerWallet.address)]: "Buyer agent" };
   const claims = pickClaims({ report, data });
   const offerRates = Object.fromEntries(report.offers?.map?.(o => [o.offerRef, o]) ?? []);
   const state = createState(env.LEMMAX_STATE_DIR);
@@ -276,7 +276,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
       let signature;
       try { signature = await buyerWallet.signFundingAuthorization(q.buyerAuthorization); }
       catch (error) { await guard.release(approval).catch(() => {}); emit({ type: "step", id: "wallet", t: t(), ...walletRefusal(error, mode) }); return { refused: ["wallet"] }; }
-      emit({ type: "step", id: "wallet", t: t(), signed: true, by: mode === "privy" ? "Privy" : "local rehearsal" });
+      emit({ type: "step", id: "wallet", t: t(), signed: true, by: mode === "privy" ? "Privy" : "local signer" });
       let funded;
       try {
         funded = await desk.fund({ attemptId: q.attemptId, validAfter: q.buyerAuthorization.message.validAfter, validBefore: q.buyerAuthorization.message.validBefore, signature },
@@ -307,8 +307,26 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
     });
   }
 
+  // Whether the public record holds a blocking finding against checker B. Until it does,
+  // a bill naming checker B is legitimate, so that trick has nothing to show.
+  // A blocking finding stays on the record for its rulebook, so a positive answer is kept.
+  let knownFlag = null;
+  async function checkerBFlagged() {
+    if (knownFlag) return knownFlag;
+    const records = await audit.partyRecords([evaluatorB.address]);
+    const record = records?.records?.[evaluatorB.address.toLowerCase()];
+    const answer = { flagged: Boolean(record && Number(record.blocking) > 0), record };
+    if (answer.flagged) knownFlag = answer;
+    return answer;
+  }
+
   async function trick({ kind, visitor }, emit) {
     if (!TRICKS.includes(kind)) throw new TypeError("Unknown trick");
+    if (kind === "flagged_checker") {
+      const b = await within(checkerBFlagged(), 5000);
+      if (!b) throw new TypeError("The public record is still catching up. Try again in a minute.");
+      if (!b.flagged) throw new TypeError("Checker B has no finding on the public record yet, so a bill naming it is legitimate.");
+    }
     return run("tricks", visitor, async () => {
       const started = now(), t = () => now() - started;
       const caseRef = claims[0].caseRef;
@@ -334,7 +352,9 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
       emit({ type: "step", id: "guard", t: t(), approved: approval.approved, reasons: approval.reasons, auditor });
       try {
         if (kind === "flagged_checker") {
-          // The guard should refuse; ask the wallet anyway, as an agent that ignores its guard would.
+          // Without a finding the bill is legitimate, so there is nothing to show; never sign it.
+          if (approval.approved) throw new TypeError("The guard found no finding against Checker B, so nothing was asked of the wallet.");
+          // The guard refused; ask the wallet anyway, as an agent that ignores its guard would.
           const wallet = await trySign(bill.buyerAuthorization);
           emit({ type: "step", id: "wallet", t: t(), ...wallet });
           return settle(!approval.approved && !wallet.signedUnexpectedly);
@@ -393,9 +413,9 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
       within(audit.freshness(), 3000),
       publicClient.readContract({ address: token.address, abi: [{ type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] }], functionName: "balanceOf", args: [buyerWallet.address] }),
       publicClient.getBalance({ address: buyerWallet.address }),
-      within(audit.partyRecords([evaluatorB.address]), 3000)]);
+      within(checkerBFlagged(), 3000)]);
     const today = state.day(dayNow());
-    const flagged = b?.records?.[evaluatorB.address.toLowerCase()];
+    const flagged = b?.flagged ? b.record : null;
     return { network: "Monad Testnet", chainId: chain.id, settlement: settlement.address, contractLink: `${EXPLORER}/address/${settlement.address}`,
       rulebook: { ref: RULEBOOK.rulebookRef, hash: RULEBOOK_HASH }, auditor, freshness, wallet: { mode, address: buyerWallet.address, usdc: formatUsdc(usdc), mon: (Number(mon) / 1e18).toString() },
       checkerB: { address: evaluatorB.address, flagged: Boolean(flagged && Number(flagged.blocking) > 0), lastVerdict: flagged?.lastVerdict ?? null, lastVerdictTx: flagged?.lastVerdictTx ?? null },

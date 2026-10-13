@@ -38,9 +38,10 @@
 
       <div class="picker" role="group" aria-label="Choose a claim to search">
         <div class="toggle" role="radiogroup" aria-label="Claim type">
-          <button type="button" role="radio" aria-checked="true" data-kind="found">Search finds it</button>
-          <button type="button" role="radio" aria-checked="false" data-kind="missed">Search misses it</button>
+          <button type="button" role="radio" aria-checked="true" data-kind="found">Known hit</button>
+          <button type="button" role="radio" aria-checked="false" data-kind="missed">Known miss</button>
         </div>
+        <p class="public-note">Each claim's answer is public, so you can pick a miss to see the refund.</p>
         <div class="claim-row"><p class="claim" id="claimText"></p><button class="shuffle" type="button" id="shuffle">Another</button></div>
         <p class="odds mono" id="odds"></p>
         <div class="buy-row">
@@ -146,7 +147,7 @@
 
 <footer class="foot small muted">
   <span>LemmaX · MIT licensed · <a href="https://github.com/4waan/LemmaX" rel="noopener">Source</a></span>
-  <span id="footNote"></span>
+  <span><span id="footNote"></span> Claims from <a href="https://github.com/allenai/scifact" rel="noopener">SciFact</a> (BEIR), CC BY-SA 4.0.</span>
 </footer>
 <script src="/app.js" type="module"></script>
 </body>

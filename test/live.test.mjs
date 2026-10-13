@@ -86,8 +86,8 @@ test("Concurrent live runs reserve daily slots inside the shared queue", async (
   release();
   const results = await pending;
   assert.deepEqual(results.map(r => r.status), ["fulfilled", "fulfilled", "rejected", "fulfilled", "rejected"]);
-  assert.match(results[2].reason.message, /demo budget/);
-  assert.match(results[4].reason.message, /trick budget/);
+  assert.match(results[2].reason.message, /free searches/);
+  assert.match(results[4].reason.message, /wallet tests/);
   assert.deepEqual(executed, ["first", "second", "trick"]);
   assert.deepEqual(state.day(1), { buys: 2, tricks: 1, issued: "0", visitors: ["a", "b"] });
 });
@@ -110,7 +110,7 @@ test("Queued live runs use their start day and continue after a failed run", asy
   assert.deepEqual(results[1], { status: "fulfilled", value: 1 });
   assert.equal(state.day(1).buys, 1);
   assert.deepEqual(state.day(2), { buys: 1, tricks: 0, issued: "0", visitors: ["after"] });
-  await assert.rejects(run("buys", "third", async () => {}), /demo budget/);
+  await assert.rejects(run("buys", "third", async () => {}), /free searches/);
 });
 
 test("Live daily limits reject invalid configuration and allow a disabled run kind", async () => {
@@ -119,7 +119,7 @@ test("Live daily limits reject invalid configuration and allow a disabled run ki
     assert.throws(() => createRunQueue({ state, limits: { buys, tricks: 1 }, dayNow }), /daily limit/);
   }
   const run = createRunQueue({ state, limits: { buys: 0, tricks: 1 }, dayNow });
-  await assert.rejects(run("buys", "a", async () => {}), /demo budget/);
+  await assert.rejects(run("buys", "a", async () => {}), /free searches/);
   assert.throws(() => run("other", "a", async () => {}), /Unknown live run kind/);
   assert.equal(state.day(1).buys, 0);
 });

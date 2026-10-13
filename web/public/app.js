@@ -5,8 +5,8 @@ const COPY = {
   lead: "Your agent sees the odds before it pays for a search, and gets its money back on a miss.",
   sub: "Settled in USDC on Monad, by a wallet that refuses any bill the public record has not cleared.",
   hit: "Hit. The provider was paid inside the settlement.",
-  miss: "Miss. The price came back to your agent.",
-  misleadLede: "Agent wallets can be talked into paying the wrong party. Try it.",
+  miss: "Miss. The search price is credited back to your agent.",
+  misleadLede: "A prompt-injected agent may try to pay the wrong party. Here are three attempts against this agent's wallet.",
   tricks: [
     { kind: "redirect_payment", title: "Send the money elsewhere", hint: "The guard approves the bill, then the agent changes who gets paid." },
     { kind: "flagged_checker", title: "Pay the checker caught overcharging", hint: "The bill names Checker B, flagged on the public record." },
@@ -15,13 +15,13 @@ const COPY = {
   holds: [
     ["Who can be paid", "Only the payees written on the bill, paid by the contract. The wallet signs nothing else."],
     ["Who decides a hit", "The checker named on the bill, from a published roster."],
-    ["On a miss", "The search price goes back to the agent in the same transaction."],
+    ["On a miss", "The search price is credited back to the agent in the same transaction, and paid to its wallet once it is owed 0.01 USDC."],
     ["Who can refuse", "The guard, before anything is signed. The wallet policy, even when the guard is skipped."],
     ["Where to check", "The public record, rebuilt from Monad by an open indexer against a hash-pinned rulebook."],
   ],
-  limits: "Limits: LemmaX runs the checkers today, and its rulebook says so. The auditor checks rules, not result quality. A refund needs a known right answer, so the paid unit is a public benchmark search.",
-  connectBody: "Six read-only tools: compare the search offers and their odds, run a search, read a source, and check any attempt against the public record.",
-  foot: "Test USDC on Monad Testnet. Checker B is a fault we staged, and is labelled wherever it appears.",
+  limits: "Scope: LemmaX runs both checkers today, and the rulebook names who holds each key. The auditor checks payments against the rules, not result quality. A refund needs a known right answer, so today's paid search runs over a public benchmark.",
+  connectBody: "Six read-only tools: compare the search offers and their odds, preview a search, read a source and check any attempt against the public record. A paid attempt adds the refund and the onchain record.",
+  foot: "Test USDC on Monad Testnet. Checker B is a canary LemmaX runs: it overcharges on purpose so you can watch the record flag it.",
   offline: "The purchase desk is offline right now. The last run and the record still work.",
 };
 const REASONS = {
@@ -232,7 +232,7 @@ function renderReceipt(run, { animate = false } = {}) {
   fill($("lines"), rows.map(r => {
     const back = r.role === "buyer (returned)", zero = r.zero || Number(r.earned) === 0;
     const cls = zero ? "zero" : back ? "back" : r.role === "provider" ? "in" : "";
-    const sub = r.name && r.name !== r.label && r.role === "checker" ? r.name : Number(r.paidNow) > 0 ? `${usdc(r.paidNow)} sent to its wallet now` : null;
+    const sub = r.name && r.name !== r.label && r.role === "checker" ? r.name : Number(r.paidNow) > 0 ? `${usdc(r.paidNow)} paid to its wallet now` : !zero && !run.earlier ? "credited" : null;
     const amt = h("span", { class: "amt" }, `${zero ? "" : "+"}${usdc(r.earned)}`);
     const li = h("li", { class: cls }, h("span", { class: "who" }, r.label, sub ? h("small", {}, sub) : null), amt);
     if (animate && !zero && !reduced.matches) { li.classList.add("flash"); rollUp(amt, Number(r.earned)); }
@@ -280,12 +280,20 @@ function showRun(run, { animate = true, label = "Last run" } = {}) {
   if (!run.timeline) later(() => fill($("stageTotal"), "Commit states were not recorded for this earlier run."), animate ? delay : 0);
 }
 
+// The overcharging checker can only be refused once the public record flags it.
+function renderScenarios() {
+  const b = $("scenarios").querySelector('[data-trick="flagged_checker"]');
+  if (!b || trickBusy) return;
+  const ready = Boolean(status?.checkerB?.flagged);
+  b.disabled = !ready;
+  b.querySelector("small").textContent = ready ? COPY.tricks.find(t => t.kind === "flagged_checker").hint : "Opens once the public record flags Checker B.";
+}
 function renderWallet() {
   if (!status?.wallet) { fill($("walletFact")); return; }
   const w = status.wallet;
-  const who = w.mode === "privy" ? "Agent wallet (Privy)" : "Agent wallet (rehearsal policy)";
+  const who = w.mode === "privy" ? "Agent wallet (Privy)" : "Agent wallet (local signer)";
   fill($("walletFact"), `${who} `, h("b", {}, `${usdc(w.usdc)} USDC · ${Number(w.mon)} MON`), Number(w.mon) === 0 ? " · never paid gas" : "");
-  $("walletLayer").textContent = w.mode === "privy" ? "Privy policy" : "Wallet policy (rehearsal)";
+  $("walletLayer").textContent = w.mode === "privy" ? "Privy policy" : "Wallet policy (local)";
 }
 function renderLive() {
   const run = recent?.runs?.[0], parts = [];
@@ -409,7 +417,7 @@ async function runTrick(t) {
   } catch (error) { fill($("why"), error.message); }
   trickBusy = false;
   for (const b of $("scenarios").children) b.disabled = false;
-  refreshRecent();
+  renderScenarios(); refreshRecent();
 }
 
 // The record: counts, the last runs as sentences, and a lookup.
@@ -456,7 +464,7 @@ async function refreshStatus() {
   if (!status) note(COPY.offline);
   if (status?.settlement) $("contractAddr").textContent = status.settlement;
   $("held").textContent = status ? `${status.price.held} USDC held · no MON needed` : "";
-  renderWallet(); renderLive(); renderClaim();
+  renderWallet(); renderLive(); renderClaim(); renderScenarios();
 }
 async function refreshRecent() {
   try { recent = await getJson("/api/recent"); } catch { recent = recent ?? null; }
