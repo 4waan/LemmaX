@@ -38,5 +38,9 @@ async function main(env) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try { process.stdout.write(JSON.stringify(await main(process.env), null, 2) + "\n"); }
-  catch (error) { console.error(`Privy setup stopped: ${error instanceof TypeError ? error.message : `${error.name ?? "Error"}${error.status ? ` (HTTP ${error.status})` : ""}`}`); process.exitCode = 1; }
+  catch (error) {
+    const code = error?.code ?? error?.error?.code ?? null;
+    console.error(`Privy setup stopped: ${error instanceof TypeError ? error.message : `${error.name ?? "Error"}${error.status ? ` (HTTP ${error.status}${code ? `, ${code}` : ""})` : ""}`}`);
+    process.exitCode = 1;
+  }
 }

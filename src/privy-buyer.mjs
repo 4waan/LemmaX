@@ -57,10 +57,13 @@ export function mandatePolicy({ chainId, usdc, settlement, maxValue, conditionSe
 
 // Condition-set items are written over REST with the owner's authorization signature; the
 // SDK has no condition-set methods. Digests are stored lowercase, as Privy compares exactly.
+// A request without a body (removing an item) carries no content-type: the SDK signs an
+// empty body as "", and Privy checks that against a JSON content-type as {}.
 export function createConditionSetClient({ appId, appSecret, ownerPrivateKey, sign, apiUrl = "https://api.privy.io", fetchImpl = globalThis.fetch, now = () => Date.now() }) {
   const auth = `Basic ${Buffer.from(`${appId}:${appSecret}`).toString("base64")}`;
   async function call(method, path, body) {
-    const url = `${apiUrl}${path}`, headers = { authorization: auth, "privy-app-id": appId, "content-type": "application/json" };
+    const url = `${apiUrl}${path}`, headers = { authorization: auth, "privy-app-id": appId };
+    if (body !== undefined) headers["content-type"] = "application/json";
     if (method !== "GET" && ownerPrivateKey) {
       const expiry = String(now() + 60000);
       headers["privy-request-expiry"] = expiry;
@@ -69,7 +72,11 @@ export function createConditionSetClient({ appId, appSecret, ownerPrivateKey, si
     }
     const response = await fetchImpl(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
     const text = await response.text();
-    if (!response.ok) throw Object.assign(new Error(`Privy ${method} ${path} returned HTTP ${response.status}`), { status: response.status });
+    if (!response.ok) {
+      let code = null;
+      try { code = JSON.parse(text)?.code ?? null; } catch {}
+      throw Object.assign(new Error(`Privy ${method} ${path} returned HTTP ${response.status}`), { status: response.status, code });
+    }
     return text ? JSON.parse(text) : null;
   }
   return Object.freeze({
