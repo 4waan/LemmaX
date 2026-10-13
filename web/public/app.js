@@ -2,9 +2,9 @@
 // the live status, and the event stream of a purchase or a refused attempt. Words live in
 // COPY so they can change without touching the logic.
 const COPY = {
-  lead: "Your agent sees the odds before it pays for a search, and gets its money back on a miss.",
-  sub: "Settled in USDC on Monad, by a wallet that refuses any bill the public record has not cleared.",
-  hit: "Hit. The provider was paid inside the settlement.",
+  lead: "Each search your agent buys settles on Monad by its result, and the record it leaves decides which bill its wallet signs next.",
+  sub: "A hit earns the provider the price, a miss credits it back, and the checker's fee is the same either way; the guard reads that record before the wallet signs again.",
+  hit: "Hit. The provider earns the search price in this settlement.",
   miss: "Miss. The search price is credited back to your agent.",
   misleadLede: "A prompt-injected agent may try to pay the wrong party. Here are three attempts against this agent's wallet.",
   tricks: [
@@ -13,11 +13,11 @@ const COPY = {
     { kind: "skip_guard", title: "Skip the guard", hint: "The agent goes straight to its wallet." },
   ],
   holds: [
-    ["Who can be paid", "Only the payees written on the bill, paid by the contract. The wallet signs nothing else."],
-    ["Who decides a hit", "The checker named on the bill, from a published roster."],
-    ["On a miss", "The search price is credited back to the agent in the same transaction, and paid to its wallet once it is owed 0.01 USDC."],
-    ["Who can refuse", "The guard, before anything is signed. The wallet policy, even when the guard is skipped."],
-    ["Where to check", "The public record, rebuilt from Monad by an open indexer against a hash-pinned rulebook."],
+    ["What the agent signs", "One USDC authorization for the exact total, to the settlement contract, with the hash of the whole bill as its nonce. LemmaX pays the MON gas; the search starts once Monad marks the payment Verified."],
+    ["How a verdict splits the money", "In one settlement on Monad: the provider earns the 0.005 USDC price on a hit, and the price is credited back to the agent on a miss. Running and checking charges are capped and published in the settlement event."],
+    ["What the checker earns", "The 0.0008 USDC the rulebook sets, for a hit or a miss, and nothing if it stays silent. The auditor files anything above that against the checker. LemmaX runs the checkers today."],
+    ["If no verdict arrives", "After the deadline anyone can credit the whole 0.008 USDC back to the agent. Contract v3 pays credit to the owner's wallet inside a settlement once it reaches 0.01 USDC."],
+    ["What the wallet signs next", "Only a bill the guard approved after reading the public record: the auditor has seen the last settlement, and no party on the bill carries a blocking finding."],
   ],
   limits: "Scope: LemmaX runs both checkers today, and the rulebook names who holds each key. The auditor checks payments against the rules, not result quality. A refund needs a known right answer, so today's paid search runs over a public benchmark.",
   connectBody: "Six read-only tools: compare the search offers and their odds, preview a search, read a source and check any attempt against the public record. A paid attempt adds the refund and the onchain record.",

@@ -1,14 +1,20 @@
 # LemmaX
 
-**Spend less on AI work.**
+**Each search your agent buys settles on Monad by its result, and the record it leaves decides which bill its wallet signs next.**
 
-Give an agent the evidence to decide whether a tool is worth buying, before it pays.
+Before paying, the agent sees how often the search found a right source on a public benchmark (230 of 300 claims). It signs one USDC authorization whose nonce is the hash of the whole bill; LemmaX relays it, pays the MON gas and starts the search once Monad marks the payment Verified. A checker named on the bill signs the outcome, and one settlement splits the money: the provider earns the 0.005 USDC price on a hit, the price is credited back to the agent on a miss, and the checker's published fee is the same either way.
 
-A cheap search that misses the source you need costs a second attempt or your own time, so a per-call price rarely tells an agent what the job will cost. A subscription can be the better choice if you already have unused allowance.
+Every settlement is public, and the next purchase depends on it. An auditor checks each one against a hash-pinned rulebook. Before the wallet may sign again, the buyer's guard confirms the auditor has seen the last settlement and refuses any bill that names a flagged issuer or checker.
 
-LemmaX puts the outcome, the evidence and the expected completion cost beside each offer. An agent can compare buying with its own alternative, choose a resource, or decide that buying makes no sense. When it buys, the price, success test, spending caps and refund terms are signed together.
+This is our third version of the loop ([how we got here](#team-and-license)), and the first two taught us what a chain has to provide:
+- **Payment final inside one tool call.** Monad marks a block Verified about a second and a half after it is proposed, and its docs advise apps with significant offchain financial logic to wait for Verified.
+- **A record fresh within seconds,** so the guard can read the last settlement before the next bill.
+- **A settlement record for every attempt,** cheaply: about $0.0015 to $0.0021 of gas per settled attempt, measured on a fork at the prices our docs assume.
+- **Agents that hold only USDC.** Circle's USDC on Monad lets one relayed signature fund an attempt. Running our earlier contract live showed that an agent with no MON cannot withdraw its credit, so contract v3 pays credit to the owner's wallet inside the settlement once it reaches 0.01 USDC.
 
-The first working example is source retrieval: **one search, up to five cited sources, one defined outcome.** Two MCP offers run against the same frozen public benchmark. USDC settlement runs on Monad Testnet.
+Monad gives all four, and agent services already sell per call there in USDC.
+
+On Monad Testnet, contract v2 has settled a hit, a miss and a timeout refund. [Contract v3](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7) is deployed and source verified, and its payout has passed local and fork checks. The guard has run the whole loop on a fork with a local auditor and a local copy of the wallet policy; the hosted Envio auditor, the Privy wallet and ERC-8004 registration come next. [How the trust loop works](docs/Trust-Loop.md).
 
 ## Make the decision before the purchase
 
@@ -48,6 +54,8 @@ The trust loop checks each recorded settlement against a published, hash-pinned 
 Envio indexes rule compliance. Privy restricts signing to guard-approved quote digests. ERC-8004 carries agent identity and authorized settlement feedback. Reputation is separate from the evidence admitted to a probability estimate.
 
 The complete loop has been rehearsed on a Monad Testnet fork using a local auditor and wallet-policy rehearsal. Hosted Envio, live Privy enforcement and ERC-8004 registration are pending. [Trust loop and its boundaries](docs/Trust-Loop.md).
+
+Next, the ledger becomes the odds. Each bill will commit to the hit rate it showed, so every settlement on Monad scores the forecast that sold it. Further out, search services that already sell per call on Monad could sell attempts with their own price, odds and refund terms, backed by their settled history; independent checkers would carry public conduct records, and every buyer's guard reading the same index would refuse the next bill that names a checker caught overbilling. The assessment library already accepts settled-attempt evidence. Getting there needs chain data fed into it, a public identity per offer and an issuer registry.
 
 ```mermaid
 flowchart LR
@@ -103,6 +111,6 @@ The decision core can be used independently of settlement. Start with the [devel
 
 Aryan Singh Rathore and Awaan Mustafa Siddiqui, co-founders.
 
-LemmaX is our third version of this idea, built over more than three weeks. LemmaXperiment set the contract and evaluation patterns: frozen terms, signature binding, replay controls and solvency checks. [Lemma](https://github.com/4waan/lemma) sold tested integrations to coding agents over x402 in USDC, refunded a failed test from a USDC bond and recorded each result onchain. LemmaX rebuilds that loop for Monad: the payment for each attempt is held in the attempt itself, and one settlement allocates it by the signed outcome. No source code was copied; the testnet operator keys and the `lemma_` tool names carry over, and our [review of both earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md) records what we kept.
+LemmaX is the third version of an idea we have worked on for more than three weeks: LemmaXperiment, then Lemma, now LemmaX. LemmaXperiment set the contract and evaluation patterns we still use: frozen terms, signature binding, replay controls, exact allocation and solvency checks. In [Lemma](https://github.com/4waan/lemma), a coding agent bought a tested release twice over x402 on Arbitrum Sepolia; one purchase passed its tests, and the other failed and was refunded from a separate USDC bond, with each result recorded onchain. LemmaX rebuilds that loop for Monad: the buyer's money stays inside the attempt until one settlement allocates it by the signed outcome, the agent sees a measured hit rate before it pays, and a guard reads the public record before the wallet signs. No source code was copied; the testnet operator keys and the `lemma_` tool prefix carry over, and our [pre-build review of both earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md) records which patterns we kept.
 
 LemmaX is [MIT licensed](LICENSE). Third-party data, packages and tools retain [their own terms](THIRD_PARTY.md). AI tools assisted in developing the project.

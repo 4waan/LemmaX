@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LemmaX</title>
-<meta name="description" content="Your agent sees the odds before it pays for a search, and gets its money back on a miss. Settled in USDC on Monad, by a wallet that refuses any bill the public record has not cleared.">
+<meta name="description" content="Each search your agent buys settles on Monad by its result, and the record it leaves decides which bill its wallet signs next.">
 <meta name="theme-color" content="#FAFAF8">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +33,8 @@
 
   <section class="hero">
     <div class="pitch">
-      <h1 id="headline"><span id="lead"></span> <span class="muted" id="sub"></span></h1>
+      <h1 id="headline"><span id="lead"></span></h1>
+      <p class="sub" id="sub"></p>
       <button class="how" type="button" id="how" aria-controls="sub" aria-expanded="false">How</button>
 
       <div class="picker" role="group" aria-label="Choose a claim to search">
@@ -125,7 +126,7 @@
 
   <section class="guarantees" aria-labelledby="holdsTitle">
     <p class="label">Guarantees</p>
-    <h2 id="holdsTitle">What holds, whatever the agent is told</h2>
+    <h2 id="holdsTitle">How every purchase settles on Monad</h2>
     <dl class="kv" id="holds"></dl>
     <p class="limits" id="limits"></p>
   </section>

@@ -56,7 +56,7 @@ export function createMcpServer(directory, desk = null, { audit = null, auditor 
       offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
       profileRef: z.enum(Object.keys(DEADLINE_PROFILES)), buyer: address,
     }), args => desk.quote(args), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
-    tool("lemma_fund_attempt", "Relay the buyer's signed EIP-3009 authorization to fund a quote this server issued. Moves the buyer's USDC into escrow on Monad and returns at Verified, reporting each Monad commit state as progress (about two seconds on testnet).", z.object({
+    tool("lemma_fund_attempt", "Relay the buyer's signed EIP-3009 authorization to fund a quote this server issued. Moves the buyer's USDC into escrow on Monad and returns at Verified, reporting each Monad commit state as progress.", z.object({
       attemptId: bytes32, validAfter: z.string().regex(/^(0|[1-9][0-9]{0,19})$/), validBefore: z.string().regex(/^(0|[1-9][0-9]{0,19})$/),
       signature: z.string().regex(/^0x(?:[0-9a-fA-F]{2}){65,2048}$/),
     }), (args, options) => desk.fund(args, options), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
