@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "reputation-publish/v1",
+  "network": "testnet",
+  "chainId": 10143,
+  "settlement": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+  "identityRegistry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "reputationRegistry": "0x8004B663056A597Dffe9eCcC1965A193B7388713",
+  "settlementWindow": {
+    "fromBlock": "70702282"
+  },
+  "agents": {
+    "directory": {
+      "agentId": "2296",
+      "owner": "0x4Ce5cE1F77bE49a060D7c0DCAee3835C067EBCD4"
+    },
+    "evaluator": {
+      "agentId": "2297",
+      "owner": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77"
+    },
+    "evaluatorB": {
+      "agentId": "2298",
+      "owner": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd"
+    },
+    "provider": {
+      "agentId": "2299",
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1"
+    }
+  },
+  "settledAttempts": 14,
+  "feedback": [
+    {
+      "line": "acceptance -> agent 2299 (provider): 8 of 14 accepted",
+      "transactionHash": "0xcba4077e93faa77befad9ada46f730caef6f02081e039dbd6ea434084f9bd012",
+      "link": "https://testnet.monadvision.com/tx/0xcba4077e93faa77befad9ada46f730caef6f02081e039dbd6ea434084f9bd012"
+    },
+    {
+      "line": "conformance -> agent 2297 (evaluator): 14 of 14 conforming",
+      "transactionHash": "0xe7348fb9aa2f464503a4e38f137d3319db9af76b3dfce176b73149d017cde5a5",
+      "link": "https://testnet.monadvision.com/tx/0xe7348fb9aa2f464503a4e38f137d3319db9af76b3dfce176b73149d017cde5a5"
+    }
+  ],
+  "envio": {
+    "endpoint": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
+    "reputationRecords": [
+      {
+        "agentId": "2299",
+        "valid": true
+      },
+      {
+        "agentId": "2297",
+        "valid": true
+      }
+    ]
+  }
+}

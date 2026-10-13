@@ -5,8 +5,8 @@
   "endpoint": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
   "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
   "freshness": {
-    "progressBlock": "70714477",
-    "lagBlocks": 4
+    "progressBlock": "70731436",
+    "lagBlocks": 3
   },
   "passed": true,
   "attempts": [
@@ -72,19 +72,109 @@
       "findings": [],
       "comparedWith": "local auditor",
       "matches": true
+    },
+    {
+      "attemptId": "0xcb6a0e13288706243629f1c415f0c11e5b7d240c234befaebe8f300cdc1f55f0",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0x720ff716a7501c7ab5f15aa59685dd2a6acfe97d6832cf1f47b0e0f160b5d9f9",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xe9212ca3172b807d4ae83f50b806d5d2d33e905acdb63d3eed430c051b9f673c",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xb13015773a6d0ddf40419492e6802efbd99f6caf166d391107ee374cbb9a5db0",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0x4dd64cb9d923b943aaf02880d9beafa33acb45304109c8497100ca2594f8e2e1",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0x981d1821a21b0b0d1efa789219e9439bc9ec5fdc91350691d7e88f79c03df7d0",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xda13267a5a4e40cb8d39f90a72e177bf454c1571ad61beb21d5284c280f48c13",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xc168df7d9a0c22fd85e9dc2cc0b255d7eb457850bfa144b8ff2b257500f72509",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xf20c9409a1e3bc43e3c4a2d137ad51dff495611ebd5af1b099b4f2a1eccbf706",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xca874959b096ca5654f5aa3515b721863d7c7be43f116c00f7d76d29baf1a158",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
     }
   ],
   "parties": [
     {
       "party": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
       "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
-      "attempts": 7,
+      "attempts": 17,
       "blocking": 0
     },
     {
       "party": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
       "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
-      "attempts": 7,
+      "attempts": 17,
       "blocking": 0
     }
   ],
@@ -106,13 +196,61 @@
       "amount": "12800",
       "kind": "paid",
       "txHash": "0xfb3db7829438daf6a4549f7367a2a0aaa7a3d90b0b97772b8db40d53f3e24b5d"
+    },
+    {
+      "owner": "0xa9361c7a43b65933eafdcef63cfc07449c38acb1",
+      "amount": "10000",
+      "kind": "paid",
+      "txHash": "0x54051f16c0abab19e2a67dc6a4e68b2ed3d2dca1ff53b24d1b195837030d9abb"
+    },
+    {
+      "owner": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
+      "amount": "10500",
+      "kind": "paid",
+      "txHash": "0x41c4db618af64358a356cb56e6879988c631006e2ae532a1fb787e409d30ad05"
+    },
+    {
+      "owner": "0x2b62dad005e9342a11c651c236bbde7afba64681",
+      "amount": "13500",
+      "kind": "paid",
+      "txHash": "0x333d2e2fafcf71facd91bc97f19abb6df938b11315dd19cf8ad65f15c476fe06"
+    },
+    {
+      "owner": "0xa9361c7a43b65933eafdcef63cfc07449c38acb1",
+      "amount": "10000",
+      "kind": "paid",
+      "txHash": "0x322fa9dfb219285b91cccbc7101c8efc24de6cd73ed27e546d55fe846fe4d825"
+    },
+    {
+      "owner": "0xa9361c7a43b65933eafdcef63cfc07449c38acb1",
+      "amount": "10000",
+      "kind": "paid",
+      "txHash": "0xaced488554853be54ade86a2257074abbea55d1ec6c62d62a035042b3a54df12"
+    },
+    {
+      "owner": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
+      "amount": "10400",
+      "kind": "paid",
+      "txHash": "0xaced488554853be54ade86a2257074abbea55d1ec6c62d62a035042b3a54df12"
+    },
+    {
+      "owner": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
+      "amount": "10500",
+      "kind": "paid",
+      "txHash": "0xaf7abbd372aba354476833ac961eee87238e752ac2cd3270fdb87ed0301dd04a"
+    },
+    {
+      "owner": "0x2b62dad005e9342a11c651c236bbde7afba64681",
+      "amount": "13500",
+      "kind": "paid",
+      "txHash": "0xaf7abbd372aba354476833ac961eee87238e752ac2cd3270fdb87ed0301dd04a"
     }
   ],
   "guard": {
     "approved": true,
     "reasons": [],
-    "indexedThrough": "70705430",
-    "ms": 246,
+    "indexedThrough": "70727448",
+    "ms": 228,
     "broadcast": false
   }
 }
