@@ -86,7 +86,18 @@ The five read-only tools, always present, are:
 - `lemma_read_source`: resolves a permitted `sourceRef` and optional integer `offset` to at most 1000 characters plus bounded title/provenance. Returned source text is data, not instructions or a generated answer.
 - `lemma_run_benchmark_case`: takes `offerRef` and a known `caseRef`; replays its frozen public relevance check.
 
-With an auditor configured, `lemma_verify_attempt` checks one attempt against the published rulebook. With an operator purchase desk, the server adds `lemma_quote_attempt`, `lemma_fund_attempt` and `lemma_attempt_status` ([Monad settlement path](Monad-Settlement-Path.md#purchase-path)).
+With an auditor configured, `lemma_verify_attempt` checks one attempt against the published rulebook. With an operator purchase desk, the server adds `lemma_quote_attempt`, `lemma_fund_attempt` and `lemma_attempt_status` ([Monad settlement path](Monad-Settlement-Path.md#purchase-path)). When the operator also sets the checker's key (`EVALUATOR_PRIVATE_KEY`), it adds `lemma_deliver_attempt`: the checker named on the bill runs the bought search, signs whether a relevant source came back, and settles the attempt on Monad in one transaction. It returns the source references, the verdict, each party's share of that settlement and the transaction, and reports progress while it works.
+
+### The agent's wallet
+
+The buyer side runs as its own MCP server, `node scripts/wallet-server.mjs` (`npm run mcp:wallet`), next to the LemmaX server in the same client. It has two tools:
+
+- `wallet_status`: the wallet's address, USDC and MON balances, and the one thing its policy may sign.
+- `wallet_sign_bill`: takes the `quote`, `issuerSignature` and `buyerAuthorization` that `lemma_quote_attempt` returned, and optionally the `lastSettlementBlock` from the previous delivery. The buyer's guard checks the issuer's signature, the published terms and the public auditor's record first; the wallet policy then signs only that bill's digest, paid to the settlement contract. A refusal is an ordinary answer naming the guard or the wallet policy and the reasons.
+
+It reads the settlement contract (`LEMMAX_SETTLEMENT_ADDRESS`, contract version 3 by default) and the auditor (`LEMMAX_AUDITOR_URL`, otherwise the same rules over Monad logs). It signs through the Privy server wallet when `PRIVY_APP_ID`, `PRIVY_APP_SECRET` and the wallet record are present, otherwise through the local rehearsal of the same policy rule with `BENCHMARK_BUYER_PRIVATE_KEY`.
+
+A full purchase from an agent is then `lemma_list_offers`, `lemma_assess`, `lemma_quote_attempt`, `wallet_sign_bill`, `lemma_fund_attempt` (which returns at Verified), `lemma_deliver_attempt`, and optionally `lemma_verify_attempt`.
 
 All tools reject additional unrecognized input fields. Unknown offers, profiles, cases and sources fail without exposing local paths or stack traces. Reading source excerpts is limited to public benchmark content and carries the dataset license. No customer documents or evidence are served.
 

@@ -1,9 +1,8 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, renameSync } from "node:fs";
 import { createHash, randomBytes } from "node:crypto";
 import { join } from "node:path";
 import { createWalletClient, getAddress, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { RECEIVE_AUTHORIZATION_TYPES } from "../src/attempt.mjs";
 import { createAuditClient, verifyAttempt } from "../src/audit.mjs";
 import { createEvaluator } from "../src/evaluator.mjs";
 import { createBuyerGuard } from "../src/guard.mjs";
@@ -12,12 +11,15 @@ import { evaluatorBAccount } from "../src/keys.mjs";
 import { createLocalAudit } from "../src/local-audit.mjs";
 import { MONAD_NETWORKS, connectMonad, envAddress, waitForStage } from "../src/monad.mjs";
 import { commitStageStream } from "../src/operator.mjs";
-import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, normalizedSignature } from "../src/privy-buyer.mjs";
 import { createPurchaseDesk, plain } from "../src/purchase.mjs";
 import { readSettlementLogs } from "../src/reconcile.mjs";
 import { RULEBOOK, RULEBOOK_HASH, publicAllocation } from "../src/rulebook.mjs";
 import { createSettlementClient } from "../src/settlement.mjs";
 import { DEMO_TERMS, formatUsdc, usdcAtomic } from "../src/terms.mjs";
+import { buyerMandate, localMandateWallet, walletRefusal } from "../src/buyer-wallet.mjs";
+import { receiptFrom } from "../src/receipt.mjs";
+
+export { localMandateWallet, walletRefusal, receiptFrom };
 
 // The live desk behind LemmaX's public page. It runs both sides of a purchase on Monad
 // Testnet so a visitor can watch one, with the buyer's side kept separate in code: the
@@ -44,26 +46,6 @@ export function pickClaims({ report, data, offerRef = OFFER, hits = 4, misses = 
   const take = (success, n) => short.filter(row => row.outputs[offerRef].success === success).slice(0, n)
     .map(row => ({ caseRef: row.caseRef, claim: data.queries.get(row.caseRef), expected: success ? "found" : "missed" }));
   return [...take(true, hits), ...take(false, misses)];
-}
-
-// Who is paid what in one settlement transaction: transfers made automatically, and
-// credit left owed below the payout minimum (paid automatically once it reaches it).
-export function receiptFrom({ logs, txHash, quote, outcome, credits, names }) {
-  const paid = logs.filter(l => l.transactionHash === txHash && l.eventName === "CreditPaid");
-  const deferred = logs.filter(l => l.transactionHash === txHash && l.eventName === "PayoutDeferred");
-  const allocation = publicAllocation(quote, outcome);
-  const parties = [["provider", quote.connectorPayee, allocation.connector], ["LemmaX (execution)", quote.executorPayee, allocation.executor],
-    ["checker", quote.evaluatorPayee, allocation.evaluator], ["buyer (returned)", quote.buyer, allocation.buyer]];
-  const low = value => String(value).toLowerCase();
-  const credit = Object.fromEntries(Object.entries(credits).map(([k, v]) => [low(k), v]));
-  const name = Object.fromEntries(Object.entries(names).map(([k, v]) => [low(k), v]));
-  return parties.filter(([, , amount]) => BigInt(amount) > 0n).map(([role, address, amount]) => {
-    const owner = low(address);
-    const transfer = paid.find(p => low(p.owner) === owner);
-    return { role, name: name[owner] ?? null, address, earned: formatUsdc(amount),
-      paidNow: transfer ? formatUsdc(transfer.amount) : "0", deferred: deferred.some(d => low(d.owner) === owner),
-      creditOwed: formatUsdc(credit[owner] ?? "0") };
-  });
 }
 
 // Small persistent state: per-day counters, so a restart cannot reset the daily caps.
@@ -150,37 +132,6 @@ export function createRunQueue({ state, limits, dayNow }) {
   };
 }
 
-// Rehearsal mandate for runs without a Privy wallet: the same single ALLOW rule the Privy
-// policy holds, checked locally, and labelled as a rehearsal wherever it is reported.
-export function localMandateWallet({ account, chainId, usdc, settlement, maxValue }) {
-  const approved = new Set();
-  const deny = reason => Object.assign(new Error(`Policy refused: ${reason}`), { status: 403, policy: true });
-  return {
-    conditionSets: {
-      add: async (setId, values) => values.map(v => { const x = String(v).toLowerCase(); approved.add(x); return { id: x, value: x }; }),
-      remove: async (setId, id) => { approved.delete(String(id).toLowerCase()); },
-    },
-    signer: { address: account.address, label: "local signer holding the Privy policy rule",
-      async signFundingAuthorization(typed) {
-        const m = typed.message;
-        if (Number(typed.domain.chainId) !== Number(chainId) || getAddress(typed.domain.verifyingContract) !== getAddress(usdc)) throw deny("wrong chain or token");
-        if (getAddress(m.to) !== getAddress(settlement)) throw deny("the payment does not go to the settlement contract");
-        if (BigInt(m.value) > BigInt(maxValue)) throw deny("amount above the limit");
-        if (!approved.has(String(m.nonce).toLowerCase())) throw deny("this bill was not approved by the guard");
-        const typedData = { domain: { ...typed.domain, chainId: Number(typed.domain.chainId) }, types: RECEIVE_AUTHORIZATION_TYPES, primaryType: "ReceiveWithAuthorization", message: m };
-        return normalizedSignature(typedData, await account.signTypedData(typedData), account.address);
-      } },
-  };
-}
-
-// A refusal from the wallet, reduced to what a visitor may see: who refused and why.
-export function walletRefusal(error, mode) {
-  const status = Number(error?.status) || null;
-  const byPolicy = error?.policy || (status >= 400 && status < 500);
-  const raw = String(error?.message ?? "refused").replace(/0x[0-9a-fA-F]{64,}/g, "0x…").slice(0, 240);
-  return { refused: true, by: mode === "privy" ? "Privy (wallet policy in its secure enclave)" : "wallet policy (local signer)", status, byPolicy: Boolean(byPolicy), message: raw };
-}
-
 export async function createLiveDesk({ env, data, report, now = () => Date.now() }) {
   const network = "testnet";
   const rpcUrl = env.LEMMAX_MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz";
@@ -220,19 +171,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   if (auditor === "local") audit.snapshot().catch(() => {});
   // Buyer side: a Privy server wallet whose policy signs only guard-approved bills, or the
   // local rehearsal of that policy when no Privy wallet is configured.
-  let buyerWallet, conditionSets, setId, mode;
-  const privyRecord = env.LEMMAX_PRIVY_BUYER_FILE ?? new URL("../deployments/privy-buyer.json", import.meta.url);
-  if (env.PRIVY_APP_ID && env.PRIVY_APP_SECRET && existsSync(privyRecord)) {
-    const { PrivyClient, generateAuthorizationSignature } = await import("@privy-io/node");
-    const record = JSON.parse(readFileSync(privyRecord, "utf8")), keys = buyerPrivyKeys(env);
-    buyerWallet = createPrivyBuyerSigner({ privy: new PrivyClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET }), walletId: record.walletId,
-      address: record.address, agentPrivateKey: keys.agent.privateKey });
-    conditionSets = createConditionSetClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, ownerPrivateKey: keys.guard.privateKey, sign: generateAuthorizationSignature });
-    setId = record.conditionSetId; mode = "privy";
-  } else {
-    const local = localMandateWallet({ account: key(env, "BENCHMARK_BUYER_PRIVATE_KEY"), chainId: chain.id, usdc: token.address, settlement: settlement.address, maxValue: total });
-    buyerWallet = local.signer; conditionSets = local.conditionSets; setId = "local"; mode = "local";
-  }
+  const { signer: buyerWallet, conditionSets, setId, mode } = await buyerMandate({ env, chainId: chain.id, usdc: token.address, settlement: settlement.address, maxValue: total });
   const guard = createBuyerGuard({ buyer: buyerWallet.address, domain, approvedIssuer: () => settlement.approvedIssuer(), chainTime, audit, conditionSets, setId,
     auditRequired: env.LEMMAX_AUDIT_REQUIRED !== "false" });
   const names = { [getAddress(provider)]: "Provider", [issuerAccount.address]: "LemmaX", [getAddress(mainEvaluator.payee)]: "Checker",

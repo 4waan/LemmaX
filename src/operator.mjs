@@ -4,6 +4,9 @@ import { MONAD_NETWORKS, connectMonad, envAddress, waitForStage, watchCommitStag
 import { SETTLEMENT_ABI, createSettlementClient } from "./settlement.mjs";
 import { createQuoteIssuer } from "./issuer.mjs";
 import { createPurchaseDesk } from "./purchase.mjs";
+import { createDelivery } from "./delivery.mjs";
+import { createEvaluator } from "./evaluator.mjs";
+import { createSciFactIndex } from "./scifact.mjs";
 import { usdcAtomic } from "./terms.mjs";
 
 const HEADROOM_BPS = 1000;
@@ -19,7 +22,9 @@ function key(env, name) {
 }
 
 // Builds the purchase desk from the operator's environment: issuer and relayer key, the
-// deployed contract, payees and caps. Keys are read here and never printed.
+// deployed contract, payees and caps. With the checker's key as well, the desk can deliver
+// a funded attempt: run the search, sign the verdict and settle it. Keys are read here and
+// never printed.
 export async function createOperatorDesk({ env, data }) {
   const network = env.LEMMAX_MONAD_NETWORK ?? "testnet";
   const rpcUrl = env.LEMMAX_MONAD_RPC_URL;
@@ -38,7 +43,14 @@ export async function createOperatorDesk({ env, data }) {
   const confirm = result => waitForStage(publicClient, result, "verified", { pollMs: 300, timeoutMs: 180000 });
   const stages = commitStageStream({ env, network, address: settlement.address });
   const desk = createPurchaseDesk({ issuer, settlement, relayer, data, chainTime, confirm, stages });
-  return { desk, network, chainId: chain.id, settlement: settlement.address };
+  if (!env.EVALUATOR_PRIVATE_KEY) return { desk, network, chainId: chain.id, settlement: settlement.address };
+  const checker = key(env, "EVALUATOR_PRIVATE_KEY");
+  if (checker.address !== evaluatorSigner) throw new TypeError("EVALUATOR_PRIVATE_KEY does not match LEMMAX_EVALUATOR_ADDRESS");
+  const evaluator = createEvaluator({ account: checker, domain: { chainId: String(chain.id), verifyingContract: settlement.address }, index: createSciFactIndex(data), data });
+  const delivery = createDelivery({ desk, settlement, evaluator, publicClient, chainTime, confirm,
+    evaluatorWallet: createWalletClient({ account: checker, chain, transport: http(rpcUrl, { retryCount: 0 }) }),
+    explorer: network === "testnet" ? "https://testnet.monadvision.com" : network === "mainnet" ? "https://monadvision.com" : null });
+  return { desk: Object.freeze({ ...desk, deliver: delivery.deliver }), network, chainId: chain.id, settlement: settlement.address };
 }
 
 // Funding follows Monad's commit states over WebSocket when an endpoint is known; the

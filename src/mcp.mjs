@@ -60,6 +60,10 @@ export function createMcpServer(directory, desk = null, { audit = null, auditor 
       attemptId: bytes32, validAfter: z.string().regex(/^(0|[1-9][0-9]{0,19})$/), validBefore: z.string().regex(/^(0|[1-9][0-9]{0,19})$/),
       signature: z.string().regex(/^0x(?:[0-9a-fA-F]{2}){65,2048}$/),
     }), (args, options) => desk.fund(args, options), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
+    if (desk.deliver) {
+      tool("lemma_deliver_attempt", "Deliver a funded attempt: the checker named on the bill runs the bought search, signs whether a relevant source came back, and settles it on Monad in one transaction. Returns the source references, the verdict, who was paid what, and the settlement transaction. A miss credits the search price back to the buyer.", z.object({ attemptId: bytes32 }),
+        (args, options) => desk.deliver(args, options), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
+    }
     tool("lemma_attempt_status", "Read an attempt's onchain state, stored quote digest and funding time.", z.object({ attemptId: bytes32 }),
       args => desk.status(args), { ...READ_ONLY, openWorldHint: true });
   }
