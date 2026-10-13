@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "auditor-check/v1",
+  "network": "testnet",
+  "chainId": 10143,
+  "endpoint": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
+  "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
+  "freshness": {
+    "progressBlock": "70714477",
+    "lagBlocks": 4
+  },
+  "passed": true,
+  "attempts": [
+    {
+      "attemptId": "0x9b9f4284371600318c98715035e5e55559500563bb3a456b0cdad5970febfccc",
+      "contract": "v2",
+      "state": "settled_success",
+      "termsSource": "calldata",
+      "findings": [],
+      "comparedWith": "outcome recorded when it ran",
+      "matches": true
+    },
+    {
+      "attemptId": "0x6b372c5715f82c3809d88076e1bbf8a279896863468b934bcf512c9ddbe3b485",
+      "contract": "v2",
+      "state": "settled_failure",
+      "termsSource": "calldata",
+      "findings": [],
+      "comparedWith": "outcome recorded when it ran",
+      "matches": true
+    },
+    {
+      "attemptId": "0x7f8652e053ba7d5a41d82408928021110894839447aae769179dcef293dde9b9",
+      "contract": "v2",
+      "state": "refunded_timeout",
+      "termsSource": "calldata",
+      "findings": [],
+      "comparedWith": "outcome recorded when it ran",
+      "matches": true
+    },
+    {
+      "attemptId": "0x94e295e150bb7af849db5813cfdc70247157bbfa5a02c726c2749e7f022e8c2d",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0x1265885eceb2f1b586655b74bd40a8aaf862060d6ede0fdcb7e13c9ac4cc7f4f",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xda23ed292d0cda73c337c7b0cba9499a21423bea807b7a090a1b023ef1f1cf60",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xe2ab122df3d6c4c05b8780f78f364f23c894e11de9005e31d91ef9790c67bb61",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    }
+  ],
+  "parties": [
+    {
+      "party": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
+      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
+      "attempts": 7,
+      "blocking": 0
+    },
+    {
+      "party": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
+      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
+      "attempts": 7,
+      "blocking": 0
+    }
+  ],
+  "payouts": [
+    {
+      "owner": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
+      "amount": "3000",
+      "kind": "withdrawn",
+      "txHash": "0x3652f0a67d7d2e91daeb202cc355df3c4d0136cc2192c6989fe0e7e244c0c170"
+    },
+    {
+      "owner": "0xa9361c7a43b65933eafdcef63cfc07449c38acb1",
+      "amount": "10000",
+      "kind": "paid",
+      "txHash": "0xe2833edb06557b8a9dea860d2c1c4277ca9f5d07528c0d131653e377eada263b"
+    },
+    {
+      "owner": "0x2b62dad005e9342a11c651c236bbde7afba64681",
+      "amount": "12800",
+      "kind": "paid",
+      "txHash": "0xfb3db7829438daf6a4549f7367a2a0aaa7a3d90b0b97772b8db40d53f3e24b5d"
+    }
+  ],
+  "guard": {
+    "approved": true,
+    "reasons": [],
+    "indexedThrough": "70705430",
+    "ms": 246,
+    "broadcast": false
+  }
+}

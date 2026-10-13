@@ -15,7 +15,7 @@ Contract version 3 is the current contract. It pays credit out automatically and
 - **LemmaX revenue.** LemmaX earns only the execution charge. There is no onchain success share, so the three payees (connector, executor, evaluator) are unchanged.
 - **Payouts.** Contract version 3 attempts an automatic payout once credit reaches the owner's bar (minimum 0.01 USDC). The relayer pays gas; refused transfers preserve credit. An owner needs MON to withdraw credit below the bar. A signed instruction can route payouts or raise the bar.
 - **Funding feedback.** The fund tool streams Monad's commit states and returns at Verified.
-- **Trust loop.** The Envio auditor and Privy mandate integrations connect to the buyer's guard, which fails closed on a stale index. The loop was rehearsed with a local auditor and wallet policy. Hosted Envio, live Privy enforcement and four ERC-8004 registrations remain pending. [Trust loop](Trust-Loop.md).
+- **Trust loop.** The Envio auditor and Privy mandate integrations connect to the buyer's guard, which fails closed on a stale index. The loop was rehearsed with a local auditor and wallet policy. The hosted Envio auditor is live on testnet and agrees with the local auditor on every contract version 3 attempt; live Privy enforcement and four ERC-8004 registrations remain pending. [Trust loop](Trust-Loop.md).
 - **License.** MIT.
 
 ## 2. Current architecture
@@ -157,7 +157,7 @@ Monad Testnet receipts report gas used equal to the transaction gas limit, consi
 
 ## 5. Roadmap
 
-**Done.** Three purchases ran on Monad Testnet with contract version 2 and reconcile with their private records, and the contract source is verified (section 4). Contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner are built and checked, and the loop is rehearsed on a fork. Version 3 is deployed and source-verified. [Trust loop](Trust-Loop.md).
+**Done.** Three purchases ran on Monad Testnet with contract version 2 and reconcile with their private records, and the contract source is verified (section 4). Contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner are built and checked, and the loop is rehearsed on a fork. Version 3 is deployed and source-verified; its first four purchases ran on testnet ([record](../verification/live-runs-testnet.json)), and the hosted Envio auditor indexes them ([check](../verification/auditor-check-testnet.json)). [Trust loop](Trust-Loop.md).
 
 **Next.** Deploy the auditor to Envio Cloud, create the Privy buyer wallet after its kill test, register the agents, run the loop on testnet and publish its feedback. Then run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness) and extend the cost ledger with measured testnet gas. A remote MCP transport for purchases needs authentication before it serves anyone beyond the operator. The validation registry stays outside the settlement path. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
 

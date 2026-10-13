@@ -1,6 +1,6 @@
 # The LemmaX trust loop on Monad
 
-The trust loop connects signed purchase terms, a buyer-controlled spending guard, settlement and public rule checks. The buyer authorizes USDC funding, while a relayer pays MON gas. Contract version 3 is deployed on Monad Testnet; the full loop has been rehearsed on a fork with a local wallet policy and auditor. Hosted Envio, live Privy enforcement and ERC-8004 registration remain pending. [Rehearsal report](../verification/trust-loop-fork.json).
+The trust loop connects signed purchase terms, a buyer-controlled spending guard, settlement and public rule checks. The buyer authorizes USDC funding, while a relayer pays MON gas. Contract version 3 is deployed on Monad Testnet; the full loop has been rehearsed on a fork with a local wallet policy and auditor, and its first four purchases ran on testnet. The hosted Envio auditor is live on testnet; live Privy enforcement and ERC-8004 registration remain pending. [Rehearsal report](../verification/trust-loop-fork.json).
 
 ## 1. The Monad problem: stranded agent funds
 
@@ -45,7 +45,7 @@ A verdict is a rule-conformance finding, not a judgement of resource quality. Pa
 
 ### Envio: the public auditor
 
-The HyperIndex indexer in [`indexer/`](../indexer) is configured for Monad Testnet. It recovers each attempt's public terms (from `AttemptTerms`, or from fund calldata for the three version 2 attempts), rebuilds who was paid what, records verdicts and party records, tracks payouts and deferrals, and validates LemmaX-format ERC-8004 feedback. Its hosted deployment is pending. The recorded fork rehearsal uses a local auditor that applies the shared rules to RPC logs; it does not establish agreement with a hosted Envio service. [Rehearsal report](../verification/trust-loop-fork.json), [Envio HyperIndex](https://docs.envio.dev/docs/HyperIndex/overview).
+The HyperIndex indexer in [`indexer/`](../indexer) is configured for Monad Testnet. It recovers each attempt's public terms (from `AttemptTerms`, or from fund calldata for the three version 2 attempts), rebuilds who was paid what, records verdicts and party records, tracks payouts and deferrals, and validates LemmaX-format ERC-8004 feedback. Its hosted deployment on Envio Cloud serves a public GraphQL endpoint, `https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql`. `npm run auditor:check` compares it with the local auditor, which applies the same shared rules to RPC logs: they agree on all four contract version 3 attempts, the three version 2 attempts match the outcomes recorded when they ran, and the buyer's guard approves a fresh bill while reading it, with the index a few blocks behind the chain head. Nothing is broadcast by the check. [Check](../verification/auditor-check-testnet.json), [rehearsal report](../verification/trust-loop-fork.json), [Envio HyperIndex](https://docs.envio.dev/docs/HyperIndex/overview).
 
 When an auditor is configured, its records gate the next purchase: the buyer's guard refuses a quote if the index is more than 30 blocks behind or the quote names a party with a blocking verdict. The guard also requires the index to have processed a settlement the buyer already knows about. `LEMMAX_AUDIT_REQUIRED=false` is the documented override. With `LEMMAX_AUDITOR_URL` set, `lemma_verify_attempt` summarizes the indexed public attempt record.
 

@@ -260,7 +260,7 @@ Each integration decides something in the payment path:
 - **Privy:** the buyer's server wallet. Its policy signs only quotes the buyer's guard approved. [Privy in the trust loop](Trust-Loop.md#privy-the-buyers-mandate).
 - **ERC-8004:** identities for four LemmaX agents and feedback built from settled attempts only (section 4).
 
-The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#measured-so-far).
+The hosted Envio auditor is live on Monad Testnet ([check](../verification/auditor-check-testnet.json)). The live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#measured-so-far).
 
 ## 10. Scale evidence
 

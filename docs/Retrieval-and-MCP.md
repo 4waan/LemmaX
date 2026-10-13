@@ -95,7 +95,7 @@ The buyer side runs as its own MCP server, `node scripts/wallet-server.mjs` (`np
 - `wallet_status`: the wallet's address, USDC and MON balances, and the one thing its policy may sign.
 - `wallet_sign_bill`: takes the `quote`, `issuerSignature` and `buyerAuthorization` that `lemma_quote_attempt` returned, and optionally the `lastSettlementBlock` from the previous delivery. The buyer's guard checks the issuer's signature, the published terms and the public auditor's record first; the wallet policy then signs only that bill's digest, paid to the settlement contract. A refusal is an ordinary answer naming the guard or the wallet policy and the reasons.
 
-It reads the settlement contract (`LEMMAX_SETTLEMENT_ADDRESS`, contract version 3 by default) and the auditor (`LEMMAX_AUDITOR_URL`, otherwise the same rules over Monad logs). It signs through the Privy server wallet when `PRIVY_APP_ID`, `PRIVY_APP_SECRET` and the wallet record are present, otherwise through the local rehearsal of the same policy rule with `BENCHMARK_BUYER_PRIVATE_KEY`.
+It reads the settlement contract (`LEMMAX_SETTLEMENT_ADDRESS`, contract version 3 by default) and the auditor (`LEMMAX_AUDITOR_URL`, such as the hosted Envio auditor at `https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql`, otherwise the same rules over Monad logs). It signs through the Privy server wallet when `PRIVY_APP_ID`, `PRIVY_APP_SECRET` and the wallet record are present, otherwise through the local rehearsal of the same policy rule with `BENCHMARK_BUYER_PRIVATE_KEY`.
 
 A full purchase from an agent is then `lemma_list_offers`, `lemma_assess`, `lemma_quote_attempt`, `wallet_sign_bill`, `lemma_fund_attempt` (which returns at Verified), `lemma_deliver_attempt`, and optionally `lemma_verify_attempt`.
 

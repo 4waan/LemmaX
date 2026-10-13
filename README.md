@@ -14,7 +14,7 @@ This is our third version of the loop ([how we got here](#team-and-license)), an
 
 Monad gives all four, and agent services already sell per call there in USDC.
 
-On Monad Testnet, contract v2 has settled a hit, a miss and a timeout refund. [Contract v3](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7) is deployed and source verified. Its first four purchases on testnet, two hits and two misses, ran through the guard, a local auditor and a local copy of the wallet policy, and two of their settlements paid credit out automatically: 0.01 USDC to the provider and 0.0128 USDC to an agent wallet that holds no MON ([record](verification/live-runs-testnet.json)); the hosted Envio auditor, the Privy wallet and ERC-8004 registration come next. [How the trust loop works](docs/Trust-Loop.md).
+On Monad Testnet, contract v2 has settled a hit, a miss and a timeout refund. [Contract v3](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7) is deployed and source verified. Its first four purchases on testnet, two hits and two misses, ran through the guard, a local auditor and a local copy of the wallet policy, and two of their settlements paid credit out automatically: 0.01 USDC to the provider and 0.0128 USDC to an agent wallet that holds no MON ([record](verification/live-runs-testnet.json)). The hosted Envio auditor now indexes both contracts on testnet, agrees with the local auditor on every contract v3 attempt, and is what the guard reads before the wallet signs ([check](verification/auditor-check-testnet.json)); the Privy wallet and ERC-8004 registration come next. [How the trust loop works](docs/Trust-Loop.md).
 
 ## Make the decision before the purchase
 
@@ -53,7 +53,7 @@ The trust loop checks each recorded settlement against a published, hash-pinned 
 
 Envio indexes rule compliance. Privy restricts signing to guard-approved quote digests. ERC-8004 carries agent identity and authorized settlement feedback. Reputation is separate from the evidence admitted to a probability estimate.
 
-The complete loop has been rehearsed on a Monad Testnet fork using a local auditor and wallet-policy rehearsal. Hosted Envio, live Privy enforcement and ERC-8004 registration are pending. [Trust loop and its boundaries](docs/Trust-Loop.md).
+The complete loop has been rehearsed on a Monad Testnet fork using a local auditor and wallet-policy rehearsal. The hosted Envio auditor is live on testnet ([GraphQL endpoint](https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql), [check](verification/auditor-check-testnet.json)); live Privy enforcement and ERC-8004 registration are pending. [Trust loop and its boundaries](docs/Trust-Loop.md).
 
 Next, the ledger becomes the odds. Each bill will commit to the hit rate it showed, so every settlement on Monad scores the forecast that sold it. Further out, search services that already sell per call on Monad could sell attempts with their own price, odds and refund terms, backed by their settled history; independent checkers would carry public conduct records, and every buyer's guard reading the same index would refuse the next bill that names a checker caught overbilling. The assessment library already accepts settled-attempt evidence. Getting there needs chain data fed into it, a public identity per offer and an issuer registry.
 

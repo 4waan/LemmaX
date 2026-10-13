@@ -25,6 +25,7 @@
     "deploy:settlement": "node scripts/deploy-settlement.mjs",
     "demo:testnet": "node scripts/testnet-demo.mjs",
     "auditor:test": "npm --prefix indexer test",
+    "auditor:check": "node scripts/auditor-check.mjs",
     "privy:kill-test": "node scripts/privy-kill-test.mjs",
     "privy:setup": "node scripts/privy-setup.mjs",
     "agents:register": "node scripts/register-agents.mjs",
