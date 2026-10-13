@@ -29,7 +29,7 @@ export function createPublicDirectory({ report, index, data, asOf = () => Math.f
   }
   return {
     listOffers() {
-      return { scope: "public-benchmark-demo", profileRef: SCIFACT_PROFILE.profileRef,
+      return { scope: "public-benchmark", profileRef: SCIFACT_PROFILE.profileRef,
         assetClass: "authorized_source_retrieval", fundable: false,
         offers: RETRIEVAL_OFFERS.map(offer => ({ ...offer, outputLimit: 5,
           sourceVersion: SCIFACT_PROFILE.corpusSha256, productionPrice: null,
@@ -48,7 +48,7 @@ export function createPublicDirectory({ report, index, data, asOf = () => Math.f
           successes: m.representativeSuccesses, failures: m.representativeFailures,
           unresolved: 0, complete: true, independentUnits: scenarioRef !== "public-evidence", observedAt: report.observedAt,
         } };
-        // Agreed USDC terms: consumed charges are paid on every attempt, principal only on success.
+        // Published USDC terms: consumed charges are paid on every attempt, principal only on success.
         if (alternative) {
           item.buyerCosts = { currency: "USDC", assumptionRef: scenarioRef, purchasePrice: usdc(DEMO_TERMS.principal),
             attemptOverhead: usdc(DEMO_TERMS.executionCharge) + usdc(DEMO_TERMS.evaluationCharge), failureRetention: 0,
@@ -75,7 +75,7 @@ export function createPublicDirectory({ report, index, data, asOf = () => Math.f
       return { ...assessed, scenarioRef, fundable: false,
         evidenceScope: "Public SciFact relevance. Not enterprise acceptance or arbitrary-query success.",
         assumptions: alternative ? ["Representative cases treated as independent for this conditional demonstration.",
-          `Agreed USDC terms ${DEMO_TERMS.termsRef}; buyer alternative ${scenarioRef.slice("demo-terms-".length)}: ${alternative.basis}.`]
+          `Published USDC terms ${DEMO_TERMS.termsRef}; buyer alternative ${scenarioRef.slice("demo-terms-".length)}: ${alternative.basis}.`]
           : illustrative ? ["Representative cases treated as independent for this conditional demonstration.",
           "Uniform prior, costs, tariffs, workload and operator terms are illustrative, not selected commercial policy."] : [],
         calibrationStatus: "not_established", independenceStatus: "not_established",

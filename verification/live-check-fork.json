@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "live-check/v1",
+  "target": "fork",
+  "chainId": 10143,
+  "settlement": "0x60D4a687d60116457e57d1D81b88dd7Fd472e07b",
+  "profile": "beir-scifact-test-source-hit5/v1",
+  "wallet": "local",
+  "auditor": "local",
+  "passed": true,
+  "checks": {
+    "purchasesSettledAsExpected": true,
+    "fundingReportedVerified": true,
+    "providerPaidOnHit": true,
+    "priceReturnedOnMiss": true,
+    "flaggedCheckerRefusedByGuard": true,
+    "tricksNeverSigned": true,
+    "redirectApprovedByGuardRefusedByWallet": true,
+    "recordShowsRefund": true,
+    "mcpReadOnly": true,
+    "statusShowsZeroMon": true
+  },
+  "purchases": [
+    {
+      "expected": "found",
+      "outcome": "success",
+      "guard": true,
+      "stages": [
+        "Relayed",
+        "Finalized",
+        "Verified"
+      ],
+      "settleTx": "0x9732736ac9b465f87891881fe4ea2d8675aa6559bbd4d5f1b5a4eb9b6adb49af",
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0.01",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.003"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0008"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0012"
+        }
+      ]
+    },
+    {
+      "expected": "missed",
+      "outcome": "eligible_failure",
+      "guard": true,
+      "stages": [
+        "Relayed",
+        "Finalized",
+        "Verified"
+      ],
+      "settleTx": "0xe7efab08e39e9018523e84276480cc6abc7a97449c560e7f2842843ca74fe662",
+      "payouts": [
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0045"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0016"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0057",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0069"
+        }
+      ]
+    }
+  ],
+  "tricks": {
+    "flagged_checker": {
+      "guard": "refused: evaluator_flagged",
+      "wallet": "refused: Policy refused: this bill was not approved by the guard",
+      "held": true
+    },
+    "redirect_payment": {
+      "guard": "approved",
+      "wallet": "refused: Policy refused: the payment does not go to the settlement contract",
+      "held": true
+    },
+    "skip_guard": {
+      "guard": "skipped",
+      "wallet": "refused: Policy refused: this bill was not approved by the guard",
+      "held": true
+    }
+  },
+  "record": {
+    "state": "settled_failure",
+    "summary": "settled failure; allocation rebuilt from public terms; follows the published rules"
+  },
+  "mcp": {
+    "tools": [
+      "lemma_list_offers",
+      "lemma_assess",
+      "lemma_retrieve",
+      "lemma_read_source",
+      "lemma_run_benchmark_case",
+      "lemma_verify_attempt"
+    ],
+    "offers": [
+      [
+        "lemmax/bm25-source-retrieval/v1",
+        0.7466666666666667
+      ],
+      [
+        "lemmax/tfidf-source-retrieval/v1",
+        0.7666666666666667
+      ]
+    ]
+  }
+}

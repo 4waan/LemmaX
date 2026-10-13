@@ -15,12 +15,30 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "envio": "3.14.0",
+    "envio": "3.14.1",
     "viem": "2.57.4"
   },
   "devDependencies": {
     "@types/node": "24.12.2",
     "typescript": "6.0.3",
-    "vitest": "4.1.0"
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "envio": {
+      "express": {
+        ".": "4.22.3",
+        "qs": "6.16.0"
+      },
+      "viem": {
+        "ws": "8.21.0"
+      }
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "envio>express": "4.22.3",
+      "express>qs": "6.16.0",
+      "viem>ws": "8.21.0"
+    }
   }
 }

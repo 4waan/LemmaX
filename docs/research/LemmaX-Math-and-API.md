@@ -1,10 +1,12 @@
 # LemmaX: decision mathematics and assessment API
 
+Research note, written before the build. Its status statements describe the project when the note was written. For what is built and what has run, see the [README](../../README.md) and [the trust loop](../Trust-Loop.md). The [assessment library](../Implementation.md) implements much of this contract.
+
 **Confirmed MVP boundary:** a resource directory with deterministic equations and structured assessment outputs. LemmaX returns `P_outcome`, ranks eligible resources by `C_reuse`, and governs its service offers through contribution margin. It does not generate an integration plan or perform agentic adoption work in the initial assessment path.
 
 **Status:** proposed mathematical and API contract for review. No production prices, priors, evidence thresholds, probability calibration claims, margin floors, subscriptions, refund deductions, or implementation are selected by the numerical examples. This specification takes precedence over earlier adoption-plan proposals for the MVP.
 
-The user's pasted directory proposal is the baseline. The broader [LemmaX architecture](LemmaX-Architecture.md) continues to define private records, approved evaluators, commitments, and settlement. Optional agent investigation remains a separately scoped future service, not a dependency of the directory query.
+Our original directory proposal is the baseline. The broader [LemmaX architecture](../LemmaX-Architecture.md) continues to define private records, approved evaluators, commitments, and settlement. Optional agent investigation remains a separately scoped future service, not a dependency of the directory query.
 
 ## 1. Shared outcome definition
 
@@ -19,7 +21,7 @@ P_outcome(a, x) = Pr(Y(a, x) = 1 | comparable authorized evidence)
 
 The outcome specification names the task, required inputs and outputs, acceptance predicates, target environment class, effort/metering limits, deadline, disclosure policy, and evaluator method. It has an immutable identity and version. Sensitive test bodies remain within the company boundary.
 
-The agreed granularity distinguishes the underlying asset, its versioned commercial capability offer, and a bounded task case as the measurement unit. Versioned benchmark batches evaluate those cases consistently. The outcome specification declares whether its evidence concerns benchmark-case success or company acceptance. For a multi-capability model, connector, or MCP server, the assessment must identify which capability and deployment/adapter are being evaluated. Relevant model settings and provider conditions belong in the context. The user confirms that the directory should cover both hosted inference access and downloadable weights/adapters. The first capability and demonstrated execution paths remain open; no global asset-wide success probability is implied.
+This granularity distinguishes the underlying asset, its versioned commercial capability offer, and a bounded task case as the measurement unit. Versioned benchmark batches evaluate those cases consistently. The outcome specification declares whether its evidence concerns benchmark-case success or company acceptance. For a multi-capability model, connector, or MCP server, the assessment must identify which capability and deployment/adapter are being evaluated. Relevant model settings and provider conditions belong in the context. We want the directory to cover both hosted inference access and downloadable weights/adapters. The first capability is source retrieval; no global asset-wide success probability is implied.
 
 Across those delivery forms, compare the same outcome requirements, applicable company constraints, and planned workload horizon. Each deployment retains its own admissible outcome evidence. Include hosted usage charges or local setup and hardware/runtime expenditure as applicable, without counting any item twice. A per-call price and a one-time license cannot establish relative completion cost without a workload assumption. Model task quality, connector compatibility, and full acceptance success must be labeled distinctly in evidence; an observation of one cannot silently serve as an observation of another.
 
@@ -60,11 +62,11 @@ Repeated attempts from the same company or agent can be correlated. The observat
 
 If applicable evidence is insufficient, return `insufficient_evidence` with `mean: null` and `interval: null`. A prior-only diagnostic can be labeled separately; it cannot make a candidate empirically rankable. Minimum evidence and freshness rules remain open policy settings.
 
-No custom neural-network training is required. Reliable probability estimates still require real comparable observations. A four-day demo must label synthetic examples and reference-harness outcomes accurately rather than presenting them as company adoption history.
+No custom neural-network training is required. Reliable probability estimates still require real comparable observations. A demonstration must label synthetic examples and reference-harness outcomes accurately rather than presenting them as company adoption history.
 
 ### Per-resource probability comparison
 
-The directory can show one probability bar for each comparable offer: `p_i = Pr(case passes | offer_i, declared profile, admitted evidence)`. All bars use the same acceptance target, applicable context, and probability scale. Values such as `0.84`, `0.05`, and `0.11` are illustrations supplied in conversation, not measured resource estimates.
+The directory can show one probability bar for each comparable offer: `p_i = Pr(case passes | offer_i, declared profile, admitted evidence)`. All bars use the same acceptance target, applicable context, and probability scale. Values such as `0.84`, `0.05`, and `0.11` are illustrations, not measured resource estimates.
 
 These are separate success events. Multiple offers can pass or fail the same case, so the bars need not sum to one. Do not normalize success probabilities across offers. A normalized score is not automatically a calibrated outcome probability.
 
@@ -85,7 +87,7 @@ This is the next policy for review. It defines which measurements may support a 
 5. **Keep company evidence separate and authorized.** A company's private workload can produce a private, context-specific estimate. Global pooling and disclosure need explicit authorization and applicability rules. Public benchmark cases cannot stand in for company adoption history. Detailed records remain offchain within the approved access boundary.
 6. **Publish provenance and gaps.** Return evidence kind, case-manifest/profile versions, cohort policy, snapshot age, admitted successes/failures, unresolved and excluded counts, evaluator identity where permitted, and contamination/domain limitations. Unknown labels, missing required cost/timing checks, or incompatible context cannot be converted into passing evidence. Model-reported confidence is not an additional observed success.
 
-Recommendation for the four-day demo: derive the initial chart from reproducible evaluated benchmark cases; offer company-specific estimates only when admissible authorized company evidence exists. Publish no fabricated company-success bars. Admission can be implemented with schemas, deterministic checks, deduplication, and an evaluator receipt. No learned evidence-classification layer is required.
+Recommendation for the demonstration: derive the initial chart from reproducible evaluated benchmark cases; offer company-specific estimates only when admissible authorized company evidence exists. Publish no fabricated company-success bars. Admission can be implemented with schemas, deterministic checks, deduplication, and an evaluator receipt. No learned evidence-classification layer is required.
 
 ## 3. C_reuse: expected completion cost
 
@@ -117,7 +119,7 @@ expected_saving = B - C_reuse
 
 If only some failures qualify for a full refund, `R_failure = (1-q)*P`, where `q` is the conditional probability of refund eligibility. Partial refunds require the actual expected retained amount. Unknown refund eligibility must be returned as a missing assumption rather than replaced with a full-refund promise.
 
-The agreed per-attempt policy refunds full connector principal on eligible failure, retains only actual separately quoted execution/evaluation charges within accepted caps, and returns unused reserve to the buyer's available credit. A cohort restricted to eligible failures has `R_failure = 0`. A broader failure population must model its actual eligibility mix. Consumed service charges remain in `A`; unused reserve is not a consumed charge. Withdrawal fees or delay/locked-capital costs belong in `G` or `D` once, under the selected withdrawal policy.
+Our per-attempt policy refunds full connector principal on eligible failure, retains only actual separately quoted execution/evaluation charges within accepted caps, and returns unused reserve to the buyer's available credit. A cohort restricted to eligible failures has `R_failure = 0`. A broader failure population must model its actual eligibility mix. Consumed service charges remain in `A`; unused reserve is not a consumed charge. Withdrawal fees or delay/locked-capital costs belong in `G` or `D` once, under the selected withdrawal policy.
 
 Direct completion cost `B_direct` can differ from `B_failure`, since a failed attempt may leave useful work or introduce recovery costs. In that case compare `B_direct - C_reuse`, not an automatically reused `B`.
 
@@ -166,7 +168,7 @@ Already-covered access normally has no new per-case access principal: `P_retaine
 
 The simple workload allocation model is implemented in `src/billing.mjs`. Flat-rate, seat, tiered, usage and credit-based subscriptions require their actual constraints and tariff functions. [Stripe recurring pricing models](https://docs.stripe.com/products-prices/pricing-models). As a concrete model-service example, Hugging Face applies included compute credits on its routed billing path, while a custom provider key is billed by the provider and does not use those credits. Verify the actual route and entitlement before treating an allowance as available. [Hugging Face billing](https://huggingface.co/docs/inference-providers/pricing).
 
-Proposed assessment additions are `billingModel`, `billingPlanRef`, `entitlementSnapshotRef`, `costBasis`, `workloadRef`, `horizonRef`, forecast task/usage quantities, remaining allowance, and fee/overage constraints. The local `priceBillingPlan` and `assessBillingPlans` exports implement a subset of these fields, described in [the implemented contract](Implementation.md). The public benchmark stdio MCP facade is implemented; the proposed general HTTP and private-company API remain open. [Current connector and transport contract](Retrieval-and-MCP.md). The adapter consumes admitted entitlement snapshots; it does not verify live subscription rights, reserve quota or enforce provider rate limits.
+Proposed assessment additions are `billingModel`, `billingPlanRef`, `entitlementSnapshotRef`, `costBasis`, `workloadRef`, `horizonRef`, forecast task/usage quantities, remaining allowance, and fee/overage constraints. The local `priceBillingPlan` and `assessBillingPlans` exports implement a subset of these fields, described in [the implemented contract](../Implementation.md). The public benchmark stdio MCP facade is implemented; the proposed general HTTP and private-company API remain open. [Current connector and transport contract](../Retrieval-and-MCP.md). The adapter consumes admitted entitlement snapshots; it does not verify live subscription rights, reserve quota or enforce provider rate limits.
 
 Ways to lower measured completion cost are to use authorized existing entitlement where it fits the task, avoid unnecessary new subscriptions, consume appropriately allocated included allowance before overage, share cached evaluation/indexing work only within authorized boundaries, and batch small onchain withdrawals. Each depends on terms, quality, freshness, quota and actual cost measurements. Neither a subscription nor a high utilization forecast guarantees a lower cost.
 
@@ -243,7 +245,7 @@ expected preview cost < x * m_paid
 
 If a preview can cause multiple paid attempts, use expected paid attempts per preview instead of a conversion fraction. This contribution bound excludes subscription funding and fixed overhead. The full business must account for those separately.
 
-Free cached discovery, subscription access, metered trials, successful-purchase fees, and optional agent investigation remain possible pricing boundaries. The pasted proposal does not select all of them or any rate.
+Free cached discovery, subscription access, metered trials, successful-purchase fees, and optional agent investigation remain possible pricing boundaries. The original proposal does not select all of them or any rate.
 
 ## 5. Deterministic API boundary
 
@@ -383,14 +385,12 @@ Use one deterministic calculation library in the existing TypeScript service and
 
 Cache by all material query inputs plus release/offer, outcome/context, evidence snapshot, estimator, tariff, subsidy, and refund-policy versions. Price expiry and authorization freshness are checked separately. Never reuse a forecast across a materially different outcome merely because the asset name is the same.
 
-For scale readiness, the intended query path reads admitted, versioned cohort statistics rather than replaying every historical case. Evidence evaluation and admission occur separately, with deduplication and authorization. Measure the actual HTTP/MCP path, database work, cache invalidation, response correctness, cost, and overload behavior using the [architecture's minimum scale protocol](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness). This is a design target. A bounded local stdio retrieval probe is now recorded, but catalog-growth assessment testing, persistent private authorization and settlement scale results remain open. [Measured probe and limits](Retrieval-and-MCP.md).
+For scale readiness, the intended query path reads admitted, versioned cohort statistics rather than replaying every historical case. Evidence evaluation and admission occur separately, with deduplication and authorization. Measure the actual HTTP/MCP path, database work, cache invalidation, response correctness, cost, and overload behavior using the [architecture's minimum scale protocol](../LemmaX-Architecture.md#minimum-evidence-of-scale-readiness). This is a design target. A bounded local stdio retrieval probe is now recorded, but catalog-growth assessment testing, persistent private authorization and settlement scale results remain open. [Measured probe and limits](../Retrieval-and-MCP.md).
 
 Verification should include independent state-by-state accounting against the cost formula, success/failure/refund variants, boundary probabilities, unknown evidence, duplicate outcomes, correlated-unit policy, and order changes under different costs. Calibration requires future or held-out real observations; syntactic correctness and passing example arithmetic cannot establish it.
 
-This documentation's illustrative full-refund cost, partial-retention cost, contribution, and preview bound were checked by direct branch accounting with decimal arithmetic. Beta interval endpoints were computed through the integer-shape binomial CDF identity and numerical bisection. No API implementation, application tests, deployment, or empirical calibration was performed.
+This research note's illustrative full-refund cost, partial-retention cost, contribution, and preview bound were checked by direct branch accounting with decimal arithmetic. Beta interval endpoints were computed through the integer-shape binomial CDF identity and numerical bisection. Those arithmetic checks did not exercise an application or deployment, or establish empirical calibration. The subsequent implementation and its recorded checks are described in the [assessment guide](../Implementation.md) and [documentation index](../README.md).
 
-## 7. Next decision
+## 7. Decisions since this note
 
-Define **one shared acceptance outcome for the first asset family**. Specify exactly what observable output or behavior counts as success, within which effort/deadline limits. This is the next product decision because it makes `P_outcome` interpretable and cross-asset `C_reuse` ranking meaningful.
-
-After that, select the sample-admission/evaluator policy, actual refund accounting, and estimator defaults incrementally. The numerical directory scope is settled; these policies are not inferred from the examples.
+The shared acceptance outcome for the first asset family is defined: at least one labeled relevant source among up to five authorized references, with provenance. [Paid unit](../Paid-Unit.md). The refund accounting and the public-benchmark assessment scenarios followed. [Retrieval and MCP](../Retrieval-and-MCP.md#probability-and-pricing-disclosure). Estimator defaults and evidence admission for private company workloads remain open, and these policies are not inferred from the examples.

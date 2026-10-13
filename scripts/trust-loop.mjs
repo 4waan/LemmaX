@@ -20,7 +20,7 @@ import { createLocalAudit } from "../src/local-audit.mjs";
 import { createMcpServer } from "../src/mcp.mjs";
 import { MONAD_NETWORKS, connectMonad, waitForStage } from "../src/monad.mjs";
 import { commitStageStream } from "../src/operator.mjs";
-import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, normalizedSignature } from "../src/privy-buyer.mjs";
+import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, normalizedSignature, privyKeySeparation } from "../src/privy-buyer.mjs";
 import { createPurchaseDesk, plain } from "../src/purchase.mjs";
 import { readSettlementLogs, reconcileAttempts } from "../src/reconcile.mjs";
 import { RULEBOOK, RULEBOOK_HASH } from "../src/rulebook.mjs";
@@ -141,7 +141,7 @@ async function main(env, say) {
       audit: envio ?? localAudit, conditionSets, setId, auditRequired: env.LEMMAX_AUDIT_REQUIRED !== "false" });
     // The agent talks to LemmaX only through MCP.
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer(createPublicDirectory({ report, index, data }), desk, { audit: envio ?? localAudit });
+    const server = createMcpServer(createPublicDirectory({ report, index, data }), desk, { audit: envio ?? localAudit, auditor: envio ? "envio" : "local" });
     const agent = new Client({ name: "LemmaX-buyer-agent", version: "1.0.0" });
     await server.connect(serverTransport); await agent.connect(clientTransport);
     const call = async (name, args, onprogress) => {
@@ -152,6 +152,7 @@ async function main(env, say) {
     const before = await balances(publicClient, usdc, { buyer: buyerWallet.address, provider: r.provider, evaluator: r.evaluator.address, evaluatorB: evaluatorB.address, facilitator: r.facilitator.address });
     const link = hash => (target === "testnet" ? `${EXPLORER}/tx/${hash}` : hash);
     const beats = [];
+    let indexedThrough = null;
     try {
       const assessed = await call("lemma_assess", { profileRef: SCIFACT_PROFILE.profileRef, scenarioRef: SCENARIO });
       const offerRef = assessed.results.find(x => x.rank === 1)?.offerRef;
@@ -163,7 +164,7 @@ async function main(env, say) {
         beats.push(beat);
         const q = await call("lemma_quote_attempt", { offerRef, caseRef: plan.caseRef, profileRef: plan.profileRef, buyer: buyerWallet.address });
         beat.attemptId = q.attemptId;
-        const approval = await guard.approve({ quote: q.quote, issuerSignature: q.issuerSignature, buyerAuthorization: q.buyerAuthorization });
+        const approval = await guard.approve({ quote: q.quote, issuerSignature: q.issuerSignature, buyerAuthorization: q.buyerAuthorization, indexedThrough });
         if (!approval.approved) {
           // Nothing is signed and nothing reaches the chain.
           let signed = true;
@@ -189,6 +190,7 @@ async function main(env, say) {
         Object.assign(issued, { receipt: evaluation.receipt });
         beat.steps.settle = { transactionHash: settled.hash, outcome: evaluation.outcome, charges: `${evaluation.receipt.executionUsed}/${evaluation.receipt.evaluationUsed}`, link: link(settled.hash) };
         say(`${plan.label.padEnd(16)} settled ${evaluation.outcome} at ${beat.steps.settle.charges}${plan.evaluator === "main" ? "" : " by the labelled evaluator-b"}`);
+        indexedThrough = settled.blockNumber.toString();
         // The next quote must be judged on an index that has seen this settlement.
         if (envio) {
           const until = Date.now() + 120000;
@@ -228,6 +230,7 @@ async function main(env, say) {
     say(`Audit: ${flagged.length ? flagged.map(f => `${f.lastVerdict} by ${f.party}`).join("; ") : "no findings"}${envio ? `; Envio and the local audit ${envioAgreement ? "agree" : "DISAGREE"}` : ""}`);
     say(`Reconciliation: ${reconciliation.ok ? "every attempt, allocation and payout matches" : "issues found"}`);
     return plain({ schemaVersion: "trust-loop/v1", target, chainId: chain.id, settlement: address, fromBlock: fromBlock.toString(), mandate,
+      buyerKeys: mandate.startsWith("Privy") ? { ownSecret: privyKeySeparation(env) } : null,
       auditor: envio ? "envio" : "local", rulebook: { ref: RULEBOOK.rulebookRef, hash: RULEBOOK_HASH }, buyer: buyerWallet.address,
       codeSha256: sourceHashes(["contracts/AttemptSettlement.sol", "src/guard.mjs", "src/privy-buyer.mjs", "src/purchase.mjs", "src/mcp.mjs", "src/rulebook.mjs",
         "indexer/src/shared/conformance.mjs", "src/local-audit.mjs", "src/reconcile.mjs", "scripts/trust-loop.mjs"]),

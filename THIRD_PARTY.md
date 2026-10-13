@@ -28,10 +28,9 @@ The transport uses the [official TypeScript MCP SDK](https://github.com/modelcon
 
 [viem](https://github.com/wevm/viem) supplies Ethereum ABI, typed hashing and local-account signing. [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) supplies EIP-712, ECDSA recovery and reentrancy protection. [Solidity](https://github.com/ethereum/solidity) is the pinned build compiler. [Official Foundry](https://github.com/foundry-rs/foundry) provides isolated local Monad execution testing. Their upstream licenses/notices remain in the installed packages and tool distributions. No earlier Lemma or LemmaXperiment contract source was copied. The original LemmaX source, including the contracts, is MIT licensed.
 
-## Sponsor integrations
+## Wallet and indexer integrations
 
 [Privy](https://docs.privy.io) server wallets are reached through the `@privy-io/node` SDK, under its Apache-2.0 license. The SDK is installed by the operator from `package-lock.json`, not vendored.
 
 The auditor in `indexer/` is built with [Envio HyperIndex](https://github.com/enviodev/hyperindex) (`envio` npm package). Envio's own license is not an OSI-recognized open source license: it permits self-hosting and non-commercial use of the code generator, restricts third-party hosting, and covers generated code under Envio's terms ([Envio licensing](https://github.com/enviodev/hyperindex/blob/main/licenses/README.md)). LemmaX's handlers, schema, configuration and shared modules in `indexer/` are MIT licensed; Envio's generated code is not committed and keeps Envio's terms.
 
-[Mera](https://mera.category.xyz) by Category Labs, if used for the passkey page, is loaded as a pinned browser bundle under its upstream license.

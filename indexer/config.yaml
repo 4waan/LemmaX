@@ -13,8 +13,8 @@ chains:
   start_block: 69718255
   contracts:
   - name: AttemptSettlement
-    # v2 holds the three historic attempts (terms decoded from calldata). v3 is the
-    # deployer's next CREATE address (nonce 1); the deployer sends nothing before it.
+    # v2 holds the three historic attempts (terms decoded from calldata). The deployed
+    # v3 contract publishes its terms in AttemptTerms.
     address:
     - "0xfb59487E973C883E3fe4301238D485f7B248fA7f"
     - "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7"

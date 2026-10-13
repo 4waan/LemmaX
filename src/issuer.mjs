@@ -23,6 +23,14 @@ export function createQuoteIssuer({ account, domain, token, payees, caps, terms 
     address: account.address,
     fundingTotal: total.toString(),
     issuedOn(day) { return (issued.get(BigInt(day)) ?? 0n).toString(); },
+    // Restore a previously recorded issuance total after a restart. Count unfunded quotes
+    // too: funded chain events alone cannot reconstruct every issued authorization.
+    restore(day, amount) {
+      const d = BigInt(day), a = BigInt(amount);
+      if (a < 0n) throw new RangeError("Restored amount must not be negative");
+      if (a > (issued.get(d) ?? 0n)) issued.set(d, a);
+      return (issued.get(d) ?? 0n).toString();
+    },
     async issue({ offerRef, caseRef, query, buyer, profileRef, issuedAt, evaluatorRef }) {
       if (evaluatorRef !== undefined && !Object.hasOwn(roster, evaluatorRef)) throw new TypeError("Unknown evaluator");
       const assigned = evaluatorRef === undefined ? payee : roster[evaluatorRef];

@@ -1,6 +1,6 @@
 # Implemented assessment boundary
 
-Package version 0.6.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. A public benchmark stdio MCP wrapper is implemented; HTTP and authenticated private-company purchase transport remain open. Signed quotes/receipts and the USDC settlement contract are tested locally and on Monad Testnet, where the contract is deployed; there is no customer funding endpoint. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
+Package version 0.6.0. The assessment core retains its 0.1.0 result schema. These computational exports are local/server-side functions. The public benchmark is available through stdio MCP and the web demo's read-only HTTP MCP endpoint. Operator configuration enables purchase tools over stdio; the web demo has a separate purchase API using its configured demo buyer. Authenticated private-company purchase transport remains open. Signed quotes/receipts and the USDC settlement contract are tested locally and on Monad Testnet. Contract version 3 is deployed there, and version 2 ran the earlier live attempts. [Implemented financial boundary](Attempt-and-Settlement.md). [Retrieval and MCP contract](Retrieval-and-MCP.md).
 
 ## Inputs and authority
 
@@ -66,6 +66,6 @@ The result reports applied fee, available allowance, billed units, usage charge,
 
 This allocation leaves task-success probabilities unchanged. Provider access expense is not automatically operator revenue. Supply operator terms separately, excluding double-counted subscription revenue. Full period-level LemmaX subscription contribution accounting remains to be implemented.
 
-The caller must supply admitted pricing and entitlement snapshots. No live provider authentication, quota reservation, purchases, cancellation, tier/seat pricing, multi-period renewal, currency conversion, or withdrawal policy is implemented. Workload averages are not executable next-request prices. Forecast arithmetic uses floating-point currency values; settlement still requires atomic units.
+The caller must supply admitted pricing and entitlement snapshots. No live provider authentication, quota reservation, purchases, cancellation, tier/seat pricing, multi-period renewal or currency conversion is implemented in this adapter. Payout scheduling lives in the settlement contract. Workload averages are not executable next-request prices. Forecast arithmetic uses floating-point currency values; settlement still requires atomic units.
 
-The separate billing oracle enumerates per-unit charges in Python Decimal across 342 cases. It checks all three billing paths, zero/exact/adjacent quota boundaries, disabled overage and allocation across task counts. Maximum checked per-case difference was `2e-15`. The oracle and feature tests share an author/session, so this is numerical verification rather than an independent human audit.
+The separate billing oracle enumerates per-unit charges in Python Decimal across 342 cases. It checks all three billing paths, zero/exact/adjacent quota boundaries, disabled overage and allocation across task counts. Maximum checked per-case difference was `2e-15`. The oracle and feature tests share an author/session, so this is numerical verification rather than an independent human review.

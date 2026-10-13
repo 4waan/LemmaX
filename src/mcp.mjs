@@ -13,9 +13,10 @@ const bytes32 = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
 
 // The read-only tools serve frozen public benchmark data. Purchase tools exist only when
 // the operator passes a purchase desk configured with its own keys and caps. With the
-// Envio auditor configured, anyone can check an attempt against the published rules.
-export function createMcpServer(directory, desk = null, { audit = null } = {}) {
-  const server = new McpServer({ name: "LemmaX-public-benchmark-demo", version: VERSION });
+// auditor configured, anyone can check an attempt against the published rules; the tool
+// names which auditor answers (Envio's hosted index, or the same rules over RPC logs).
+export function createMcpServer(directory, desk = null, { audit = null, auditor = "envio" } = {}) {
+  const server = new McpServer({ name: "lemmax", version: VERSION });
   function tool(name, description, schema, action, annotations = READ_ONLY) {
     server.registerTool(name, { description, inputSchema: schema.strict(), annotations }, async (args, extra) => {
       try {
@@ -47,7 +48,7 @@ export function createMcpServer(directory, desk = null, { audit = null } = {}) {
     offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
   }), args => directory.runBenchmarkCase(args));
   if (audit) {
-    tool("lemma_verify_attempt", "Check one attempt against LemmaX's published rulebook using the public Envio auditor: state, who was paid what, and any rule findings. Reads public chain data only.",
+    tool("lemma_verify_attempt", `Check one attempt against LemmaX's published rulebook using ${auditor === "envio" ? "the public Envio auditor" : "a local auditor that applies the same rules to Monad logs"}: state, who was paid what, and any rule findings. Reads public chain data only.`,
       z.object({ attemptId: bytes32 }), args => verifyAttempt(audit, args.attemptId), { ...READ_ONLY, openWorldHint: true });
   }
   if (desk) {
@@ -55,10 +56,14 @@ export function createMcpServer(directory, desk = null, { audit = null } = {}) {
       offerRef: z.string().min(1).max(256), caseRef: z.string().min(1).max(64),
       profileRef: z.enum(Object.keys(DEADLINE_PROFILES)), buyer: address,
     }), args => desk.quote(args), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
-    tool("lemma_fund_attempt", "Relay the buyer's signed EIP-3009 authorization to fund a quote this server issued. Moves the buyer's USDC into escrow on Monad and returns at Verified, reporting each Monad commit state as progress (about two seconds on testnet).", z.object({
+    tool("lemma_fund_attempt", "Relay the buyer's signed EIP-3009 authorization to fund a quote this server issued. Moves the buyer's USDC into escrow on Monad and returns at Verified, reporting each Monad commit state as progress.", z.object({
       attemptId: bytes32, validAfter: z.string().regex(/^(0|[1-9][0-9]{0,19})$/), validBefore: z.string().regex(/^(0|[1-9][0-9]{0,19})$/),
       signature: z.string().regex(/^0x(?:[0-9a-fA-F]{2}){65,2048}$/),
     }), (args, options) => desk.fund(args, options), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
+    if (desk.deliver) {
+      tool("lemma_deliver_attempt", "Deliver a funded attempt: the checker named on the bill runs the bought search, signs whether a relevant source came back, and settles it on Monad in one transaction. Returns the source references, the verdict, who was paid what, and the settlement transaction. A miss credits the search price back to the buyer.", z.object({ attemptId: bytes32 }),
+        (args, options) => desk.deliver(args, options), { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
+    }
     tool("lemma_attempt_status", "Read an attempt's onchain state, stored quote digest and funding time.", z.object({ attemptId: bytes32 }),
       args => desk.status(args), { ...READ_ONLY, openWorldHint: true });
   }

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="LemmaX">
+  <style>.ink{stroke:#14141c}.v{stroke:#6c4cf5}@media (prefers-color-scheme:dark){.ink{stroke:#f2f1f7}}</style>
+  <g stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path class="v" d="M28 40 V18 a9 9 0 0 1 9 -9 H70 a9 9 0 0 1 9 9 V62"/>
+    <path class="v" d="M28 40 H14 M21 32 L13 40 L21 48"/>
+    <path class="ink" d="M42 26 H64 M42 40 H64"/>
+    <path class="v" d="M40 66 L47 73 L60 59"/>
+    <path class="ink" d="M28 58 V88 L36 81 L43 88 L50 81 L57 88"/>
+    <path class="ink" d="M66 64 L90 92"/>
+    <path class="v" d="M64 92 L88 64"/>
+  </g>
+</svg>

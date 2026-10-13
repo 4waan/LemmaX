@@ -1,0 +1,11 @@
+.git
+node_modules
+indexer/node_modules
+indexer/generated
+indexer/build
+private
+docs
+test
+.github
+*.log
+.env*

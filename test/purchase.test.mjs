@@ -67,6 +67,12 @@ test("Issuer signs bound quotes and buyer authorizations and enforces per-attemp
     { caps: { maxPerAttempt: 8000n, dailyCap: 8000n } });
   await assert.rejects(failing.issue({ offerRef, caseRef: "hit", query: "q", buyer: a.buyer.address, profileRef: "demo-timeout/v1", issuedAt: "86405" }), /signer offline/);
   assert.equal(failing.issuedOn(1), "0");
+  // A restart restores the day's total from the chain; restoring never lowers it.
+  assert.equal(tight.restore(7, 16000n), "16000");
+  await assert.rejects(issue(7), /Daily issuance cap reached/);
+  assert.equal(tight.restore(5, 8000n), "16000");
+  assert.equal(tight.restore(9, 0n), "0");
+  assert.throws(() => tight.restore(9, -1n), /negative/);
   await assert.rejects(tight.issue({ offerRef: "unknown/v1", caseRef: "hit", query: "q", buyer: a.buyer.address, profileRef: "demo-timeout/v1", issuedAt: "999999" }), /Unknown retrieval offer/);
 });
 
