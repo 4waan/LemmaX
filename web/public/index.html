@@ -2,154 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LemmaX</title>
-<meta name="description" content="Each search your agent buys settles on Monad by its result, and the record it leaves decides which bill its wallet signs next.">
-<meta name="theme-color" content="#FAFAF8">
+<meta name="description" content="Your agent only pays for searches that work. Settled on Monad.">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="top">
-  <a class="brand" href="/" aria-label="LemmaX home">
-    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M9 6.5h11.5a2.5 2.5 0 0 1 2.5 2.5v16.2l-2.1-1.4-2.1 1.4-2.1-1.4-2.1 1.4-2.1-1.4-2.1 1.4V9A2.5 2.5 0 0 1 9 6.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M10.8 12.5h8.4M10.8 16.5h5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M26.5 13.5c0-5-3.4-8.5-8-8.5M5.5 18.5c0 5 3.4 8.5 8 8.5" class="arc" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="m11.2 24.6 2.4 2.4-2.4 2.4" class="arc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>LemmaX</span>
-  </a>
-  <nav class="links" aria-label="Sections"><a href="#record" data-goto="record">Record</a><a href="#connect">Connect</a><a href="https://github.com/4waan/LemmaX" rel="noopener">GitHub</a></nav>
-  <span class="net" id="net"><i></i>Monad Testnet · 10143</span>
-  <button id="theme" class="icon-btn" type="button" aria-label="Switch theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5Z" fill="currentColor"/></svg></button>
+<header class="nav">
+  <span class="brand">LemmaX</span>
+  <a href="https://github.com/4waan/LemmaX" rel="noopener">GitHub</a>
 </header>
 
-<main>
-  <p class="live mono" id="liveLine" aria-live="polite"></p>
+<main class="stage">
+  <div class="words">
+    <h1>Your agent only pays for searches that work.</h1>
+    <p class="sub">If a search finds nothing, the price goes straight back. Settled on Monad in seconds.</p>
+  </div>
 
-  <section class="hero">
-    <div class="pitch">
-      <h1 id="headline"><span id="lead"></span></h1>
-      <p class="sub" id="sub"></p>
-      <button class="how" type="button" id="how" aria-controls="sub" aria-expanded="false">How</button>
+  <svg class="scene" id="scene" viewBox="0 0 720 230" role="img" aria-label="Money moving between your agent, Monad and a search provider">
+    <path id="pathOut" class="track" d="M110 104 L610 104"/>
+    <path id="pathBack" class="track back" d="M610 104 C 520 214, 200 214, 110 104"/>
+    <g class="node" id="nAgent" transform="translate(110 104)"><circle r="40"/><g class="icon"><rect x="-13" y="-9" width="26" height="20" rx="7"/><circle cx="-5" cy="1" r="2.2" class="dot"/><circle cx="5" cy="1" r="2.2" class="dot"/><path d="M0 -9 V -15"/><circle cx="0" cy="-17" r="2.2" class="dot"/></g><text class="label" y="74">Your agent</text></g>
+    <g class="node monad" id="nMonad" transform="translate(360 104)"><rect x="-30" y="-30" width="60" height="60" rx="14" transform="rotate(45)"/><text class="label" y="74">Monad</text></g>
+    <g class="node" id="nSearch" transform="translate(610 104)"><circle r="40"/><g class="icon"><circle cx="-3" cy="-3" r="9"/><path d="M4 4 L12 12"/></g><text class="label" y="74">Search</text></g>
+    <text class="tick" id="tMonad" x="360" y="40"></text>
+    <text class="tick" id="tAgent" x="110" y="40"></text>
+    <text class="tick" id="tSearch" x="610" y="40"></text>
+    <g id="coin" class="coin" transform="translate(110 104)"><circle r="13"/><text y="5">$</text></g>
+  </svg>
 
-      <div class="picker" role="group" aria-label="Choose a claim to search">
-        <div class="toggle" role="radiogroup" aria-label="Claim type">
-          <button type="button" role="radio" aria-checked="true" data-kind="found">Known hit</button>
-          <button type="button" role="radio" aria-checked="false" data-kind="missed">Known miss</button>
-        </div>
-        <p class="public-note">Each claim's answer is public, so you can pick a miss to see the refund.</p>
-        <div class="claim-row"><p class="claim" id="claimText"></p><button class="shuffle" type="button" id="shuffle">Another</button></div>
-        <p class="odds mono" id="odds"></p>
-        <div class="buy-row">
-          <button id="buyBtn" class="primary" type="button" disabled>Buy one search</button>
-          <span class="mono small muted" id="held"></span>
-        </div>
-        <p class="note" id="buyNote" role="status"></p>
-      </div>
+  <div class="moment" id="moment" aria-live="polite"></div>
 
-      <div class="agent-line">
-        <p class="label">Give your agent this</p>
-        <div class="copyrow"><code id="mcpHero"></code><button class="copy" type="button" data-copy="mcpHero">Copy</button></div>
-      </div>
-    </div>
-
-    <div class="stage" id="stage">
-      <div class="stage-head mono"><span><span id="stageTitle">Last run</span><span class="tag" id="stageTag" hidden></span></span><span id="stageMeta" class="muted"></span></div>
-
-      <div class="view" data-view="buy" role="tabpanel" aria-label="Buy">
-        <div class="flowwrap">
-        <ol class="flow" id="flow" aria-label="Where the money is">
-          <li data-node="agent"><b>Agent</b><small></small></li>
-          <li data-node="guard"><b>Guard</b><small></small></li>
-          <li data-node="wallet"><b>Wallet</b><small></small></li>
-          <li data-node="monad"><b>Monad</b><small></small></li>
-          <li data-node="checker"><b>Checker</b><small></small></li>
-        </ol>
-        <span class="chip mono" id="chip" aria-hidden="true">0.008 USDC</span>
-        </div>
-        <div class="stages" id="stages" aria-label="Monad commit states for the payment">
-          <div data-stage="Proposed"><span class="bar"></span><span class="mono">Proposed</span><em class="mono"></em></div>
-          <div data-stage="Voted"><span class="bar"></span><span class="mono">Voted</span><em class="mono"></em></div>
-          <div data-stage="Finalized"><span class="bar"></span><span class="mono">Finalized</span><em class="mono"></em></div>
-          <div data-stage="Verified"><span class="bar"></span><span class="mono">Verified</span><em class="mono"></em></div>
-        </div>
-        <p class="stage-total mono" id="stageTotal"></p>
-        <div class="receipt" id="receipt">
-          <div class="receipt-head mono"><span>Receipt</span><span class="verdict" id="verdict"></span></div>
-          <ul id="lines"></ul>
-          <p class="caption" id="caption"></p>
-          <div class="receipt-foot mono small">
-            <span id="txLink"></span>
-            <button type="button" class="link" id="detailsBtn" aria-expanded="false" aria-controls="details">Details +</button>
-          </div>
-          <dl class="details mono small" id="details" hidden></dl>
-        </div>
-        <p class="wallet-fact mono small" id="walletFact"></p>
-      </div>
-
-      <div class="view" data-view="mislead" role="tabpanel" aria-label="Mislead it" hidden>
-        <p class="lede" id="misleadLede"></p>
-        <div class="mislead">
-          <div class="scenarios" id="scenarios" aria-label="Attempts"></div>
-          <div class="bill" id="bill" aria-live="polite">
-            <dl class="mono small" id="billRows"></dl>
-            <ol class="layers mono small" id="layers">
-              <li data-layer="guard"><span>Guard</span><b></b><em></em></li>
-              <li data-layer="wallet"><span id="walletLayer">Wallet policy</span><b></b><em></em></li>
-              <li data-layer="contract"><span>Contract</span><b></b><em></em></li>
-            </ol>
-            <p class="why small" id="why"></p>
-            <div class="sign-row"><button type="button" class="locked" disabled>Sign</button><span class="mono small" id="moved"></span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="view" data-view="record" role="tabpanel" aria-label="Record" hidden>
-        <div class="counts mono small" id="counts"></div>
-        <ul class="events" id="events"></ul>
-        <form class="lookup" id="lookup"><input id="q" class="mono" aria-label="Transaction hash or attempt id" placeholder="Paste a tx hash or attempt id" spellcheck="false" autocomplete="off"><button type="submit">Check</button></form>
-        <div id="recordOut" aria-live="polite"></div>
-      </div>
-
-      <div class="dock" role="tablist" aria-label="Mode">
-        <button type="button" role="tab" aria-selected="true" data-mode="buy">Buy</button>
-        <button type="button" role="tab" aria-selected="false" data-mode="mislead" tabindex="-1">Mislead it</button>
-        <button type="button" role="tab" aria-selected="false" data-mode="record" tabindex="-1">Record</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="guarantees" aria-labelledby="holdsTitle">
-    <p class="label">Guarantees</p>
-    <h2 id="holdsTitle">How every purchase settles on Monad</h2>
-    <dl class="kv" id="holds"></dl>
-    <p class="limits" id="limits"></p>
-  </section>
-
-  <section class="connect" id="connect" aria-labelledby="connectTitle">
-    <div>
-      <p class="label">For agents</p>
-      <h2 id="connectTitle">Any MCP client can use it with a URL.</h2>
-      <p class="muted" id="connectBody"></p>
-    </div>
-    <div class="panel">
-      <div class="panel-head"><p class="label">Endpoints</p><span class="net"><i></i>Monad Testnet · 10143</span></div>
-      <div class="kvrow"><span class="mono small muted">MCP</span><code id="mcpUrl"></code><button class="copy" type="button" data-copy="mcpUrl">Copy</button></div>
-      <div class="kvrow"><span class="mono small muted">Record</span><code id="recordUrl"></code><button class="copy" type="button" data-copy="recordUrl">Copy</button></div>
-      <div class="kvrow"><span class="mono small muted">Contract</span><code id="contractAddr"></code><button class="copy" type="button" data-copy="contractAddr">Copy</button></div>
-    </div>
-  </section>
+  <nav class="side">
+    <button type="button" id="sideA"></button>
+    <button type="button" id="sideB"></button>
+  </nav>
 </main>
-
-<footer class="foot small muted">
-  <span>LemmaX · MIT licensed · <a href="https://github.com/4waan/LemmaX" rel="noopener">Source</a></span>
-  <span><span id="footNote"></span> Claims from <a href="https://github.com/allenai/scifact" rel="noopener">SciFact</a> (BEIR), CC BY-SA 4.0.</span>
-</footer>
 <script src="/app.js" type="module"></script>
 </body>
 </html>
