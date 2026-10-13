@@ -4,44 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LemmaX</title>
-<meta name="description" content="Your agent sees how often a search has worked before it pays. If the search misses, the half cent comes back.">
+<meta name="description" content="Your agent sees how often a search has worked before it pays. If the search misses, your agent gets its half cent back. Settled on Monad.">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="nav">
-  <a class="brand" href="/" aria-label="LemmaX"><img src="/logo.svg" alt="" width="28" height="28"><span>Lemma<em>X</em></span></a>
-  <a href="https://github.com/4waan/LemmaX" rel="noopener">GitHub</a>
+<header class="nav wrap">
+  <a class="brand" href="/" aria-label="LemmaX home"><img src="/logo.svg" alt="" width="28" height="28"><span>Lemma<em>X</em></span></a>
+  <nav class="links">
+    <a href="#inside">How it works</a>
+    <a href="#numbers">Numbers</a>
+    <a href="https://github.com/4waan/LemmaX" rel="noopener">GitHub</a>
+  </nav>
 </header>
 
-<main class="stage">
-  <div class="words">
-    <h1>Your agent sees how often a search has worked before it pays.</h1>
-    <p class="sub">If the search misses, the half cent comes back. Settled on Monad in seconds.</p>
-  </div>
+<main>
+  <section class="hero wrap">
+    <div class="pitch">
+      <a class="pill" id="contractPill" href="https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7" target="_blank" rel="noopener"><span class="live-dot"></span>Live on Monad Testnet</a>
+      <h1>Your agent sees how often a search has worked before it pays.</h1>
+      <p class="lead">LemmaX prices each paid call against what your agent would spend without it, holds the USDC on Monad until a checker signs the result, and lets the wallet sign only bills the public record has cleared.</p>
+      <p class="note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5M4 3v3h3"/></svg>If the search misses, the half cent comes back in the same settlement.</p>
+      <div class="ctas">
+        <button type="button" class="btn primary" id="runLive">Run it live on Monad</button>
+        <a class="btn" href="#connect">Connect your agent</a>
+      </div>
+      <p class="fine" id="runNote">No wallet or login. Each run is a real USDC payment on Monad Testnet.</p>
+    </div>
 
-  <svg class="scene" id="scene" viewBox="0 0 720 230" role="img" aria-label="Money moving between your agent, Monad and a search provider">
-    <path id="pathOut" class="track" d="M110 104 L610 104"/>
-    <path id="pathBack" class="track back" d="M610 104 C 520 214, 200 214, 110 104"/>
-    <g class="node" id="nAgent" transform="translate(110 104)"><circle r="40"/><g class="icon"><rect x="-13" y="-9" width="26" height="20" rx="7"/><circle cx="-5" cy="1" r="2.2" class="dot"/><circle cx="5" cy="1" r="2.2" class="dot"/><path d="M0 -9 V -15"/><circle cx="0" cy="-17" r="2.2" class="dot"/></g><text class="label" y="74">Your agent</text></g>
-    <g class="node monad" id="nMonad" transform="translate(360 104)"><rect x="-30" y="-30" width="60" height="60" rx="14" transform="rotate(45)"/><text class="label" y="74">Monad</text></g>
-    <g class="node" id="nSearch" transform="translate(610 104)"><circle r="40"/><g class="icon"><circle cx="-3" cy="-3" r="9"/><path d="M4 4 L12 12"/></g><text class="label" y="74">Search</text></g>
-    <text class="tick" id="tMonad" x="360" y="40"></text>
-    <text class="tick" id="tAgent" x="110" y="40"></text>
-    <text class="tick" id="tSearch" x="610" y="40"></text>
-    <g id="coin" class="coin" transform="translate(110 104)"><circle r="13"/><text y="5">$</text></g>
-  </svg>
+    <div class="term-wrap">
+      <div class="term-top">
+        <span class="chip" id="termMode">Replay of a real run</span>
+        <button type="button" class="chip ghost" id="replay" hidden>Replay</button>
+      </div>
+      <div class="terminal">
+        <div class="term-bar"><span class="dots"><span></span><span></span><span></span></span><span class="term-title">claude  ~/research-agent</span></div>
+        <div class="term-body" id="term" aria-live="polite"></div>
+        <div class="term-foot"><span id="termFoot">lemmax MCP · Monad Testnet</span><span>USDC</span></div>
+      </div>
+    </div>
+  </section>
 
-  <div class="moment" id="moment" aria-live="polite"></div>
+  <section class="numbers wrap" id="numbers" aria-labelledby="numbersTitle">
+    <h2 id="numbersTitle" class="eyebrow">Measured, not promised</h2>
+    <ul class="stats">
+      <li><strong id="nSaved">73% less</strong><span>than having Claude Haiku read the corpus for each answer: <b id="nCost">0.052</b> against <b id="nFallback">0.194</b> USDC, expected.</span></li>
+      <li><strong id="nHits">230 of 300</strong><span>public claims where the search found a right source, measured before anything is sold.</span></li>
+      <li><strong>Don't buy</strong><span>is an answer too. If your own pipeline costs <b id="nOwn">0.0024</b>, LemmaX says the attempt costs more: <b id="nOwnCost">0.0066</b>.</span></li>
+      <li><strong>0 MON</strong><span>in the agent's wallet. It signs once in USDC and LemmaX pays the gas.</span></li>
+    </ul>
+  </section>
 
-  <nav class="side">
-    <button type="button" id="sideA"></button>
-    <button type="button" id="sideB"></button>
-  </nav>
+  <section class="inside wrap" id="inside" aria-labelledby="insideTitle">
+    <div class="head">
+      <h2 id="insideTitle">What each line in that terminal did</h2>
+      <p>Seven MCP tools, one contract on Monad, one public auditor.</p>
+    </div>
+    <ol class="features">
+      <li><code>lemma_assess</code><h3>Odds with error bars</h3><p>Settled outcomes feed a Beta posterior: a hit rate and its 95% range. Too little evidence and the answer is <i>unknown</i>, never a guess.</p></li>
+      <li><code>lemma_assess</code><h3>Cost to an answer</h3><p>Each offer is priced against the agent's own fallback, ranked, and skipped when buying would cost more.</p></li>
+      <li><code>lemma_quote_attempt</code><h3>One signature is the whole bill</h3><p>The bill's EIP-712 hash is the nonce of a USDC authorization. Payees, caps, checker and deadlines are signed together and can never be replayed.</p></li>
+      <li><code>wallet_sign_bill</code><h3>A wallet that reads the record</h3><p>The guard checks that the auditor has seen the last settlement and that no one on the bill has a finding. Then the policy signs that one hash.</p></li>
+      <li><code>lemma_fund_attempt</code><h3>Final inside one tool call</h3><p>The call streams Monad's commit states and returns at Verified, so the search only starts on money that cannot move back.</p></li>
+      <li><code>lemma_deliver_attempt</code><h3>The result priced apart from trying</h3><p>A named checker signs the verdict. One settlement pays the search on a hit, the fixed costs either way, and returns the rest.</p></li>
+    </ol>
+    <p class="after"><code>lemma_verify_attempt</code> rebuilds any attempt from Monad's logs against the hash-pinned rulebook. Only settled attempts write reputation to ERC-8004.</p>
+  </section>
+
+  <section class="connect wrap" id="connect" aria-labelledby="connectTitle">
+    <h2 id="connectTitle">Give your agent LemmaX</h2>
+    <div class="cmd-row"><code class="cmd" id="cmd">claude mcp add --transport http lemmax &lt;this-site&gt;/mcp</code><button type="button" class="btn" id="copy">Copy</button></div>
+    <p class="fine">Works with any MCP client. The public endpoint serves the read-only tools.</p>
+  </section>
 </main>
+
+<footer class="foot wrap">
+  <span>LemmaX on Monad Testnet</span>
+  <a id="footContract" href="https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7" target="_blank" rel="noopener">Contract</a>
+  <a href="https://github.com/4waan/LemmaX" rel="noopener">Source</a>
+</footer>
 <script src="/app.js" type="module"></script>
 </body>
 </html>
