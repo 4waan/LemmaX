@@ -27,7 +27,9 @@ export { localMandateWallet, walletRefusal, receiptFrom };
 // the environment and are never printed or returned. Everything a visitor triggers is
 // capped per visitor and per day.
 export const EXPLORER = "https://testnet.monadvision.com";
-export const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70137467" });
+// Contract v3 was deployed at block 70137467; a full scan found no settlement events from
+// there through block 70702282, so the local auditor starts reading at that block.
+export const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70702282" });
 export const OFFER = "lemmax/tfidf-source-retrieval/v1";
 export const TRICKS = Object.freeze(["flagged_checker", "redirect_payment", "skip_guard"]);
 const HEADROOM_BPS = 1000;

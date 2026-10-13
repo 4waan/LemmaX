@@ -1,8 +1,8 @@
 # LemmaX
 
-**Your agent sees how often a search has worked before it pays. If the search misses, your agent gets its half cent back.**
+**Your agent's wallet pays only for tools with a track record.**
 
-Before paying, the agent sees how often the search found a right source on a public benchmark (230 of 300 claims). It signs one USDC authorization whose nonce is the hash of the whole bill; LemmaX relays it, pays the MON gas and starts the search once Monad marks the payment Verified. A checker named on the bill signs the outcome, and one settlement splits the money: the provider earns the 0.005 USDC price on a hit, the price is credited back to the agent on a miss, and the checker's published fee is the same either way.
+Before it signs, LemmaX checks the tool's measured odds (a right source for 230 of 300 claims on a public benchmark), what an answer will cost against the agent's own way of getting it (0.052 USDC through LemmaX against 0.194 when the model reads the corpus itself, or a plain "don't buy" when the agent's own pipeline is cheaper), and the public record of every settlement on Monad. The agent signs one USDC authorization whose nonce is the hash of the whole bill; LemmaX relays it, pays the MON gas and starts the search once Monad marks the payment Verified. A checker named on the bill signs the outcome, and one settlement splits the money: the provider earns the 0.005 USDC price on a hit, the price is credited back to the agent on a miss, and the checker's published fee is the same either way.
 
 Every settlement is public, and the next purchase depends on it. An auditor checks each one against a hash-pinned rulebook. Before the wallet may sign again, the buyer's guard confirms the auditor has seen the last settlement and refuses any bill that names a flagged issuer or checker.
 
@@ -14,7 +14,7 @@ This is our third version of the loop ([how we got here](#team-and-license)), an
 
 Monad gives all four, and agent services already sell per call there in USDC.
 
-On Monad Testnet, contract v2 has settled a hit, a miss and a timeout refund. [Contract v3](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7) is deployed and source verified, and its payout has passed local and fork checks. The guard has run the whole loop on a fork with a local auditor and a local copy of the wallet policy; the hosted Envio auditor, the Privy wallet and ERC-8004 registration come next. [How the trust loop works](docs/Trust-Loop.md).
+On Monad Testnet, contract v2 has settled a hit, a miss and a timeout refund. [Contract v3](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7) is deployed and source verified. Its first four purchases on testnet, two hits and two misses, ran through the guard, a local auditor and a local copy of the wallet policy, and two of their settlements paid credit out automatically: 0.01 USDC to the provider and 0.0128 USDC to an agent wallet that holds no MON ([record](verification/live-runs-testnet.json)); the hosted Envio auditor, the Privy wallet and ERC-8004 registration come next. [How the trust loop works](docs/Trust-Loop.md).
 
 ## Make the decision before the purchase
 
@@ -74,7 +74,7 @@ The default assessment leaves probabilities and cost ranks unknown. Explicit sce
 
 Three purchases ran on Monad Testnet with contract v2: a success, an eligible miss and a full timeout refund. Their events reconcile with the private records. [Live transactions and allocations](docs/Monad-Settlement-Path.md#live-run-on-monad-testnet).
 
-Contract v3 is deployed and source-verified at [`0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7`](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7). Its automatic payouts passed local and fork checks. The public demo page and HTTP MCP transport are implemented and rehearsed on a fork; a hosted demo is still pending. [Evidence guide](docs/README.md#check-a-claim-against-its-record).
+Contract v3 is deployed and source-verified at [`0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7`](https://testnet.monadvision.com/address/0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7). On testnet, Claude Code bought through both MCP servers and the public page bought through its own API; Monad's commit-state stream reported Verified 1.27 and 1.36 seconds after relay on the page's two runs, and both automatic payouts above ran inside those settlements. A hosted page is still pending. [Evidence guide](docs/README.md#check-a-claim-against-its-record).
 
 Status: Monad Testnet with public benchmark searches. There are no outside users, production savings or independent security review yet.
 

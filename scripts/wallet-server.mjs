@@ -9,7 +9,9 @@ import { createSettlementClient } from "../src/settlement.mjs";
 import { DEMO_TERMS, formatUsdc } from "../src/terms.mjs";
 import { createWalletMcpServer } from "../src/wallet-mcp.mjs";
 
-const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70137467" });
+// Contract v3 was deployed at block 70137467; a full scan found no settlement events from
+// there through block 70702282, so the local auditor starts reading at that block.
+const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70702282" });
 const BALANCE = [{ type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] }];
 
 // The agent's wallet as its own MCP server, for an agent that buys from LemmaX. Run it beside

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "live-runs/v1",
+  "network": "testnet",
+  "chainId": 10143,
+  "contract": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+  "explorer": "https://testnet.monadvision.com",
+  "runs": [
+    {
+      "attemptId": "0xe2ab122df3d6c4c05b8780f78f364f23c894e11de9005e31d91ef9790c67bb61",
+      "outcome": "eligible_failure",
+      "claim": "Ribosomopathies have a low degree of cell and tissue specific pathology.",
+      "caseRef": "1049",
+      "checker": "Checker",
+      "at": 1791901710,
+      "block": "70705430",
+      "fundTx": "0xba4bdedc80b53e33cdf2f797b398040b0939062cea6fdf1fb2d793b5a8c5e6de",
+      "settleTx": "0xfb3db7829438daf6a4549f7367a2a0aaa7a3d90b0b97772b8db40d53f3e24b5d",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 628
+        },
+        {
+          "step": "Proposed",
+          "ms": 628
+        },
+        {
+          "step": "Voted",
+          "ms": 668
+        },
+        {
+          "step": "Finalized",
+          "ms": 961
+        },
+        {
+          "step": "Verified",
+          "ms": 1895
+        }
+      ],
+      "payouts": [
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.006"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0032"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0057",
+          "paidNow": "0.0128",
+          "deferred": false,
+          "creditOwed": "0"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xda23ed292d0cda73c337c7b0cba9499a21423bea807b7a090a1b023ef1f1cf60",
+      "outcome": "success",
+      "claim": "Rapid phosphotransfer rates govern fidelity in two component systems",
+      "caseRef": "1019",
+      "checker": "Checker",
+      "at": 1791901695,
+      "block": "70705381",
+      "fundTx": "0xcd8d6c51e9af93aafcec61577174c7da07459574530d2929194d1d2dc6ce4c8b",
+      "settleTx": "0xe2833edb06557b8a9dea860d2c1c4277ca9f5d07528c0d131653e377eada263b",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 649
+        },
+        {
+          "step": "Proposed",
+          "ms": 650
+        },
+        {
+          "step": "Voted",
+          "ms": 848
+        },
+        {
+          "step": "Finalized",
+          "ms": 1125
+        },
+        {
+          "step": "Verified",
+          "ms": 2004
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0.01",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0045"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0024"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0071"
+        }
+      ]
+    }
+  ]
+}

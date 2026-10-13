@@ -27,7 +27,7 @@ function key(env, name) {
 // never printed.
 export async function createOperatorDesk({ env, data }) {
   const network = env.LEMMAX_MONAD_NETWORK ?? "testnet";
-  const rpcUrl = env.LEMMAX_MONAD_RPC_URL;
+  const rpcUrl = env.LEMMAX_MONAD_RPC_URL ?? (network === "testnet" ? "https://testnet-rpc.monad.xyz" : undefined);
   const { chain, publicClient } = await connectMonad({ network, rpcUrl, pollingInterval: 300 });
   const issuerAccount = key(env, "FACILITATOR_PRIVATE_KEY");
   const evaluatorSigner = envAddress(env, "LEMMAX_EVALUATOR_ADDRESS", { optional: true }) ?? key(env, "EVALUATOR_PRIVATE_KEY").address;
