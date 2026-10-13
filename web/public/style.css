@@ -45,6 +45,7 @@ code { font-family: var(--mono); }
 h1 { margin: 22px 0 18px; font-weight: 600; font-size: clamp(36px, 4.6vw, 56px); line-height: 1.06; letter-spacing: -0.035em; text-wrap: balance; }
 .lead { margin: 0 0 18px; font-size: 18px; color: var(--ink-2); max-width: 36em; text-wrap: pretty; }
 .note { display: flex; gap: 10px; align-items: center; margin: 0 0 28px; color: var(--ink-2); font-size: 15px; }
+.note b { color: var(--ink); font-weight: 600; }
 .note svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 12px 22px; font-weight: 500; font-size: 15px; text-decoration: none; transition: border-color .2s ease, transform .2s ease, opacity .2s ease; }
