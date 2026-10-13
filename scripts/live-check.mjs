@@ -70,7 +70,7 @@ async function main(env, say) {
     say("Staged: checker B charged 0.0010 against a published 0.0008");
 
     // The page, as Railway would run it, pointed at the fork.
-    const started = await startServer({ port: 0, log: () => {}, env: { ...env, LEMMAX_MONAD_RPC_URL: node.rpc, LEMMAX_MONAD_WS_URL: "off",
+    const started = await startServer({ port: Number(env.LEMMAX_LIVE_CHECK_SERVE ?? 0), log: () => {}, env: { ...env, LEMMAX_MONAD_RPC_URL: node.rpc, LEMMAX_MONAD_WS_URL: "off",
       LEMMAX_SETTLEMENT_ADDRESS: deployment.address, LEMMAX_SETTLEMENT_FROM_BLOCK: String(deployment.blockNumber), LEMMAX_AUDITOR_URL: "",
       PRIVY_APP_ID: "", LEMMAX_STATE_DIR: "" } });
     server = started.server;
@@ -121,6 +121,11 @@ async function main(env, say) {
       statusShowsZeroMon: Number(status.wallet.mon) === 0,
     };
     say(`Checks: ${Object.values(checks).filter(Boolean).length} of ${Object.keys(checks).length} passed`);
+    // Optionally keep the rehearsed page open in a browser until interrupted.
+    if (env.LEMMAX_LIVE_CHECK_SERVE) {
+      say(`Serving the rehearsed page at ${base} (Ctrl+C to stop)`);
+      await new Promise(resolve => { process.once("SIGINT", resolve); process.once("SIGTERM", resolve); });
+    }
     return { schemaVersion: "live-check/v1", target: "fork", chainId: chain.id, settlement: deployment.address, profile: SCIFACT_PROFILE.profileRef,
       wallet: status.wallet.mode, auditor: status.auditor, passed: Object.values(checks).every(Boolean), checks, purchases, tricks,
       record: { state: record.state, summary: record.summary }, mcp: { tools, offers } };

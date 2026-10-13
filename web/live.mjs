@@ -95,6 +95,7 @@ export function createState(dir) {
     mkdirSync(dir, { recursive: true });
     writeFileSync(`${path}.tmp`, JSON.stringify(state)); renameSync(`${path}.tmp`, path);
   };
+  state.runs ??= []; state.counts ??= { settled: 0, missed: 0, refused: 0, signedOutsidePolicy: 0 };
   return {
     day(dayNumber) {
       const k = String(dayNumber);
@@ -102,6 +103,11 @@ export function createState(dir) {
       for (const old of Object.keys(state.days)) if (Number(old) < dayNumber - 7) delete state.days[old];
       return state.days[k];
     },
+    // Settled purchases made through this desk, newest first, and running counts.
+    record(run) { state.runs.unshift(run); state.runs.length = Math.min(state.runs.length, 20); save(); },
+    runs: () => state.runs,
+    count(key) { state.counts[key] = (state.counts[key] ?? 0) + 1; save(); },
+    counts: () => ({ ...state.counts }),
     save,
   };
 }
@@ -292,7 +298,11 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
       const owners = [issued.quote.connectorPayee, issued.quote.executorPayee, issued.quote.evaluatorPayee, issued.quote.buyer].map(a => getAddress(a));
       const credits = Object.fromEntries(await Promise.all(owners.map(async o => [o, await settlement.credit(o)])));
       const payouts = receiptFrom({ logs, txHash: settled.hash, quote: issued.quote, outcome, credits, names });
-      emit({ type: "receipt", t: t(), attemptId: q.attemptId, outcome: evaluation.outcome, payouts, links: { fund: link(funded.transactionHash), settle: link(settled.hash) } });
+      const entry = { attemptId: q.attemptId, outcome: evaluation.outcome, claim: claim.claim, caseRef, checker: names[getAddress(issued.quote.evaluatorPayee)] ?? null,
+        at: Math.floor(now() / 1000), block: settled.blockNumber.toString(), fundTx: funded.transactionHash, settleTx: settled.hash,
+        timeline: funded.timeline.map(x => ({ step: x.step, ms: x.ms })), payouts };
+      state.record(entry); state.count("settled"); if (evaluation.outcome === "eligible_failure") state.count("missed");
+      emit({ type: "receipt", t: t(), ...entry, links: { fund: link(funded.transactionHash), settle: link(settled.hash) } });
       return { attemptId: q.attemptId, outcome: evaluation.outcome };
     });
   }
@@ -305,7 +315,11 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
       const issued = await trickIssuer.issue({ offerRef: OFFER, caseRef, query: data.queries.get(caseRef), buyer: buyerWallet.address, profileRef: "demo-standard/v1",
         issuedAt: await chainTime(), evaluatorRef: kind === "flagged_checker" ? "evaluator-b" : undefined });
       const bill = { quote: plain(issued.quote), issuerSignature: issued.issuerSignature, buyerAuthorization: plain(issued.authorization) };
-      emit({ type: "step", id: "quote", t: t(), checker: names[getAddress(issued.quote.evaluatorPayee)] ?? issued.quote.evaluatorPayee, note: "a real bill, signed by LemmaX, that will never be sent" });
+      const m = bill.buyerAuthorization.message;
+      emit({ type: "step", id: "quote", t: t(), checker: names[getAddress(issued.quote.evaluatorPayee)] ?? issued.quote.evaluatorPayee,
+        bill: { amount: formatUsdc(m.value), payTo: getAddress(m.to), checker: names[getAddress(issued.quote.evaluatorPayee)] ?? issued.quote.evaluatorPayee } });
+      // Every attempt ends in one tally: refused before anything was signed, or (never expected) signed.
+      const settle = held => { state.count(held ? "refused" : "signedOutsidePolicy"); return { held }; };
       const trySign = async typed => {
         try { await buyerWallet.signFundingAuthorization(typed); return { refused: false, signedUnexpectedly: true }; }
         catch (error) { return walletRefusal(error, mode); }
@@ -314,7 +328,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
         emit({ type: "step", id: "guard", t: t(), skipped: true });
         const wallet = await trySign(bill.buyerAuthorization);
         emit({ type: "step", id: "wallet", t: t(), ...wallet });
-        return { held: !wallet.signedUnexpectedly };
+        return settle(!wallet.signedUnexpectedly);
       }
       const approval = await guard.approve({ ...bill, indexedThrough: lastSettledBlock });
       emit({ type: "step", id: "guard", t: t(), approved: approval.approved, reasons: approval.reasons, auditor });
@@ -323,7 +337,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
           // The guard should refuse; ask the wallet anyway, as an agent that ignores its guard would.
           const wallet = await trySign(bill.buyerAuthorization);
           emit({ type: "step", id: "wallet", t: t(), ...wallet });
-          return { held: !approval.approved && !wallet.signedUnexpectedly };
+          return settle(!approval.approved && !wallet.signedUnexpectedly);
         }
         // redirect_payment: the guard approved the real bill; the agent changes who gets paid.
         const attacker = privateKeyToAccount(`0x${randomBytes(32).toString("hex")}`).address;
@@ -331,7 +345,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
         emit({ type: "step", id: "tamper", t: t(), change: "who gets paid", to: attacker });
         const wallet = await trySign(tampered);
         emit({ type: "step", id: "wallet", t: t(), ...wallet });
-        return { held: !wallet.signedUnexpectedly };
+        return settle(!wallet.signedUnexpectedly);
       } finally { await guard.release(approval).catch(() => {}); }
     });
   }
@@ -352,6 +366,28 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   }
 
   const within = (promise, ms) => Promise.race([promise, new Promise(resolve => setTimeout(() => resolve(null), ms))]).catch(() => null);
+  // The last settled runs, for the page to replay on load. Before this desk has settled
+  // anything, the earlier live run on Monad Testnet (contract v2) stands in, labelled as such.
+  const seed = (() => {
+    try {
+      const v2 = JSON.parse(readFileSync(new URL("../verification/testnet-demo.json", import.meta.url), "utf8"));
+      // v2 kept earnings as credit to withdraw; the amounts follow from the public terms.
+      const share = (role, name, amount) => ({ role, name, earned: formatUsdc(amount), paidNow: "0", deferred: false });
+      return v2.attempts.filter(a => a.steps?.settle).map(a => {
+        const hit = a.label === "success";
+        const allocation = publicAllocation(DEMO_TERMS, { state: hit ? "settled_success" : "settled_failure", executionUsed: DEMO_TERMS.executionCharge, evaluationUsed: DEMO_TERMS.evaluationCharge });
+        const payouts = [share("provider", "Provider", allocation.connector), share("LemmaX (execution)", "LemmaX", allocation.executor),
+          share("checker", "Checker", allocation.evaluator), share("buyer (returned)", "Buyer agent", allocation.buyer)].filter(p => Number(p.earned) > 0);
+        return { attemptId: a.attemptId, outcome: hit ? "success" : "eligible_failure", caseRef: a.caseRef, claim: data.queries.get(a.caseRef) ?? null,
+          fundTx: a.steps.fund.transactionHash, settleTx: a.steps.settle.transactionHash, checker: "Checker", payouts, contract: v2.settlement, earlier: true };
+      });
+    } catch { return []; }
+  })();
+  function recent() {
+    const runs = state.runs();
+    return { runs: (runs.length ? runs : seed).slice(0, 5), counts: state.counts(), contract: settlement.address, explorer: EXPLORER, fromEarlierContract: !runs.length };
+  }
+
   async function status() {
     const [freshness, usdc, mon, b] = await Promise.all([
       within(audit.freshness(), 3000),
@@ -368,5 +404,5 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
       price: { held: formatUsdc(total), principal: formatUsdc(DEMO_TERMS.principal), execution: formatUsdc(DEMO_TERMS.executionCharge), checking: formatUsdc(DEMO_TERMS.evaluationCharge) } };
   }
 
-  return { buy, trick, record, status, claims, visitorHash, audit, mode, auditor, settlement: settlement.address, buyer: buyerWallet.address, publicClient };
+  return { buy, trick, record, status, recent, claims, visitorHash, audit, mode, auditor, settlement: settlement.address, buyer: buyerWallet.address, publicClient };
 }

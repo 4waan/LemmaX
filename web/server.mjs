@@ -15,7 +15,7 @@ import { TRICKS, createLimiter, createLiveDesk } from "./live.mjs";
 const PUBLIC = fileURLToPath(new URL("./public/", import.meta.url));
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon", ".json": "application/json" };
 const SECURITY = { "x-content-type-options": "nosniff", "referrer-policy": "no-referrer", "x-frame-options": "DENY",
-  "content-security-policy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'" };
+  "content-security-policy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-ancestors 'none'" };
 
 function send(res, status, body, headers = {}) {
   const text = typeof body === "string" ? body : JSON.stringify(body);
@@ -62,6 +62,7 @@ export async function startServer({ env = process.env, port = Number(env.PORT ??
       if (url.pathname === "/healthz") return send(res, 200, { ok: true });
       if (url.pathname === "/api/status" && req.method === "GET") return send(res, 200, await live.status());
       if (url.pathname === "/api/claims" && req.method === "GET") return send(res, 200, { claims: live.claims });
+      if (url.pathname === "/api/recent" && req.method === "GET") return send(res, 200, live.recent());
       if (url.pathname === "/api/record" && req.method === "GET") return send(res, 200, await live.record(url.searchParams.get("q") ?? ""));
       if (url.pathname === "/api/buy" && req.method === "POST") {
         const visitor = visitorOf(req), allowed = buyLimit(visitor);
