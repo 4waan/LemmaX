@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { PrivyClient, generateAuthorizationSignature } from "@privy-io/node";
 import { MONAD_NETWORKS, envAddress } from "../src/monad.mjs";
@@ -23,7 +24,8 @@ async function main(env) {
   const privy = new PrivyClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET });
   const sets = createConditionSetClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, ownerPrivateKey: keys.guard.privateKey, sign: generateAuthorizationSignature });
   const quorum = await privy.keyQuorums().create({ public_keys: [keys.agent.publicKey], authorization_threshold: 1, display_name: "LemmaX buyer agent" });
-  const set = await sets.create("lemmax-approved-quote-digests", keys.guard.publicKey);
+  // Condition-set names are unique within a Privy app, so each run names its own set.
+  const set = await sets.create(`lemmax-approved-quote-digests-${randomBytes(4).toString("hex")}`, keys.guard.publicKey);
   const policy = await privy.policies().create({ ...mandatePolicy({ chainId: 10143, usdc: plan.usdc, settlement, maxValue, conditionSetId: set.id }),
     owner: { public_key: keys.principal.publicKey } });
   const wallet = await privy.wallets().create({ chain_type: "ethereum", owner: { public_key: keys.principal.publicKey },

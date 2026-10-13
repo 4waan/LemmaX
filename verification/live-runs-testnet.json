@@ -6,6 +6,77 @@
   "explorer": "https://testnet.monadvision.com",
   "runs": [
     {
+      "attemptId": "0xcb6a0e13288706243629f1c415f0c11e5b7d240c234befaebe8f300cdc1f55f0",
+      "outcome": "success",
+      "claim": "Rapamycin decreases the concentration of triacylglycerols in fruit flies.",
+      "caseRef": "1014",
+      "checker": "Checker",
+      "at": 1791906988,
+      "block": "70722725",
+      "fundTx": "0xeaf21c860b7df68f314a751aec6a8eb5aa7096994bfcfc816f1663d2ed052ba2",
+      "settleTx": "0x64913d46f0a1276bc5f4aa70d25414d905f54504984aeaccf7bf5b48cb804216",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 299
+        },
+        {
+          "step": "Proposed",
+          "ms": 299
+        },
+        {
+          "step": "Voted",
+          "ms": 600
+        },
+        {
+          "step": "Finalized",
+          "ms": 853
+        },
+        {
+          "step": "Verified",
+          "ms": 1794
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.005"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0075"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.004"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0007"
+        }
+      ]
+    },
+    {
       "attemptId": "0xe2ab122df3d6c4c05b8780f78f364f23c894e11de9005e31d91ef9790c67bb61",
       "outcome": "eligible_failure",
       "claim": "Ribosomopathies have a low degree of cell and tissue specific pathology.",

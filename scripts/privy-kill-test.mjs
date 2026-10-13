@@ -25,7 +25,7 @@ async function main(env) {
   const sets = createConditionSetClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, ownerPrivateKey: guard.privateKey, sign: generateAuthorizationSignature });
   const agentSets = createConditionSetClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, ownerPrivateKey: agent.privateKey, sign: generateAuthorizationSignature });
   const quorum = await step("create the agent key quorum", () => privy.keyQuorums().create({ public_keys: [agent.publicKey], authorization_threshold: 1, display_name: "LemmaX kill-test agent" }));
-  const set = await step("create the condition set", () => sets.create("lemmax-kill-test-digests", guard.publicKey));
+  const set = await step("create the condition set", () => sets.create(`lemmax-kill-test-digests-${randomBytes(4).toString("hex")}`, guard.publicKey));
   const policy = await step("create the mandate policy", () => privy.policies().create({ ...mandatePolicy({ chainId: CHAIN_ID, usdc: USDC, settlement: SETTLEMENT, maxValue: MAX, conditionSetId: set.id }),
     owner: { public_key: principal.publicKey } }));
   const wallet = await step("create the wallet", () => privy.wallets().create({ chain_type: "ethereum", owner: { public_key: principal.publicKey },
