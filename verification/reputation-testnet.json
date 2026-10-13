@@ -26,28 +26,65 @@
       "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1"
     }
   },
-  "settledAttempts": 14,
-  "feedback": [
+  "batches": [
     {
-      "line": "acceptance -> agent 2299 (provider): 8 of 14 accepted",
-      "transactionHash": "0xcba4077e93faa77befad9ada46f730caef6f02081e039dbd6ea434084f9bd012",
-      "link": "https://testnet.monadvision.com/tx/0xcba4077e93faa77befad9ada46f730caef6f02081e039dbd6ea434084f9bd012"
+      "settledAttempts": 14,
+      "feedback": [
+        {
+          "line": "acceptance -> agent 2299 (provider): 8 of 14 accepted",
+          "transactionHash": "0xcba4077e93faa77befad9ada46f730caef6f02081e039dbd6ea434084f9bd012",
+          "link": "https://testnet.monadvision.com/tx/0xcba4077e93faa77befad9ada46f730caef6f02081e039dbd6ea434084f9bd012"
+        },
+        {
+          "line": "conformance -> agent 2297 (evaluator): 14 of 14 conforming",
+          "transactionHash": "0xe7348fb9aa2f464503a4e38f137d3319db9af76b3dfce176b73149d017cde5a5",
+          "link": "https://testnet.monadvision.com/tx/0xe7348fb9aa2f464503a4e38f137d3319db9af76b3dfce176b73149d017cde5a5"
+        }
+      ]
     },
     {
-      "line": "conformance -> agent 2297 (evaluator): 14 of 14 conforming",
-      "transactionHash": "0xe7348fb9aa2f464503a4e38f137d3319db9af76b3dfce176b73149d017cde5a5",
-      "link": "https://testnet.monadvision.com/tx/0xe7348fb9aa2f464503a4e38f137d3319db9af76b3dfce176b73149d017cde5a5"
+      "settledAttempts": 19,
+      "newlyCounted": "the attempts settled after the first batch, including evaluator-b's overcharge in the testnet trust loop",
+      "feedback": [
+        {
+          "line": "acceptance -> agent 2299 (provider): 2 of 3 accepted",
+          "transactionHash": "0xa1b24152325ba1f1c39fa03eb332f7d2d19604cfb1ae483ed09aaacc18a6077d",
+          "link": "https://testnet.monadvision.com/tx/0xa1b24152325ba1f1c39fa03eb332f7d2d19604cfb1ae483ed09aaacc18a6077d"
+        },
+        {
+          "line": "conformance -> agent 2297 (evaluator): 3 of 3 conforming",
+          "transactionHash": "0x3e6dcdf7c1c23736db82ebe056d6af7937fceb456902c6fa7591dbdc988a72d4",
+          "link": "https://testnet.monadvision.com/tx/0x3e6dcdf7c1c23736db82ebe056d6af7937fceb456902c6fa7591dbdc988a72d4"
+        },
+        {
+          "line": "conformance -> agent 2298 (evaluatorB): 0 of 1 conforming",
+          "transactionHash": "0x48f909ccf45a6d1b0d0b312bb09e10eebf46b3a556a309882e40f8b70fdb6a39",
+          "link": "https://testnet.monadvision.com/tx/0x48f909ccf45a6d1b0d0b312bb09e10eebf46b3a556a309882e40f8b70fdb6a39"
+        }
+      ]
     }
   ],
   "envio": {
     "endpoint": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
     "reputationRecords": [
       {
-        "agentId": "2299",
+        "agentId": "2297",
         "valid": true
       },
       {
         "agentId": "2297",
+        "valid": true
+      },
+      {
+        "agentId": "2298",
+        "valid": true
+      },
+      {
+        "agentId": "2299",
+        "valid": true
+      },
+      {
+        "agentId": "2299",
         "valid": true
       }
     ]
