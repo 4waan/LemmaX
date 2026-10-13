@@ -16,7 +16,7 @@
   <a class="brand" href="/" aria-label="LemmaX home"><img src="/logo.svg" alt="" width="28" height="28"><span>Lemma<em>X</em></span></a>
   <nav class="links">
     <a href="#inside">How it works</a>
-    <a href="#numbers">Numbers</a>
+    <a href="#who">Who it's for</a>
     <a href="https://github.com/4waan/LemmaX" rel="noopener">GitHub</a>
   </nav>
 </header>
@@ -58,13 +58,26 @@
     </ul>
   </section>
 
+  <section class="market wrap" id="who" aria-labelledby="whoTitle">
+    <div class="head">
+      <h2 id="whoTitle">Agents already pay for every search, found or not</h2>
+      <p>LemmaX is for the developers whose agents call paid search and data APIs many times a task.</p>
+    </div>
+    <ul class="proof">
+      <li><strong>1M+</strong><span>developers build on Tavily alone, a search API agents call per request. Exa reports 400K+, Parallel 100K+.</span><a href="https://nebius.com/newsroom/nebius-announces-agreement-to-acquire-tavily-to-add-agentic-search-to-its-ai-cloud" target="_blank" rel="noopener">Tavily</a><a href="https://exa.ai/blog/announcing-series-c" target="_blank" rel="noopener">Exa</a><a href="https://techcrunch.com/2026/04/29/parallel-web-systems-hits-2b-valuation-as-ai-agents-become-the-webs-primary-users/" target="_blank" rel="noopener">Parallel</a></li>
+      <li><strong>$0.004 to $0.008</strong><span>per search call at Exa, Brave, Perplexity and Tavily, charged whether or not anything useful comes back.</span><a href="https://exa.ai/pricing" target="_blank" rel="noopener">Exa</a><a href="https://brave.com/search/api/" target="_blank" rel="noopener">Brave</a><a href="https://www.tavily.com/pricing" target="_blank" rel="noopener">Tavily</a></li>
+      <li><strong>94K</strong><span>buyers paid per call over x402 in 30 days, across 75M transactions, as x402.org reports.</span><a href="https://www.x402.org/" target="_blank" rel="noopener">x402.org</a></li>
+      <li><strong>12</strong><span>search services already sell per call in USDC on Monad's API Hub, next to 10,309 agents with ERC-8004 identities on Monad.</span><a href="https://app.monad.xyz/agents/api-hub" target="_blank" rel="noopener">API Hub</a><a href="https://8004scan.io/networks" target="_blank" rel="noopener">8004scan</a></li>
+    </ul>
+  </section>
+
   <section class="inside wrap" id="inside" aria-labelledby="insideTitle">
     <div class="head">
       <h2 id="insideTitle">What each line in that terminal did</h2>
       <p>Seven MCP tools, one contract on Monad, one public auditor.</p>
     </div>
     <ol class="features">
-      <li><code>lemma_assess</code><h3>Odds with error bars</h3><p>Settled outcomes feed a Beta posterior: a hit rate and its 95% range. Too little evidence and the answer is <i>unknown</i>, never a guess.</p></li>
+      <li><code>lemma_assess</code><h3>Odds with error bars</h3><p>Measured outcomes feed a Beta posterior: a hit rate and its 95% range. Too little evidence and the answer is <i>unknown</i>, never a guess.</p></li>
       <li><code>lemma_assess</code><h3>Cost to an answer</h3><p>Each offer is priced against the agent's own fallback, ranked, and skipped when buying would cost more.</p></li>
       <li><code>lemma_quote_attempt</code><h3>One signature is the whole bill</h3><p>The bill's EIP-712 hash is the nonce of a USDC authorization. Payees, caps, checker and deadlines are signed together and can never be replayed.</p></li>
       <li><code>wallet_sign_bill</code><h3>A wallet that reads the record</h3><p>The guard checks that the auditor has seen the last settlement and that no one on the bill has a finding. Then the policy signs that one hash.</p></li>
@@ -72,6 +85,23 @@
       <li><code>lemma_deliver_attempt</code><h3>The result priced apart from trying</h3><p>A named checker signs the verdict. One settlement pays the search on a hit, the fixed costs either way, and returns the rest.</p></li>
     </ol>
     <p class="after"><code>lemma_verify_attempt</code> rebuilds any attempt from Monad's logs against the hash-pinned rulebook. Only settled attempts write reputation to ERC-8004.</p>
+  </section>
+
+  <section class="scale wrap" id="scale" aria-labelledby="scaleTitle">
+    <div class="head">
+      <h2 id="scaleTitle">The odds sharpen as agents buy</h2>
+      <p>Today the odds come from 247 independent benchmark cases. Next, every settled attempt on Monad adds to them, and the range narrows for every agent.</p>
+    </div>
+    <ol class="growth">
+      <li><b>247</b><span>cases today</span><em style="--w: 100%"></em><i>71% to 81%</i></li>
+      <li><b>2,470</b><span>cases</span><em style="--w: 32%"></em><i>75% to 78%</i></li>
+      <li><b>24,700</b><span>cases</span><em style="--w: 10%"></em><i>76% to 77%</i></li>
+    </ol>
+    <ul class="proof three">
+      <li><strong>~520K gas</strong><span>funds and settles one attempt. A Monad block holds 150M gas every 300 ms, room for hundreds of attempts in each block.</span><a href="https://github.com/4waan/LemmaX/blob/main/verification/settlement-fork-check.json" target="_blank" rel="noopener">Our gas</a><a href="https://docs.monad.xyz/introduction/monad-for-developers" target="_blank" rel="noopener">Monad docs</a></li>
+      <li><strong>0.0015 USDC</strong><span>is LemmaX's fee per attempt, the same whichever provider wins, so ranking never favours a commission.</span></li>
+      <li><strong>Next: any provider</strong><span>that sells per call sells attempts, with its own price, odds and refund terms, backed by its settled record on Monad.</span></li>
+    </ul>
   </section>
 
   <section class="connect wrap" id="connect" aria-labelledby="connectTitle">

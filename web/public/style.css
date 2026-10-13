@@ -127,6 +127,26 @@ h2 { margin: 0; font-size: clamp(26px, 3vw, 36px); font-weight: 600; letter-spac
 .features p { margin: 0; color: var(--ink-2); font-size: 15px; }
 .after { margin: 22px 0 0; color: var(--ink-2); font-size: 15px; }
 
+/* Who it's for, and how it scales */
+.market, .scale { padding-block: 40px 64px; }
+.proof { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.proof.three { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 28px; }
+@media (max-width: 980px) { .proof, .proof.three { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .proof, .proof.three { grid-template-columns: minmax(0, 1fr); } }
+.proof li { border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-content: flex-start; min-width: 0; }
+.proof strong { flex-basis: 100%; font-size: clamp(26px, 2.6vw, 32px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+.proof span { flex-basis: 100%; color: var(--ink-2); font-size: 15px; margin-bottom: 4px; }
+.proof a { font-size: 12.5px; color: var(--mute); text-decoration: none; border-bottom: 1px solid var(--line); }
+.proof a:hover { color: var(--ink); border-color: var(--ink-2); }
+.growth { list-style: none; margin: 0; padding: 22px 24px; border: 1px solid var(--line); border-radius: 16px; display: grid; gap: 14px; }
+.growth li { display: grid; grid-template-columns: 6.5em 9em minmax(0, 1fr) 13em; align-items: center; gap: 14px; font-size: 15px; }
+.growth b { font-weight: 600; font-size: 20px; letter-spacing: -0.02em; font-feature-settings: "tnum"; }
+.growth span { color: var(--mute); }
+.growth em { display: block; height: 10px; border-radius: 99px; background: var(--accent-soft); position: relative; }
+.growth em::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: var(--w); transform: translateX(-50%); min-width: 6px; border-radius: 99px; background: var(--accent); }
+.growth i { font-style: normal; color: var(--ink-2); font-feature-settings: "tnum"; }
+@media (max-width: 700px) { .growth li { grid-template-columns: 5.5em minmax(0, 1fr); } .growth span { display: none; } .growth em { grid-column: 1 / -1; order: 3; } }
+
 /* Connect */
 .connect { padding-block: 48px 72px; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 18px; }
 .cmd-row { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; min-width: 0; }
