@@ -103,4 +103,6 @@ The decision core can be used independently of settlement. Start with the [devel
 
 Aryan Singh Rathore and Awaan Mustafa Siddiqui, co-founders.
 
+LemmaX is a new codebase. We [reviewed our earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md), Lemma and LemmaXperiment, before building it, and copied no source code from them. Most of the first commit is generated benchmark output; the [commit history](https://github.com/4waan/LemmaX/commits/main) records the build from there.
+
 LemmaX is [MIT licensed](LICENSE). Third-party data, packages and tools retain [their own terms](THIRD_PARTY.md). AI tools assisted in developing the project.

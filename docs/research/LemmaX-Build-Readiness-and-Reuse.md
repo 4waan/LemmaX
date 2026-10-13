@@ -6,7 +6,7 @@ Repository code and focused local checks were inspected at Lemma commit `e002b5b
 
 **Conclusion:** we can start the implementation architecture and a parameterized revenue model now. The [architecture](../LemmaX-Architecture.md) and [math/API contract](LemmaX-Math-and-API.md) already define their foundations. Six decisions below determine the executable MVP. Prices, revenue forecasts, comparative model results, partner adoption, and a Monad deployment are not established.
 
-No other hackathon team was lined up when we wrote this review, so we planned an integration package first. Internal use by our two projects is useful evidence, but independent adoption remains an unfilled validation target. No outreach or external publication was performed in this review.
+No outside team was lined up when we wrote this review, so we planned an integration package first. Internal use by our two projects is useful evidence, but independent adoption remains an unfilled validation target. No outreach or external publication was performed in this review.
 
 This review precedes the first assessment-library implementation; the [paid-unit specification](../Paid-Unit.md) records what followed. Source paths below identify inspected sibling projects, not files vendored into this repository.
 
@@ -104,7 +104,7 @@ The executed [SciFact report](../../benchmarks/scifact-bm25-results.json) contai
 
 Monad supplies shared funding, ordering, execution, and settlement state for independently operated agents and evaluators. It does not infer compatibility, store private corpora, or certify an evaluator's judgment. Confirm current RPC/token settings from [official testnet documentation](https://docs.monad.xyz/developer-essentials/testnet) during deployment. Nothing in this review was deployed.
 
-ERC-8004 identity/reputation can be an authorized extension. The [official Monad guide](https://docs.monad.xyz/guides/erc-8004) currently marks validation as coming soon; do not make that registry a dependency. Optional indexing should serve real reconciliation and status display. Native blobs, zkML proving, and FHE remain outside the hackathon build.
+ERC-8004 identity/reputation can be an authorized extension. The [official Monad guide](https://docs.monad.xyz/guides/erc-8004) currently marks validation as coming soon; do not make that registry a dependency. Optional indexing should serve real reconciliation and status display. Native blobs, zkML proving, and FHE remain outside the first release.
 
 ## 6. Evidence that makes the demo useful
 
@@ -140,9 +140,9 @@ Subscription billing is also in scope. Compare an authorized existing plan by in
 
 Remaining inputs are real tariffs, failure eligibility and exact consumed-charge allocation, withdrawal policy, operator costs, refresh cost/horizon, paid volumes/conversion, and support burden. We can produce the equations, ledger, and sensitivity analysis now; a credible revenue forecast waits for these measurements. Benchmark-case `p` cannot price an unrelated integration-success share.
 
-## 8. Hackathon criteria
+## 8. Adoption evidence
 
-The official **Trust, Identity & AI Infrastructure** rubric assigns **20% to Traction & Path Forward**. Another team integrating during the hackathon is an example of traction evidence, rather than a separate mandatory validation score. The track also weights market readiness at 25%. The live product, public repository, access instructions, logo, and technical/pitch videos need submission preparation. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
+An outside team integrating LemmaX is the strongest evidence of demand; use by our own projects does not stand in for it. A hosted product with plain access instructions is the precondition for that.
 
 ## 9. Verification performed in this review
 

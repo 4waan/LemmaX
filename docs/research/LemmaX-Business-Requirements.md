@@ -108,7 +108,7 @@ The evidence supports different conclusions, rather than one universal winner:
 
 The selection gate is concrete: usable data and rights; one explicit buyer output; at least two comparable versioned offers; an evaluator that can execute within the remaining time and budget; measured connector behavior; a cost ledger; and a demonstration of the existing private commitment/settlement flow. If these cannot be achieved for a candidate, narrow the demonstrated claim or test the next candidate. Do not fabricate an adoption probability to fill the catalog.
 
-For the hackathon, a credible outcome is a small evidence-backed directory, deterministic assessment API, approved-evaluator verdict, and Monad commitment/settlement. Public benchmarks can remain offchain. No training pipeline, agentic planning, zkML proof generation, FHE processing, Ethereum blob publishing, or broad connector suite is necessary to establish this first demonstration.
+For the first release, a credible outcome is a small evidence-backed directory, deterministic assessment API, approved-evaluator verdict, and Monad commitment/settlement. Public benchmarks can remain offchain. No training pipeline, agentic planning, zkML proof generation, FHE processing, Ethereum blob publishing, or broad connector suite is necessary to establish this first demonstration.
 
 ## 7. Verification and unresolved requirements
 

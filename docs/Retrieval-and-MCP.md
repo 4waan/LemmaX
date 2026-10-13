@@ -90,7 +90,7 @@ With an auditor configured, `lemma_verify_attempt` checks one attempt against th
 
 All tools reject additional unrecognized input fields. Unknown offers, profiles, cases and sources fail without exposing local paths or stack traces. Reading source excerpts is limited to public benchmark content and carries the dataset license. No customer documents or evidence are served.
 
-The real SDK smoke check compares rankings and outcomes through a spawned stdio server. It checks 100 requests with one request in flight and another 100 with a window of four. Server scoring remains synchronous; queued requests are not worker parallelism. This is a bounded local integration/load probe, not sustained production throughput or independent hackathon-team adoption. [Recorded smoke run](../verification/mcp-smoke.json).
+The real SDK smoke check compares rankings and outcomes through a spawned stdio server. It checks 100 requests with one request in flight and another 100 with a window of four. Server scoring remains synchronous; queued requests are not worker parallelism. This is a bounded local integration/load probe, not sustained production throughput or adoption by an outside team. [Recorded smoke run](../verification/mcp-smoke.json).
 
 ## Next boundary
 

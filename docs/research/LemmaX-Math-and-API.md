@@ -62,7 +62,7 @@ Repeated attempts from the same company or agent can be correlated. The observat
 
 If applicable evidence is insufficient, return `insufficient_evidence` with `mean: null` and `interval: null`. A prior-only diagnostic can be labeled separately; it cannot make a candidate empirically rankable. Minimum evidence and freshness rules remain open policy settings.
 
-No custom neural-network training is required. Reliable probability estimates still require real comparable observations. A hackathon demo must label synthetic examples and reference-harness outcomes accurately rather than presenting them as company adoption history.
+No custom neural-network training is required. Reliable probability estimates still require real comparable observations. A demonstration must label synthetic examples and reference-harness outcomes accurately rather than presenting them as company adoption history.
 
 ### Per-resource probability comparison
 
@@ -87,7 +87,7 @@ This is the next policy for review. It defines which measurements may support a 
 5. **Keep company evidence separate and authorized.** A company's private workload can produce a private, context-specific estimate. Global pooling and disclosure need explicit authorization and applicability rules. Public benchmark cases cannot stand in for company adoption history. Detailed records remain offchain within the approved access boundary.
 6. **Publish provenance and gaps.** Return evidence kind, case-manifest/profile versions, cohort policy, snapshot age, admitted successes/failures, unresolved and excluded counts, evaluator identity where permitted, and contamination/domain limitations. Unknown labels, missing required cost/timing checks, or incompatible context cannot be converted into passing evidence. Model-reported confidence is not an additional observed success.
 
-Recommendation for the hackathon demo: derive the initial chart from reproducible evaluated benchmark cases; offer company-specific estimates only when admissible authorized company evidence exists. Publish no fabricated company-success bars. Admission can be implemented with schemas, deterministic checks, deduplication, and an evaluator receipt. No learned evidence-classification layer is required.
+Recommendation for the demonstration: derive the initial chart from reproducible evaluated benchmark cases; offer company-specific estimates only when admissible authorized company evidence exists. Publish no fabricated company-success bars. Admission can be implemented with schemas, deterministic checks, deduplication, and an evaluator receipt. No learned evidence-classification layer is required.
 
 ## 3. C_reuse: expected completion cost
 

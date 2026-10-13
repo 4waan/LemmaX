@@ -4,7 +4,7 @@ Research note, written before the build. Its status statements describe the proj
 
 This note extends the [LemmaX architecture](../LemmaX-Architecture.md) and [math/API specification](LemmaX-Math-and-API.md). It records verified capabilities and proposed integration choices. No blob transactions, contracts, storage accounts, bridges, or deployments were created.
 
-**Recommendation:** keep the hackathon MVP on Monad with private, durable evidence storage and signed evaluator outcomes. Consider Ethereum blobs later for publishing authorized batches that other participants need to retrieve and replay. Native blob storage on Monad is currently unavailable. Adding the optional publication route is not an adopted product decision.
+**Recommendation:** keep the first release on Monad with private, durable evidence storage and signed evaluator outcomes. Consider Ethereum blobs later for publishing authorized batches that other participants need to retrieve and replay. Native blob storage on Monad is currently unavailable. Adding the optional publication route is not an adopted product decision.
 
 ## 1. What blobs actually provide
 
@@ -161,7 +161,7 @@ These are proposed metadata, not a finalized JSON schema. Private references are
 
 Build the deterministic assessment and private evidence path, then demonstrate funded commitment and signed settlement on Monad. Portable evidence bundles and reproducible calculations already support the trust/provenance direction without a second chain.
 
-If the core workflow is complete and a publication benefit is established, a later optional experiment can publish a synthetic, explicitly public batch on Ethereum Sepolia, retrieve it independently, and compare costs with ordinary archived storage. That experiment would not establish production affordability, confidentiality, or hackathon eligibility.
+If the core workflow is complete and a publication benefit is established, a later optional experiment can publish a synthetic, explicitly public batch on Ethereum Sepolia, retrieve it independently, and compare costs with ordinary archived storage. That experiment would not establish production affordability or confidentiality.
 
 Before adopting blobs, choose what needs network-backed availability: a public directory snapshot, an authorized private batch, or neither. Then measure encoded payload size, fill rate, publication fee, finality/retrieval latency, provider compatibility, archive recovery, and actual margin impact. The acceptance outcome for the first resource family has since been defined. [Paid unit](../Paid-Unit.md).
 

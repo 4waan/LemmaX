@@ -39,7 +39,7 @@ The [business requirements and benchmark evidence](research/LemmaX-Business-Requ
 18. Payouts need a minimum and an owner-controlled bar above it. Contract version 3 pays the whole credit once it reaches the bar, with a 0.01 USDC minimum, and `withdraw` closes out smaller balances. The bar never changes the amount owed.
 19. Subscription-billed resources are within scope alongside usage-billed resources. Capability/outcome and billing-plan identities remain separate. Compare costs over a common workload/horizon, account for authorized existing entitlements, and do not treat a recurring fee as a new successful-query purchase.
 
-The assessment output is fixed as structured numerical results. The demonstration fixes the first offers, deadlines, tariff, timeout refund, payouts and sponsor tools. LemmaX operates the demonstration evaluators, as the rulebook declares. Customer failure eligibility, disputes, subscription rights and tariffs, and subsidy funding remain open. The [paid-unit specification](Paid-Unit.md) records the refund policy and payout rules.
+The assessment output is fixed as structured numerical results. The demonstration fixes the first offers, deadlines, tariff, timeout refund, payouts and integrations. LemmaX operates the demonstration evaluators, as the rulebook declares. Customer failure eligibility, disputes, subscription rights and tariffs, and subsidy funding remain open. The [paid-unit specification](Paid-Unit.md) records the refund policy and payout rules.
 
 ## 2. Product and component boundary
 
@@ -207,7 +207,7 @@ For an eventual small private predicate, this is a reasonable candidate to bench
 
 For larger deterministic computations, current **SP1** documentation covers V6 with a 64-bit toolchain and updated async interfaces. Its documented Groth16 wrapper is approximately 260 bytes with approximately 270,000 gas for onchain verification. Those are provider documentation figures, not measured LemmaX or Monad costs; proving, wrapping, calldata, and settlement remain additional work. [SP1 V6 migration](https://docs.succinct.xyz/docs/sp1/getting-started/migration), [SP1 proof types](https://docs.succinct.xyz/docs/sp1/generating-proofs/proof-types).
 
-GPU/network proving can help larger workloads, but a remote prover can see submitted inputs unless an additional privacy boundary is used. Succinct's documented TEE private proving is currently an enterprise private beta. It is therefore not an assumed inexpensive, immediately available dependency for this hackathon. [SP1 quickstart](https://docs.succinct.xyz/docs/sp1/getting-started/quickstart), [private proving status](https://docs.succinct.xyz/docs/sp1/prover-network/private-proving).
+GPU/network proving can help larger workloads, but a remote prover can see submitted inputs unless an additional privacy boundary is used. Succinct's documented TEE private proving is currently an enterprise private beta. It is therefore not an assumed inexpensive, immediately available dependency for the current build. [SP1 quickstart](https://docs.succinct.xyz/docs/sp1/getting-started/quickstart), [private proving status](https://docs.succinct.xyz/docs/sp1/prover-network/private-proving).
 
 ### Where FHE would add a useful guarantee
 
@@ -219,7 +219,7 @@ The current Zama architecture uses offchain FHE coprocessors and threshold-MPC k
 
 The checked OpenZeppelin integration documentation lists Ethereum mainnet and Sepolia where the FHE infrastructure is deployed. It does not establish a supported Monad deployment. EVM compatibility alone cannot supply the missing coprocessors and key-management network. Some Zama configuration/tutorial pages still describe Sepolia-only support, so concrete deployment addresses and access must be verified rather than inferred from marketing or older tutorials. [OpenZeppelin supported networks](https://docs.openzeppelin.com/relayer/zama-fhevm#supported-networks), [Zama configuration](https://docs.zama.org/protocol/solidity-guides/smart-contract).
 
-**Recommendation:** keep FHE outside the hackathon build. Revisit it only after identifying an encrypted computation that local calculation or ordinary encryption cannot satisfy, and verifying an accessible service plus measured total cost. No claim of a universally cheapest or fastest cryptographic backend has been established.
+**Recommendation:** keep FHE outside the current build. Revisit it only after identifying an encrypted computation that local calculation or ordinary encryption cannot satisfy, and verifying an accessible service plus measured total cost. No claim of a universally cheapest or fastest cryptographic backend has been established.
 
 ### Cost measurement if a proof is later selected
 
@@ -250,23 +250,17 @@ Current tooling guidance names Foundry 1.8+ and Viem 2.40+. Monad charges the su
 
 The proposed initial evidence path remains durable company-controlled storage. Optional Ethereum blob publication could later distribute authorized batches during Ethereum's approximately 18-day protocol serving window, with a separate archive for continued retrieval. This would add another chain, costs, and an explicit inclusion/finality trust boundary. Keep it independent of settlement unless a future purchased service requires publication under an agreed policy. No blob route has been adopted. [Ethereum data availability](https://ethereum.org/en/developers/docs/data-availability/), [LemmaX blob research](research/LemmaX-Blob-Research.md).
 
-The architecture is portable to other EVM networks. Monad's performance, primitives, ecosystem support, and the target hackathon motivate the deployment choice; no unique confidentiality property is attributed to the chain. Monad's gas and reserve rules also shaped contract version 3, which pays agents inside settlement so they never need MON. [Trust loop](Trust-Loop.md#1-the-monad-problem-stranded-agent-funds).
+The architecture is portable to other EVM networks. Monad's performance, primitives and agent ecosystem motivate the deployment choice; no unique confidentiality property is attributed to the chain. Monad's gas and reserve rules also shaped contract version 3, which pays agents inside settlement so they never need MON. [Trust loop](Trust-Loop.md#1-the-monad-problem-stranded-agent-funds).
 
-## 9. Hackathon alignment and sponsor tools
+## 9. Integrations
 
-The target is **Trust, Identity & AI Infrastructure**, as verified in the official portal. [Official track](https://hackathon.monad.xyz/tracks/trust-identity-ai).
+Each integration decides something in the payment path:
 
-The track asks for trust/provenance infrastructure, user-controlled data, and portability without dependence on one platform. Its criteria allocate 20% to technical work, 20% to design and developer experience, 15% to originality, 25% to market relevance, and 20% to traction. An API can address developer experience if its documentation and live workflow are clear. [Track criteria](https://hackathon.monad.xyz/tracks/trust-identity-ai).
-
-The listed deliverables include a public repository accessible to `metropolis@hackathon.monad.xyz`, a logo up to 3 MB, a technical video up to three minutes showing working functionality, a pitch video up to two minutes, and a live Monad mainnet or testnet demonstration. [Submission requirements](https://hackathon.monad.xyz/tracks/trust-identity-ai).
-
-Each sponsor tool we use decides something in the payment path:
-
-- **Envio:** the public auditor. It indexes settlements, rebuilds who was paid what and records rule verdicts, which the buyer's guard reads before the wallet signs. Its bounty requires a working indexing pipeline, public configuration/schema/handlers or HyperSync client, application consumption, and an end-to-end demo. Actual use matters; an unused package does not establish eligibility. [Envio bounty](https://hackathon.monad.xyz/tracks/best-use-of-envio), [Envio in the trust loop](Trust-Loop.md#envio-the-public-auditor).
+- **Envio:** the public auditor. It indexes settlements, rebuilds who was paid what and records rule verdicts, which the buyer's guard reads before the wallet signs. [Envio in the trust loop](Trust-Loop.md#envio-the-public-auditor).
 - **Privy:** the buyer's server wallet. Its policy signs only quotes the buyer's guard approved. [Privy in the trust loop](Trust-Loop.md#privy-the-buyers-mandate).
 - **ERC-8004:** identities for four LemmaX agents and feedback built from settled attempts only (section 4).
 
-Other sponsor tracks were reviewed, and none of their tools is used. Documentation review does not establish bounty eligibility or award entitlement. The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#what-is-proved-today).
+The hosted Envio deployment, the live Privy wallet and ERC-8004 registration are not done yet. [Status](../README.md#what-is-proved-today).
 
 ## 10. Scale evidence
 

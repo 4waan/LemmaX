@@ -28,7 +28,7 @@ The transport uses the [official TypeScript MCP SDK](https://github.com/modelcon
 
 [viem](https://github.com/wevm/viem) supplies Ethereum ABI, typed hashing and local-account signing. [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) supplies EIP-712, ECDSA recovery and reentrancy protection. [Solidity](https://github.com/ethereum/solidity) is the pinned build compiler. [Official Foundry](https://github.com/foundry-rs/foundry) provides isolated local Monad execution testing. Their upstream licenses/notices remain in the installed packages and tool distributions. No earlier Lemma or LemmaXperiment contract source was copied. The original LemmaX source, including the contracts, is MIT licensed.
 
-## Sponsor integrations
+## Wallet and indexer integrations
 
 [Privy](https://docs.privy.io) server wallets are reached through the `@privy-io/node` SDK, under its Apache-2.0 license. The SDK is installed by the operator from `package-lock.json`, not vendored.
 
