@@ -4,6 +4,7 @@ import { createPublicDirectory } from "../src/directory.mjs";
 import { createMcpServer } from "../src/mcp.mjs";
 import { createOperatorDesk, operatorConfigured } from "../src/operator.mjs";
 import { createAuditClient } from "../src/audit.mjs";
+import { createLocalAudit } from "../src/local-audit.mjs";
 import { connectMonad } from "../src/monad.mjs";
 import { loadRetrievalReport } from "./verify-retrieval.mjs";
 
@@ -15,12 +16,15 @@ try {
   const data = loadSciFact(process.env.LEMMAX_SCIFACT_DIR);
   const directory = createPublicDirectory({ report, data, index: createSciFactIndex(data) });
   const operator = operatorConfigured(process.env) ? await createOperatorDesk({ env: process.env, data }) : null;
-  // The auditor check needs only its public GraphQL URL and a Monad RPC for the chain head.
+  // The auditor check needs only its public GraphQL URL and a Monad RPC for the chain head. An
+  // operator without one checks its own contract with the same rules over Monad logs.
   const audit = process.env.LEMMAX_AUDITOR_URL ? createAuditClient({ url: process.env.LEMMAX_AUDITOR_URL,
-    publicClient: (await connectMonad({ network: process.env.LEMMAX_MONAD_NETWORK ?? "testnet", rpcUrl: process.env.LEMMAX_MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz" })).publicClient }) : null;
-  await createMcpServer(directory, operator?.desk ?? null, { audit }).connect(new StdioServerTransport());
+    publicClient: (await connectMonad({ network: process.env.LEMMAX_MONAD_NETWORK ?? "testnet", rpcUrl: process.env.LEMMAX_MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz" })).publicClient })
+    : operator && process.env.LEMMAX_SETTLEMENT_FROM_BLOCK ? createLocalAudit({ publicClient: operator.publicClient, address: operator.settlement, fromBlock: BigInt(process.env.LEMMAX_SETTLEMENT_FROM_BLOCK) }) : null;
+  const auditor = process.env.LEMMAX_AUDITOR_URL ? "envio" : "local";
+  await createMcpServer(directory, operator?.desk ?? null, { audit, auditor }).connect(new StdioServerTransport());
   console.error([operator ? `LemmaX MCP: operator mode on Monad ${operator.network}, settlement ${operator.settlement}` : "LemmaX MCP: read-only public benchmark",
-    audit ? ", with the public auditor" : ""].join(""));
+    audit ? `, with the ${auditor === "envio" ? "public" : "local"} auditor` : ""].join(""));
 } catch (error) {
   const reason = error instanceof TypeError || error instanceof RangeError ? ` ${error.message}.` : "";
   console.error(`LemmaX could not start.${reason} Check installed dependencies, the prepared public benchmark directory and any operator settings.`);

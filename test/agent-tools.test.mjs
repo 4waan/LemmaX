@@ -116,6 +116,8 @@ test("Delivery runs the bought search, settles it once on chain and reports who 
   assert.equal(done.link, `https://testnet.monadvision.com/tx/0x${"cd".repeat(32)}`);
   assert.deepEqual(done.payouts.map(p => [p.role, p.earned]), [["provider", "0.005"], ["LemmaX (execution)", "0.0015"], ["checker", "0.0008"], ["buyer (returned)", "0.0007"]]);
   assert.deepEqual(progress, ["Searching", "Checked: hit", "Settled"]);
+  assert.deepEqual([done.cost.held, done.cost.returned, done.cost.net], ["0.008", "0.0007", "0.0073"]);
+  assert.match(done.cost.returnedTo, /credit on the settlement contract .* once it reaches 0\.01 USDC/);
   assert.equal(settles.length, 1);
   // Settled attempts cannot be delivered twice, and only this desk's quotes can be delivered at all.
   assert.equal((await client.callTool({ name: "lemma_deliver_attempt", arguments: { attemptId: q.attemptId } })).content[0].text, "Request rejected: Attempt is already settled or refunded");

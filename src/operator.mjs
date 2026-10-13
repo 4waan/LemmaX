@@ -43,14 +43,14 @@ export async function createOperatorDesk({ env, data }) {
   const confirm = result => waitForStage(publicClient, result, "verified", { pollMs: 300, timeoutMs: 180000 });
   const stages = commitStageStream({ env, network, address: settlement.address });
   const desk = createPurchaseDesk({ issuer, settlement, relayer, data, chainTime, confirm, stages });
-  if (!env.EVALUATOR_PRIVATE_KEY) return { desk, network, chainId: chain.id, settlement: settlement.address };
+  if (!env.EVALUATOR_PRIVATE_KEY) return { desk, network, chainId: chain.id, settlement: settlement.address, publicClient };
   const checker = key(env, "EVALUATOR_PRIVATE_KEY");
   if (checker.address !== evaluatorSigner) throw new TypeError("EVALUATOR_PRIVATE_KEY does not match LEMMAX_EVALUATOR_ADDRESS");
   const evaluator = createEvaluator({ account: checker, domain: { chainId: String(chain.id), verifyingContract: settlement.address }, index: createSciFactIndex(data), data });
   const delivery = createDelivery({ desk, settlement, evaluator, publicClient, chainTime, confirm,
     evaluatorWallet: createWalletClient({ account: checker, chain, transport: http(rpcUrl, { retryCount: 0 }) }),
     explorer: network === "testnet" ? "https://testnet.monadvision.com" : network === "mainnet" ? "https://monadvision.com" : null });
-  return { desk: Object.freeze({ ...desk, deliver: delivery.deliver }), network, chainId: chain.id, settlement: settlement.address };
+  return { desk: Object.freeze({ ...desk, deliver: delivery.deliver }), network, chainId: chain.id, settlement: settlement.address, publicClient };
 }
 
 // Funding follows Monad's commit states over WebSocket when an endpoint is known; the
