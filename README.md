@@ -103,6 +103,6 @@ The decision core can be used independently of settlement. Start with the [devel
 
 Aryan Singh Rathore and Awaan Mustafa Siddiqui, co-founders.
 
-LemmaX is a new codebase. We [reviewed our earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md), Lemma and LemmaXperiment, before building it, and copied no source code from them; the testnet operator keys and the `lemma_` tool names carry over from Lemma. Most of the first commit is generated benchmark output; the [commit history](https://github.com/4waan/LemmaX/commits/main) records the build from there.
+LemmaX is our third version of this idea, built over more than three weeks. LemmaXperiment set the contract and evaluation patterns: frozen terms, signature binding, replay controls and solvency checks. [Lemma](https://github.com/4waan/lemma) sold tested integrations to coding agents over x402 in USDC, refunded a failed test from a USDC bond and recorded each result onchain. LemmaX rebuilds that loop for Monad: the payment for each attempt is held in the attempt itself, and one settlement allocates it by the signed outcome. No source code was copied; the testnet operator keys and the `lemma_` tool names carry over, and our [review of both earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md) records what we kept.
 
 LemmaX is [MIT licensed](LICENSE). Third-party data, packages and tools retain [their own terms](THIRD_PARTY.md). AI tools assisted in developing the project.
