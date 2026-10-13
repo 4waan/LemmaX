@@ -326,8 +326,16 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
 
   const within = (promise, ms) => Promise.race([promise, new Promise(resolve => setTimeout(() => resolve(null), ms))]).catch(() => null);
   // The last settled runs, for the page to replay on load. Before this desk has settled
-  // anything, the earlier live run on Monad Testnet (contract v2) stands in, labelled as such.
-  const seed = (() => {
+  // anything, recorded runs on this contract stand in when the repo carries them
+  // (verification/live-runs-testnet.json, written by this desk's own record); otherwise the
+  // earlier live run on Monad Testnet (contract v2), labelled as such.
+  const recorded = (() => {
+    try {
+      const file = JSON.parse(readFileSync(new URL("../verification/live-runs-testnet.json", import.meta.url), "utf8"));
+      return getAddress(file.contract) === getAddress(settlement.address) && Array.isArray(file.runs) ? file.runs : [];
+    } catch { return []; }
+  })();
+  const seed = recorded.length ? recorded : (() => {
     try {
       const v2 = JSON.parse(readFileSync(new URL("../verification/testnet-demo.json", import.meta.url), "utf8"));
       // v2 kept earnings as credit to withdraw; the amounts follow from the public terms.
@@ -344,7 +352,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   })();
   function recent() {
     const runs = state.runs();
-    return { runs: (runs.length ? runs : seed).slice(0, 5), counts: state.counts(), contract: settlement.address, explorer: EXPLORER, fromEarlierContract: !runs.length };
+    return { runs: (runs.length ? runs : seed).slice(0, 5), counts: state.counts(), contract: settlement.address, explorer: EXPLORER, fromEarlierContract: !runs.length && !recorded.length };
   }
 
   async function status() {
