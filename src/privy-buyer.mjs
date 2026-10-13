@@ -1,4 +1,4 @@
-import { createECDH, createPrivateKey, createPublicKey } from "node:crypto";
+import { createECDH, createHash, createPrivateKey, createPublicKey } from "node:crypto";
 import { getAddress, recoverTypedDataAddress } from "viem";
 import { RECEIVE_AUTHORIZATION_TYPES } from "./attempt.mjs";
 import { deriveP256Key } from "./keys.mjs";
@@ -35,6 +35,9 @@ export function buyerPrivyKeys(env) {
     return [role, p256KeyPair(deriveP256Key(own ?? parent, label))];
   }));
 }
+// A short public fingerprint of an authorization key, recorded with the wallet so a server
+// can tell whether its keys are the ones the wallet was created with.
+export const keyFingerprint = publicKey => createHash("sha256").update(Buffer.from(publicKey, "base64")).digest("hex").slice(0, 16);
 // Which buyer-side keys have their own secret, for reports. Names and booleans only.
 export const privyKeySeparation = env => Object.fromEntries(Object.entries(PRIVY_KEY_SECRETS).map(([role, name]) => [role, Boolean(env[name])]));
 

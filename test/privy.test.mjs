@@ -7,7 +7,11 @@ import { RECEIVE_AUTHORIZATION_TYPES, quoteDigest } from "../src/attempt.mjs";
 import { createQuoteIssuer } from "../src/issuer.mjs";
 import { createBuyerGuard } from "../src/guard.mjs";
 import { RULEBOOK, RULEBOOK_HASH } from "../src/rulebook.mjs";
-import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, mandatePolicy, normalizedSignature, p256KeyPair, privyKeySeparation } from "../src/privy-buyer.mjs";
+import { buyerPrivyKeys, createConditionSetClient, createPrivyBuyerSigner, keyFingerprint, mandatePolicy, normalizedSignature, p256KeyPair, privyKeySeparation } from "../src/privy-buyer.mjs";
+import { buyerMandate } from "../src/buyer-wallet.mjs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { deriveP256Key, evaluatorBAccount } from "../src/keys.mjs";
 import { DEMO_TERMS, usdcAtomic } from "../src/terms.mjs";
 
@@ -155,4 +159,21 @@ test("The guard approves only honest, rulebook-conformant quotes from clean part
   assert.throws(() => createQuoteIssuer({ account: issuerAccount, domain, token, caps: { maxPerAttempt: 8000n, dailyCap: 8000n },
     payees: { connector: roles.connectors[0].address, executor: issuerAccount.address, evaluator: issuerAccount.address, evaluatorSigner: issuerAccount.address } }), /cannot also be an evaluator/);
   await assert.rejects(issuer.issue({ offerRef: "lemmax/tfidf-source-retrieval/v1", caseRef: "c1", query: "q", buyer: buyer.address, profileRef: "demo-standard/v1", issuedAt: "1000", evaluatorRef: "nobody" }), /Unknown evaluator/);
+});
+
+test("A server uses the Privy wallet only with the agent and guard keys it was created with", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "lemmax-privy-")), file = join(dir, "privy-buyer.json");
+  const env = { BENCHMARK_BUYER_PRIVATE_KEY: generatePrivateKey(), PRIVY_APP_ID: "app-1", PRIVY_APP_SECRET: "secret", LEMMAX_PRIVY_BUYER_FILE: file };
+  const keys = buyerPrivyKeys(env), wallet = privateKeyToAccount(generatePrivateKey()).address;
+  const args = { env, chainId: 10143, usdc: USDC, settlement: SETTLEMENT, maxValue: "8000" };
+  try {
+    const record = { walletId: "w-1", address: wallet, conditionSetId: "set-1", keyFingerprints: { agent: keyFingerprint(keys.agent.publicKey), guard: keyFingerprint(keys.guard.publicKey) } };
+    writeFileSync(file, JSON.stringify(record));
+    const privy = await buyerMandate(args);
+    assert.deepEqual([privy.mode, privy.setId, privy.signer.address, privy.privyUnavailable], ["privy", "set-1", wallet, undefined]);
+    writeFileSync(file, JSON.stringify({ ...record, keyFingerprints: { ...record.keyFingerprints, guard: "0000000000000000" } }));
+    const fallback = await buyerMandate(args);
+    assert.deepEqual([fallback.mode, fallback.setId, fallback.signer.address], ["local", "local", privateKeyToAccount(env.BENCHMARK_BUYER_PRIVATE_KEY).address]);
+    assert.match(fallback.privyUnavailable, /differs/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

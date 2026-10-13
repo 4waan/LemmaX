@@ -8,15 +8,14 @@ import { connectMonad, envAddress } from "../src/monad.mjs";
 import { createSettlementClient } from "../src/settlement.mjs";
 import { DEMO_TERMS, formatUsdc } from "../src/terms.mjs";
 import { createWalletMcpServer } from "../src/wallet-mcp.mjs";
+import { V3, auditorUrl } from "../web/live.mjs";
 
-// Contract v3 was deployed at block 70137467; a full scan found no settlement events from
-// there through block 70702282, so the local auditor starts reading at that block.
-const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70702282" });
 const BALANCE = [{ type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] }];
 
 // The agent's wallet as its own MCP server, for an agent that buys from LemmaX. Run it beside
 // the LemmaX server in the same MCP client. It reads the settlement contract and the public
-// auditor (Envio when LEMMAX_AUDITOR_URL is set, else the same rules over Monad logs), and
+// auditor (the public Envio index for v3, or LEMMAX_AUDITOR_URL; "local" for the same rules
+// over Monad logs), and
 // signs through the Privy wallet when configured, else the local rehearsal of its policy.
 // Stdout carries only protocol messages; keys are never printed.
 export async function createWalletServer(env = process.env) {
@@ -28,8 +27,8 @@ export async function createWalletServer(env = process.env) {
   const token = await settlement.asset();
   const total = BigInt(DEMO_TERMS.principal) + BigInt(DEMO_TERMS.executionCap) + BigInt(DEMO_TERMS.evaluationCap);
   const mandate = await buyerMandate({ env, chainId: chain.id, usdc: token.address, settlement: settlement.address, maxValue: total });
-  const auditor = env.LEMMAX_AUDITOR_URL ? "envio" : "local";
-  const audit = env.LEMMAX_AUDITOR_URL ? createAuditClient({ url: env.LEMMAX_AUDITOR_URL, publicClient })
+  const auditUrl = auditorUrl(env, settlement.address), auditor = auditUrl ? "envio" : "local";
+  const audit = auditUrl ? createAuditClient({ url: auditUrl, publicClient })
     : createLocalAudit({ publicClient, address: settlement.address, fromBlock: BigInt(env.LEMMAX_SETTLEMENT_FROM_BLOCK ?? (address === V3.address ? V3.fromBlock : "0")) });
   if (auditor === "local") audit.snapshot().catch(() => {});
   const chainTime = async () => (await publicClient.getBlock()).timestamp.toString();
