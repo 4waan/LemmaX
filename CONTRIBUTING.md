@@ -74,7 +74,7 @@ npm run auditor:test
 
 Code generation and the auditor tests do not deploy a hosted GraphQL service. Use [`indexer/config.yaml`](indexer/config.yaml) and the [trust-loop guide](docs/Trust-Loop.md) for that boundary.
 
-The indexer pins Envio and Vitest. Its scoped overrides select patched Express, query parsing and WebSocket dependencies while keeping their existing major versions. When updating them, verify a clean install, code generation, types and auditor behavior together. The pinned versions and override scope live in [`indexer/package.json`](indexer/package.json).
+The indexer pins Envio and Vitest. Its scoped overrides select patched Express, query parsing and WebSocket dependencies while keeping their existing major versions. Envio Cloud installs the indexer with pnpm, which reads neither npm's `overrides` nor `package-lock.json`, so the same pins also appear under `pnpm.overrides` and in [`indexer/pnpm-lock.yaml`](indexer/pnpm-lock.yaml). When updating them, update both lockfiles (`npm install` and `npx pnpm@10.32.0 install`), then verify a clean install, code generation, types and auditor behavior together. The pinned versions and override scope live in [`indexer/package.json`](indexer/package.json).
 
 ## Run the funded web app deliberately
 
