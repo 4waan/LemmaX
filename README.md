@@ -96,6 +96,17 @@ The examples use illustrative inputs. Benchmark verification checks the committe
 
 To use the retrieval tools, [prepare the public SciFact corpus](docs/Retrieval-and-MCP.md#reproduce-locally), then launch `node scripts/mcp-server.mjs` from an MCP client with `LEMMAX_SCIFACT_DIR` set. The default server is read-only and offers discovery, assessment, retrieval, source reading and benchmark replay. Purchase tools require separate operator configuration.
 
+## Use it from Claude Code
+
+An agent buys through two MCP servers: LemmaX, which serves offers, the assessment, quotes, funding, delivery and the audit, and the agent's own wallet, which signs only bills the buyer's guard has cleared. LemmaX never holds the agent's key. With the operator's and the buyer's variables in the environment ([which ones](docs/Retrieval-and-MCP.md#the-agents-wallet)):
+
+```sh
+claude mcp add --transport stdio lemmax -- node scripts/mcp-server.mjs
+claude mcp add --transport stdio wallet -- node scripts/wallet-server.mjs
+```
+
+Then ask for a source and a budget. The agent calls `lemma_list_offers` and `lemma_assess` to see the odds and the expected cost against its own fallback, `lemma_quote_attempt` for one bill, `wallet_sign_bill` to sign it, `lemma_fund_attempt`, which returns once Monad marks the payment Verified, `lemma_deliver_attempt` for the sources, the checker's verdict and the settlement, and `lemma_verify_attempt` to check that settlement against the rulebook. The public page serves the read-only tools at `/mcp`, so `claude mcp add --transport http lemmax <page>/mcp` works without any keys.
+
 ## Build on LemmaX
 
 The decision core can be used independently of settlement. Start with the [developer guide](CONTRIBUTING.md) for setup, module boundaries and checks, or the [documentation map](docs/README.md) for a reading order.
