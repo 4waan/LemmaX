@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { createLimiter, createRunQueue, createState, localMandateWallet, pickClaims, receiptFrom, walletRefusal } from "../web/live.mjs";
+import { V3, auditorUrl, createLimiter, createRunQueue, createState, localMandateWallet, pickClaims, receiptFrom, walletRefusal } from "../web/live.mjs";
 
 const SETTLEMENT = "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", USDC = "0x534b2f3A21130d7a60830c2Df862319e593943A3";
 
@@ -141,4 +141,13 @@ test("The rehearsal wallet holds the same single rule as the Privy policy", asyn
   const shown = walletRefusal(Object.assign(new Error(`policy denied for nonce 0x${"ab".repeat(32)}`), { status: 400 }), "privy");
   assert.deepEqual([shown.refused, shown.status, shown.byPolicy, shown.message], [true, 400, true, "policy denied for nonce 0x…"]);
   assert.match(shown.by, /Privy/);
+});
+
+test("Buyers read the public Envio index for contract v3 unless told otherwise", () => {
+  const other = privateKeyToAccount(generatePrivateKey()).address;
+  assert.equal(auditorUrl({}, V3.address.toLowerCase()), V3.auditorUrl);
+  assert.equal(auditorUrl({}, other), null);
+  assert.equal(auditorUrl({ LEMMAX_AUDITOR_URL: "https://example.org/graphql" }, V3.address), "https://example.org/graphql");
+  assert.equal(auditorUrl({ LEMMAX_AUDITOR_URL: "local" }, V3.address), null);
+  assert.equal(auditorUrl({ LEMMAX_AUDITOR_URL: "" }, V3.address), null);
 });

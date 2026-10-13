@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "privy-kill-test/v1",
+  "sdk": "@privy-io/node 0.35.0",
+  "chainId": 10143,
+  "settlement": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+  "usdc": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
+  "wallet": {
+    "address": "0x4ffB34d9Ce3E5c42Fc7859108a866bfFa167D5De"
+  },
+  "passed": true,
+  "results": [
+    {
+      "check": "listed digest is signed",
+      "expected": "allowed",
+      "observed": "allowed",
+      "pass": true,
+      "latencyMs": 222,
+      "attempts": 1
+    },
+    {
+      "check": "signature normalizes to v 27/28, low s, and recovers to the wallet",
+      "expected": "allowed",
+      "observed": "allowed",
+      "pass": true,
+      "returnedV": 28
+    },
+    {
+      "check": "unlisted digest",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "value above the funding total",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "payee other than the settlement",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "TransferWithAuthorization to anyone",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "personal_sign",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "secp256k1 hash signing",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "raw hash signing",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "invalid_data",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "private key export",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 401,
+        "code": null,
+        "type": "Error"
+      }
+    },
+    {
+      "check": "EIP-7702 authorization",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "agent adds its own digest to the guard's set",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 401,
+        "code": "invalid_data",
+        "type": "Error"
+      }
+    },
+    {
+      "check": "digest refused after the guard removes it",
+      "expected": "refused",
+      "observed": "refused",
+      "pass": true,
+      "refusal": {
+        "status": 400,
+        "code": "policy_violation",
+        "type": "Error"
+      }
+    }
+  ],
+  "note": "Throwaway wallet and keys created by this run; keys were held only in memory."
+}

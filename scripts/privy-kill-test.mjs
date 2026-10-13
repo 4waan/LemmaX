@@ -14,6 +14,9 @@ import { createConditionSetClient, mandatePolicy, normalizedSignature } from "..
 const SETTLEMENT = process.env.LEMMAX_SETTLEMENT_ADDRESS ?? "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7";
 const USDC = MONAD_NETWORKS.testnet.usdc, CHAIN_ID = 10143, MAX = "8000";
 const digest = () => `0x${randomBytes(32).toString("hex")}`;
+// Names the setup step a Privy error came from, so a stopped run says where it stopped.
+const step = async (name, action) => { try { return await action(); } catch (error) { throw Object.assign(error, { step: name }); } };
+const privyCode = error => error?.code ?? error?.error?.code ?? null;
 
 async function main(env) {
   if (!env.PRIVY_APP_ID || !env.PRIVY_APP_SECRET) throw new TypeError("Set PRIVY_APP_ID and PRIVY_APP_SECRET");
@@ -21,12 +24,12 @@ async function main(env) {
   const [principal, agent, guard] = await Promise.all([generateP256KeyPair(), generateP256KeyPair(), generateP256KeyPair()]);
   const sets = createConditionSetClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, ownerPrivateKey: guard.privateKey, sign: generateAuthorizationSignature });
   const agentSets = createConditionSetClient({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, ownerPrivateKey: agent.privateKey, sign: generateAuthorizationSignature });
-  const quorum = await privy.keyQuorums().create({ public_keys: [agent.publicKey], authorization_threshold: 1, display_name: "LemmaX kill-test agent" });
-  const set = await sets.create("lemmax-kill-test-digests", guard.publicKey);
-  const policy = await privy.policies().create({ ...mandatePolicy({ chainId: CHAIN_ID, usdc: USDC, settlement: SETTLEMENT, maxValue: MAX, conditionSetId: set.id }),
-    owner: { public_key: principal.publicKey } });
-  const wallet = await privy.wallets().create({ chain_type: "ethereum", owner: { public_key: principal.publicKey },
-    additional_signers: [{ signer_id: quorum.id, override_policy_ids: [policy.id] }] });
+  const quorum = await step("create the agent key quorum", () => privy.keyQuorums().create({ public_keys: [agent.publicKey], authorization_threshold: 1, display_name: "LemmaX kill-test agent" }));
+  const set = await step("create the condition set", () => sets.create(`lemmax-kill-test-digests-${randomBytes(4).toString("hex")}`, guard.publicKey));
+  const policy = await step("create the mandate policy", () => privy.policies().create({ ...mandatePolicy({ chainId: CHAIN_ID, usdc: USDC, settlement: SETTLEMENT, maxValue: MAX, conditionSetId: set.id }),
+    owner: { public_key: principal.publicKey } }));
+  const wallet = await step("create the wallet", () => privy.wallets().create({ chain_type: "ethereum", owner: { public_key: principal.publicKey },
+    additional_signers: [{ signer_id: quorum.id, override_policy_ids: [policy.id] }] }));
   const asAgent = { authorization_context: { authorization_private_keys: [agent.privateKey] } };
   const typed = (message, primaryType = "ReceiveWithAuthorization", types = RECEIVE_AUTHORIZATION_TYPES) => ({
     domain: { name: "USDC", version: "2", chainId: CHAIN_ID, verifyingContract: USDC }, types, primaryType,
@@ -38,14 +41,14 @@ async function main(env) {
     try { detail = await action(); observed = "allowed"; } catch (error) {
       // Only a policy refusal from Privy (an HTTP 4xx) counts; a network error proves nothing.
       observed = Number(error.status) >= 400 && Number(error.status) < 500 ? "refused" : "error";
-      detail = { status: error.status ?? null, type: error.name ?? "Error" };
+      detail = { status: error.status ?? null, code: privyCode(error), type: error.name ?? "Error" };
     }
     results.push({ check: name, expected, observed, pass: observed === expected, ...(observed !== "allowed" ? { refusal: detail } : {}) });
   }
 
   // Allowed: a listed digest, measured from the moment it is added to the first signature.
   const approved = typed({});
-  const [item] = await sets.add(set.id, [approved.message.nonce]);
+  const [item] = await step("add the approved digest", () => sets.add(set.id, [approved.message.nonce]));
   const added = Date.now();
   let signature = null, attempts = 0;
   while (!signature && Date.now() - added < 15000) {
@@ -71,7 +74,7 @@ async function main(env) {
   await check("private key export", "refused", () => privy.wallets().export(wallet.id, asAgent));
   await check("EIP-7702 authorization", "refused", () => privy.wallets().ethereum().sign7702Authorization(wallet.id, { params: { contract: USDC, chain_id: CHAIN_ID }, ...asAgent }));
   await check("agent adds its own digest to the guard's set", "refused", () => agentSets.add(set.id, [digest()]));
-  await sets.remove(set.id, item.id);
+  await step("remove the approved digest", () => sets.remove(set.id, item.id));
   await check("digest refused after the guard removes it", "refused", async () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     return signTyped(approved);
@@ -89,7 +92,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.stdout.write(text);
     if (!report.passed) process.exitCode = 2;
   } catch (error) {
-    console.error(`Kill test stopped: ${error instanceof TypeError ? error.message : `${error.name ?? "Error"}${error.status ? ` (HTTP ${error.status})` : ""}`}`);
+    const where = error?.step ? ` at "${error.step}"` : "", code = privyCode(error);
+    console.error(`Kill test stopped${where}: ${error instanceof TypeError ? error.message : `${error.name ?? "Error"}${error.status ? ` (HTTP ${error.status}${code ? `, ${code}` : ""})` : ""}`}`);
     process.exitCode = 1;
   }
 }

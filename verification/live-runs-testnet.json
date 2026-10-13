@@ -6,6 +6,680 @@
   "explorer": "https://testnet.monadvision.com",
   "runs": [
     {
+      "attemptId": "0xca874959b096ca5654f5aa3515b721863d7c7be43f116c00f7d76d29baf1a158",
+      "outcome": "eligible_failure",
+      "claim": "Ribosomopathies have a low degree of cell and tissue specific pathology.",
+      "caseRef": "1049",
+      "checker": "Checker",
+      "at": 1791908429,
+      "block": "70727448",
+      "fundTx": "0x19e40f7a5a977526b274e373a2c05cb0eae0e8b19b2ed11f731f94467bded85d",
+      "settleTx": "0xaf7abbd372aba354476833ac961eee87238e752ac2cd3270fdb87ed0301dd04a",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 357
+        },
+        {
+          "step": "Proposed",
+          "ms": 357
+        },
+        {
+          "step": "Voted",
+          "ms": 597
+        },
+        {
+          "step": "Finalized",
+          "ms": 890
+        },
+        {
+          "step": "Verified",
+          "ms": 1791
+        }
+      ],
+      "payouts": [
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0.0105",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0008"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0057",
+          "paidNow": "0.0135",
+          "deferred": false,
+          "creditOwed": "0"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xf20c9409a1e3bc43e3c4a2d137ad51dff495611ebd5af1b099b4f2a1eccbf706",
+      "outcome": "success",
+      "claim": "Rapid phosphotransfer rates govern fidelity in two component systems",
+      "caseRef": "1019",
+      "checker": "Checker",
+      "at": 1791908413,
+      "block": "70727398",
+      "fundTx": "0xd2653cc5549c2663f1a47913b1d88175a80144879c962e1ee0c6d51305ad6d0a",
+      "settleTx": "0xaced488554853be54ade86a2257074abbea55d1ec6c62d62a035042b3a54df12",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 739
+        },
+        {
+          "step": "Proposed",
+          "ms": 740
+        },
+        {
+          "step": "Voted",
+          "ms": 1051
+        },
+        {
+          "step": "Finalized",
+          "ms": 1188
+        },
+        {
+          "step": "Verified",
+          "ms": 2081
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0.01",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.009"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0.0104",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0078"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xc168df7d9a0c22fd85e9dc2cc0b255d7eb457850bfa144b8ff2b257500f72509",
+      "outcome": "success",
+      "claim": "All hematopoietic stem cells segregate their chromosomes randomly.",
+      "caseRef": "100",
+      "checker": "Checker",
+      "at": 1791908331,
+      "block": "70727127",
+      "fundTx": "0x990b96a493e499dff06cbf76e3218c8e1975cc9f73d277b52cde3c91eb2d7bfd",
+      "settleTx": "0xe488077e4d72362ceb2c74522e4fb637f3e5cca0328042477c9f96a2c9ae311c",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 599
+        },
+        {
+          "step": "Proposed",
+          "ms": 599
+        },
+        {
+          "step": "Voted",
+          "ms": 627
+        },
+        {
+          "step": "Finalized",
+          "ms": 922
+        },
+        {
+          "step": "Verified",
+          "ms": 1833
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.005"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0075"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0096"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0071"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xda13267a5a4e40cb8d39f90a72e177bf454c1571ad61beb21d5284c280f48c13",
+      "outcome": "eligible_failure",
+      "claim": "Ribosomopathies have a low degree of cell and tissue specific pathology.",
+      "caseRef": "1049",
+      "checker": "Checker",
+      "at": 1791908267,
+      "block": "70726920",
+      "fundTx": "0xa64ebb8d555fffc41123672b5b58340d2b14b60e06e7be72bbbd875117f1b44c",
+      "settleTx": "0x4c81c39d1cad2d768f31405472c26461faf3e13a023060cefa7a98b27aeb1491",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 633
+        },
+        {
+          "step": "Proposed",
+          "ms": 633
+        },
+        {
+          "step": "Voted",
+          "ms": 815
+        },
+        {
+          "step": "Finalized",
+          "ms": 1112
+        },
+        {
+          "step": "Verified",
+          "ms": 2014
+        }
+      ],
+      "payouts": [
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.006"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0088"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0057",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0064"
+        }
+      ]
+    },
+    {
+      "attemptId": "0x981d1821a21b0b0d1efa789219e9439bc9ec5fdc91350691d7e88f79c03df7d0",
+      "outcome": "success",
+      "claim": "Rapid phosphotransfer rates govern fidelity in two component systems",
+      "caseRef": "1019",
+      "checker": "Checker",
+      "at": 1791908250,
+      "block": "70726868",
+      "fundTx": "0xfe9f573199b0324bda734d19dcd40076262539a001574f71f2fcdfb3990a6691",
+      "settleTx": "0x322fa9dfb219285b91cccbc7101c8efc24de6cd73ed27e546d55fe846fe4d825",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 290
+        },
+        {
+          "step": "Proposed",
+          "ms": 290
+        },
+        {
+          "step": "Voted",
+          "ms": 494
+        },
+        {
+          "step": "Finalized",
+          "ms": 794
+        },
+        {
+          "step": "Verified",
+          "ms": 1687
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0.01",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0045"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.008"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0007"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xe9212ca3172b807d4ae83f50b806d5d2d33e905acdb63d3eed430c051b9f673c",
+      "outcome": "eligible_failure",
+      "claim": "Ribosomopathies have a low degree of cell and tissue specific pathology.",
+      "caseRef": "1049",
+      "checker": "Checker",
+      "at": 1791907565,
+      "block": "70724614",
+      "fundTx": "0x5c8d3ab0b04a9e426468b6f647aa574f08c67f9cf8223f8a4f9da0e190ab8031",
+      "settleTx": "0x333d2e2fafcf71facd91bc97f19abb6df938b11315dd19cf8ad65f15c476fe06",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 589
+        },
+        {
+          "step": "Proposed",
+          "ms": 589
+        },
+        {
+          "step": "Voted",
+          "ms": 801
+        },
+        {
+          "step": "Finalized",
+          "ms": 964
+        },
+        {
+          "step": "Verified",
+          "ms": 1893
+        }
+      ],
+      "payouts": [
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.003"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0072"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0057",
+          "paidNow": "0.0135",
+          "deferred": false,
+          "creditOwed": "0"
+        }
+      ]
+    },
+    {
+      "attemptId": "0x4dd64cb9d923b943aaf02880d9beafa33acb45304109c8497100ca2594f8e2e1",
+      "outcome": "success",
+      "claim": "Rapamycin decreases the concentration of triacylglycerols in fruit flies.",
+      "caseRef": "1014",
+      "checker": "Checker",
+      "at": 1791907548,
+      "block": "70724561",
+      "fundTx": "0xc73c537e094f4e23e084df14e2a871e19603a99b3943e849825ad8ea8b53774d",
+      "settleTx": "0x30c1d1cfef779d9acb56b3f74793c3e4e58520a0890d109abc40b7711aa64ad6",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 403
+        },
+        {
+          "step": "Proposed",
+          "ms": 403
+        },
+        {
+          "step": "Voted",
+          "ms": 649
+        },
+        {
+          "step": "Finalized",
+          "ms": 932
+        },
+        {
+          "step": "Verified",
+          "ms": 1818
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.005"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0015"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0064"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0078"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xb13015773a6d0ddf40419492e6802efbd99f6caf166d391107ee374cbb9a5db0",
+      "outcome": "eligible_failure",
+      "claim": "0-dimensional biomaterials show inductive properties.",
+      "caseRef": "1",
+      "checker": "Checker",
+      "at": 1791907423,
+      "block": "70724146",
+      "fundTx": "0x977df6e853d9b279e7e57f26271697de666c67c3656a1a0486e75191d4b768d4",
+      "settleTx": "0x41c4db618af64358a356cb56e6879988c631006e2ae532a1fb787e409d30ad05",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 559
+        },
+        {
+          "step": "Proposed",
+          "ms": 560
+        },
+        {
+          "step": "Voted",
+          "ms": 837
+        },
+        {
+          "step": "Finalized",
+          "ms": 1019
+        },
+        {
+          "step": "Verified",
+          "ms": 1923
+        }
+      ],
+      "payouts": [
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0.0105",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0056"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0057",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0071"
+        }
+      ]
+    },
+    {
+      "attemptId": "0x720ff716a7501c7ab5f15aa59685dd2a6acfe97d6832cf1f47b0e0f160b5d9f9",
+      "outcome": "success",
+      "claim": "Radioiodine treatment of non-toxic multinodular goitre reduces thyroid volume.",
+      "caseRef": "1012",
+      "checker": "Checker",
+      "at": 1791907406,
+      "block": "70724094",
+      "fundTx": "0x03ba6b8e5004c37d8f3b1899b216efb10f237eaef07555cebf4a65349ea3a8b3",
+      "settleTx": "0x54051f16c0abab19e2a67dc6a4e68b2ed3d2dca1ff53b24d1b195837030d9abb",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 658
+        },
+        {
+          "step": "Proposed",
+          "ms": 658
+        },
+        {
+          "step": "Voted",
+          "ms": 744
+        },
+        {
+          "step": "Finalized",
+          "ms": 1041
+        },
+        {
+          "step": "Verified",
+          "ms": 1968
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0.01",
+          "deferred": false,
+          "creditOwed": "0"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.009"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0048"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0014"
+        }
+      ]
+    },
+    {
+      "attemptId": "0xcb6a0e13288706243629f1c415f0c11e5b7d240c234befaebe8f300cdc1f55f0",
+      "outcome": "success",
+      "claim": "Rapamycin decreases the concentration of triacylglycerols in fruit flies.",
+      "caseRef": "1014",
+      "checker": "Checker",
+      "at": 1791906988,
+      "block": "70722725",
+      "fundTx": "0xeaf21c860b7df68f314a751aec6a8eb5aa7096994bfcfc816f1663d2ed052ba2",
+      "settleTx": "0x64913d46f0a1276bc5f4aa70d25414d905f54504984aeaccf7bf5b48cb804216",
+      "timeline": [
+        {
+          "step": "Relayed",
+          "ms": 299
+        },
+        {
+          "step": "Proposed",
+          "ms": 299
+        },
+        {
+          "step": "Voted",
+          "ms": 600
+        },
+        {
+          "step": "Finalized",
+          "ms": 853
+        },
+        {
+          "step": "Verified",
+          "ms": 1794
+        }
+      ],
+      "payouts": [
+        {
+          "role": "provider",
+          "name": "Provider",
+          "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+          "earned": "0.005",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.005"
+        },
+        {
+          "role": "LemmaX (execution)",
+          "name": "LemmaX",
+          "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+          "earned": "0.0015",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0075"
+        },
+        {
+          "role": "checker",
+          "name": "Checker",
+          "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+          "earned": "0.0008",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.004"
+        },
+        {
+          "role": "buyer (returned)",
+          "name": "Buyer agent",
+          "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+          "earned": "0.0007",
+          "paidNow": "0",
+          "deferred": false,
+          "creditOwed": "0.0007"
+        }
+      ]
+    },
+    {
       "attemptId": "0xe2ab122df3d6c4c05b8780f78f364f23c894e11de9005e31d91ef9790c67bb61",
       "outcome": "eligible_failure",
       "claim": "Ribosomopathies have a low degree of cell and tissue specific pathology.",

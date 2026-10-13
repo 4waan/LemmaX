@@ -1,0 +1,34 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "LemmaX Evaluator-b",
+  "description": "Canary checker run by LemmaX. It overcharges on purpose so the public auditor's finding and the buyer guard's refusal stay checkable onchain.",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://github.com/4waan/LemmaX"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 2298,
+      "agentRegistry": "eip155:10143:0x8004A818BFB912233c491871b3d84c89A494BD9e"
+    }
+  ],
+  "supportedTrust": [
+    "crypto-economic",
+    "reputation"
+  ],
+  "lemmax": {
+    "role": "evaluatorB",
+    "chainId": 10143,
+    "settlement": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+    "rulebook": {
+      "ref": "lemmax-rulebook/v1",
+      "hash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1"
+    },
+    "auditor": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
+    "disclosurePolicy": "https://github.com/4waan/LemmaX/blob/main/docs/LemmaX-Architecture.md#4-settlement-and-erc-8004-reputation"
+  }
+}

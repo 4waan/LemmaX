@@ -28,8 +28,17 @@ export { localMandateWallet, walletRefusal, receiptFrom };
 // capped per visitor and per day.
 export const EXPLORER = "https://testnet.monadvision.com";
 // Contract v3 was deployed at block 70137467; a full scan found no settlement events from
-// there through block 70702282, so the local auditor starts reading at that block.
-export const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70702282" });
+// there through block 70702282, so the local auditor starts reading at that block. Its
+// public auditor is the hosted Envio index built from indexer/.
+export const V3 = Object.freeze({ address: "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7", fromBlock: "70702282",
+  auditorUrl: "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql" });
+// The auditor a buyer reads: LEMMAX_AUDITOR_URL when set ("" or "local" for the same rules
+// over Monad logs), otherwise the public Envio index when the contract is v3.
+export function auditorUrl(env, settlementAddress) {
+  const configured = env.LEMMAX_AUDITOR_URL;
+  if (configured !== undefined) return configured && configured !== "local" ? configured : null;
+  return getAddress(settlementAddress) === getAddress(V3.address) ? V3.auditorUrl : null;
+}
 export const OFFER = "lemmax/tfidf-source-retrieval/v1";
 export const TRICKS = Object.freeze(["flagged_checker", "redirect_payment", "skip_guard"]);
 const HEADROOM_BPS = 1000;
@@ -165,15 +174,16 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
   const { createSciFactIndex } = await import("../src/scifact.mjs");
   const index = createSciFactIndex(data);
   const evaluator = createEvaluator({ account: evaluatorAccount, domain, index, data });
-  // Auditor: the hosted Envio index when configured; otherwise the same rules over RPC logs.
-  const audit = env.LEMMAX_AUDITOR_URL ? createAuditClient({ url: env.LEMMAX_AUDITOR_URL, publicClient })
+  // Auditor: the hosted Envio index (by default for v3); otherwise the same rules over RPC logs.
+  const auditUrl = auditorUrl(env, settlement.address);
+  const audit = auditUrl ? createAuditClient({ url: auditUrl, publicClient })
     : createLocalAudit({ publicClient, address: settlement.address, fromBlock });
-  const auditor = env.LEMMAX_AUDITOR_URL ? "envio" : "local";
+  const auditor = auditUrl ? "envio" : "local";
   // The local fallback reads logs from the contract's first block; start that in the background.
   if (auditor === "local") audit.snapshot().catch(() => {});
   // Buyer side: a Privy server wallet whose policy signs only guard-approved bills, or the
   // local rehearsal of that policy when no Privy wallet is configured.
-  const { signer: buyerWallet, conditionSets, setId, mode } = await buyerMandate({ env, chainId: chain.id, usdc: token.address, settlement: settlement.address, maxValue: total });
+  const { signer: buyerWallet, conditionSets, setId, mode, privyUnavailable } = await buyerMandate({ env, chainId: chain.id, usdc: token.address, settlement: settlement.address, maxValue: total });
   const guard = createBuyerGuard({ buyer: buyerWallet.address, domain, approvedIssuer: () => settlement.approvedIssuer(), chainTime, audit, conditionSets, setId,
     auditRequired: env.LEMMAX_AUDIT_REQUIRED !== "false" });
   const names = { [getAddress(provider)]: "Provider", [issuerAccount.address]: "LemmaX", [getAddress(mainEvaluator.payee)]: "Checker",
@@ -366,7 +376,7 @@ export async function createLiveDesk({ env, data, report, now = () => Date.now()
     const today = state.day(dayNow());
     const flagged = b?.flagged ? b.record : null;
     return { network: "Monad Testnet", chainId: chain.id, settlement: settlement.address, contractLink: `${EXPLORER}/address/${settlement.address}`,
-      rulebook: { ref: RULEBOOK.rulebookRef, hash: RULEBOOK_HASH }, auditor, freshness, wallet: { mode, address: buyerWallet.address, usdc: formatUsdc(usdc), mon: (Number(mon) / 1e18).toString() },
+      rulebook: { ref: RULEBOOK.rulebookRef, hash: RULEBOOK_HASH }, auditor, freshness, wallet: { mode, address: buyerWallet.address, usdc: formatUsdc(usdc), mon: (Number(mon) / 1e18).toString(), ...(privyUnavailable ? { privyUnavailable } : {}) },
       checkerB: { address: evaluatorB.address, flagged: Boolean(flagged && Number(flagged.blocking) > 0), lastVerdict: flagged?.lastVerdict ?? null, lastVerdictTx: flagged?.lastVerdictTx ?? null },
       today: { buys: today.buys, buysLeft: Math.max(0, limits.buysPerDay - today.buys), visitors: today.visitors.length },
       offers: Object.values(offerRates).map(o => ({ offerRef: o.offerRef, name: o.method === "bm25" ? "Search A (BM25)" : "Search B (TF-IDF)", successes: o.successes, cases: o.cases, used: o.offerRef === OFFER })),

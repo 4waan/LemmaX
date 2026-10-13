@@ -140,6 +140,7 @@ async function session({ claim, live, caseRef, run }) {
       out(el("span", "", `${e.found?.length ?? 5} sources · checker: `, span(hit ? "t-ok" : "t-warn", hit ? "hit, a relevant source" : "miss, nothing relevant")));
     },
     settled(e) { view.settleTx = e.tx; },
+    recorded(e) { view.recorded = e; },
     receipt(e) {
       view.deliver?.done();
       const by = role => e.payouts?.find(p => p.role === role)?.earned ?? "0";
@@ -148,7 +149,8 @@ async function session({ claim, live, caseRef, run }) {
         el("span", "t-faint", "settled in one Monad transaction · ", tx(e.settleTx)));
       // Credit at or above 0.01 USDC is paid out inside the same settlement.
       const paid = e.payouts?.filter(p => Number(p.paidNow) > 0) ?? [];
-      for (const p of paid) out(el("span", "", ok(`paid out in the same transaction: ${p.paidNow} USDC to the ${p.role === "buyer (returned)" ? "agent's wallet, which holds no MON" : p.role}`)));
+      const payee = { "buyer (returned)": "the agent's wallet, which holds no MON", "LemmaX (execution)": "LemmaX for execution", provider: "the provider", checker: "the checker" };
+      for (const p of paid) out(el("span", "", ok(`paid out in the same transaction: ${p.paidNow} USDC to ${payee[p.role] ?? p.role}`)));
       view.receipt = e;
     },
   };
@@ -192,7 +194,7 @@ async function session({ claim, live, caseRef, run }) {
     if (v?.found) {
       const flagged = (v.verdicts ?? []).filter(x => x.severity !== "informational");
       out(flagged.length ? span("t-no", `${flagged.length} rule finding(s): ${flagged.map(x => x.code).join(", ")}`)
-        : el("span", "", ok("rebuilt from Monad logs, follows rulebook "), span("t-acc", short(v.rulebookHash))));
+        : el("span", "", ok(`${status?.auditor === "envio" ? "Envio rebuilt it from Monad logs" : "rebuilt from Monad logs"}${view.recorded?.auditor === "envio" && view.recorded.ms != null ? `, indexed within ${(view.recorded.ms / 1000).toFixed(2)} s of settling` : ""}, follows rulebook `), span("t-acc", short(v.rulebookHash))));
     } else out(span("t-faint", "settled on chain; the auditor has not indexed it yet"));
   }
   await sleep(500);

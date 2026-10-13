@@ -46,7 +46,7 @@ The target lifecycle for one attempt:
    no valid receipt by settleBy: anyone calls refundTimeout(quote) for a full refund
 ```
 
-Every step ran on Monad Testnet with contract version 2. Version 3 makes step 12 optional: credit at or above the owner's bar is paid inside the settlement or refund transaction, and `withdraw` remains for smaller balances. Version 3 payouts have run under local Monad execution and on a fork of Monad Testnet. Step 8 runs inside the demonstration runner, not as a standing service. The public and private boundary is unchanged from the [architecture](LemmaX-Architecture.md#3-what-is-public-on-monad).
+Every step ran on Monad Testnet with contract version 2. Version 3 makes step 12 optional: credit at or above the owner's bar is paid inside the settlement or refund transaction, and `withdraw` remains for smaller balances. Version 3 payouts have run under local Monad execution, on a fork of Monad Testnet and on testnet, where settlements paid credit out automatically to the provider, the checker, LemmaX and an agent wallet that holds no MON ([record](../verification/live-runs-testnet.json)). Step 8 runs inside `lemma_deliver_attempt` when the operator sets `EVALUATOR_PRIVATE_KEY`, and inside the page server, not as a standing service. The public and private boundary is unchanged from the [architecture](LemmaX-Architecture.md#3-what-is-public-on-monad).
 
 ## 3. Monad behaviour that shapes the implementation
 
@@ -101,7 +101,7 @@ Broadcasting additionally requires `LEMMAX_DEPLOY_BROADCAST=1`, `LEMMAX_DEPLOYER
 
 ### Verification
 
-The Node suite has 94 passing tests. They include the ABI drift check, the funding authorization's domain, nonce, window and chain guards, gas policy, stage waits, and reconciliation of matching, tampered and duplicated events.
+The Node suite (`npm test`) includes the ABI drift check, the funding authorization's domain, nonce, window and chain guards, gas policy, stage waits, and reconciliation of matching, tampered and duplicated events.
 
 `npm run settlement:check` deploys a local FiatToken test double (EIP-3009, ERC-1271-capable signature checks, a blocklist and a short-payment switch) and runs the full lifecycle under Monad execution. Against contract version 3 it passes 80 checks, including the following:
 
@@ -157,9 +157,9 @@ Monad Testnet receipts report gas used equal to the transaction gas limit, consi
 
 ## 5. Roadmap
 
-**Done.** Three purchases ran on Monad Testnet with contract version 2 and reconcile with their private records, and the contract source is verified (section 4). Contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner are built and checked, and the loop is rehearsed on a fork. Version 3 is deployed and source-verified; its first four purchases ran on testnet ([record](../verification/live-runs-testnet.json)), and the hosted Envio auditor indexes them ([check](../verification/auditor-check-testnet.json)). [Trust loop](Trust-Loop.md).
+**Done.** Three purchases ran on Monad Testnet with contract version 2 and reconcile with their private records, and the contract source is verified (section 4). Contract version 3 with automatic payouts, the streamed fund call, the rulebook and shared conformance rules, the Envio auditor, the Privy buyer mandate and guard, ERC-8004 registration and feedback, and the trust-loop runner are built and checked, and the loop is rehearsed on a fork. Version 3 is deployed and source-verified and has run 18 attempts on testnet ([record](../verification/live-runs-testnet.json)); the hosted Envio auditor indexes them, agrees with the local auditor on every one, gates the page's purchases, and flagged the canary checker's overcharge in the testnet trust loop ([check](../verification/auditor-check-testnet.json), [loop](../verification/trust-loop-testnet.json)). The Privy policy passed its kill test ([report](../verification/privy-kill-test.json)), and LemmaX's four ERC-8004 agents are registered with feedback published from the settled attempts ([record](../verification/reputation-testnet.json)). [Trust loop](Trust-Loop.md).
 
-**Next.** Deploy the auditor to Envio Cloud, create the Privy buyer wallet after its kill test, register the agents, run the loop on testnet and publish its feedback. Then run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness) and extend the cost ledger with measured testnet gas. A remote MCP transport for purchases needs authentication before it serves anyone beyond the operator. The validation registry stays outside the settlement path. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
+**Next.** Create the buyer's own Privy wallet, now that its kill test has passed. Then run the assessment scale protocol from the [architecture](LemmaX-Architecture.md#minimum-evidence-of-scale-readiness) and extend the cost ledger with measured testnet gas. A remote MCP transport for purchases needs authentication before it serves anyone beyond the operator. The validation registry stays outside the settlement path. [Monad ERC-8004 guide](https://docs.monad.xyz/guides/erc-8004), [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts), [Envio supported networks](https://docs.envio.dev/docs/HyperIndex/supported-networks).
 
 ## 6. Version 1 terms
 

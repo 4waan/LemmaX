@@ -1,0 +1,400 @@
+{
+  "schemaVersion": "trust-loop/v1",
+  "target": "testnet",
+  "chainId": 10143,
+  "settlement": "0x2DA6DAE2731BDf030543AF18D8083d5de6a012a7",
+  "fromBlock": "70702282",
+  "mandate": "local rehearsal of the mandate",
+  "buyerKeys": null,
+  "auditor": "envio",
+  "rulebook": {
+    "ref": "lemmax-rulebook/v1",
+    "hash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1"
+  },
+  "buyer": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+  "codeSha256": {
+    "contracts/AttemptSettlement.sol": "7db66a2d987f0da87c78ed23756f67a5e7283a87a307059fe3499afd02748b53",
+    "src/guard.mjs": "3b667ebbfe5da991726e04aa1721a0b8455358c1a7290d902c038475fb936d2a",
+    "src/privy-buyer.mjs": "303cbec8e2cd47ccfda284b9c4c977525fd2e244557280e6638be0597adb2e9f",
+    "src/purchase.mjs": "a25cb9a47adbeb3b22e0539b7d6d8367382252d6de5110229a82a60023fca39c",
+    "src/mcp.mjs": "54cdf0c46f140899b927fb123ea2322017beb673203e57a8b9700d27ee3c8c0f",
+    "src/rulebook.mjs": "602494b6a290a548f5e23953b5a3aae221dcc1a8b8bdd85f17b629920d8f6bad",
+    "indexer/src/shared/conformance.mjs": "7daa9371dbb6da1bbea5db62341fe57d5bc54d4e469bc03355c4e9cca587ad07",
+    "src/local-audit.mjs": "7a1a4593954db575a97843da57bc9dfa4c91e3204d2179fe3b75bae62db666a8",
+    "src/reconcile.mjs": "842aae8a9288ef7b60515f3c094a6276001e817b7c540cbae5245a92e3e119b9",
+    "scripts/trust-loop.mjs": "5f14474267d8c55737ca8691224d19c0a40949fd852d8ea0372be6d1a48e6b2f"
+  },
+  "beats": [
+    {
+      "label": "timeout",
+      "caseRef": "1012",
+      "profileRef": "demo-timeout/v1",
+      "evaluator": "main",
+      "settle": false,
+      "steps": {
+        "fund": {
+          "transactionHash": "0xcfc1e233e63f79287a293306603a71ff8ed44520bf427bb55b44759693fe3023",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 451,
+              "transactionHash": "0xcfc1e233e63f79287a293306603a71ff8ed44520bf427bb55b44759693fe3023"
+            },
+            {
+              "step": "Proposed",
+              "ms": 452,
+              "blockNumber": "70734915"
+            },
+            {
+              "step": "Voted",
+              "ms": 670,
+              "blockNumber": "70734915"
+            },
+            {
+              "step": "Finalized",
+              "ms": 960,
+              "blockNumber": "70734915"
+            },
+            {
+              "step": "Verified",
+              "ms": 1884,
+              "blockNumber": "70734915"
+            }
+          ],
+          "link": "https://testnet.monadvision.com/tx/0xcfc1e233e63f79287a293306603a71ff8ed44520bf427bb55b44759693fe3023"
+        },
+        "refundTimeout": {
+          "transactionHash": "0x6d2c119d50a874d184274eff47f4caa4c6438a44f0da1f201659ce2e6773529c",
+          "link": "https://testnet.monadvision.com/tx/0x6d2c119d50a874d184274eff47f4caa4c6438a44f0da1f201659ce2e6773529c"
+        }
+      },
+      "attemptId": "0x93a2eefd375d2272f99f86210781988bbcba20dec5ce095a67996b6609130bef"
+    },
+    {
+      "label": "success",
+      "caseRef": "100",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "main",
+      "settle": true,
+      "steps": {
+        "fund": {
+          "transactionHash": "0x982382224ef756924f66051d32c087014b2a201bd660da61c91916d7e8be0fe0",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 633,
+              "transactionHash": "0x982382224ef756924f66051d32c087014b2a201bd660da61c91916d7e8be0fe0"
+            },
+            {
+              "step": "Proposed",
+              "ms": 633,
+              "blockNumber": "70734923"
+            },
+            {
+              "step": "Voted",
+              "ms": 704,
+              "blockNumber": "70734923"
+            },
+            {
+              "step": "Finalized",
+              "ms": 1002,
+              "blockNumber": "70734923"
+            },
+            {
+              "step": "Verified",
+              "ms": 1918,
+              "blockNumber": "70734923"
+            }
+          ],
+          "link": "https://testnet.monadvision.com/tx/0x982382224ef756924f66051d32c087014b2a201bd660da61c91916d7e8be0fe0"
+        },
+        "settle": {
+          "transactionHash": "0x3c15752cb397875371a3ce4fa50c1457b3d4ba19ebffb8a4cc197941f28b8016",
+          "outcome": "success",
+          "charges": "1500/800",
+          "link": "https://testnet.monadvision.com/tx/0x3c15752cb397875371a3ce4fa50c1457b3d4ba19ebffb8a4cc197941f28b8016",
+          "indexedAfterMs": 673
+        }
+      },
+      "attemptId": "0x340585e19aca260ec59c17abd2ab8ff219f35d596780d59d20e56aa8af3ad8bd"
+    },
+    {
+      "label": "eligible_failure",
+      "caseRef": "1",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "main",
+      "settle": true,
+      "steps": {
+        "fund": {
+          "transactionHash": "0x03ccdb73b4cc0f6a74a9846881e952d56551a5a649661ee2fa82c15b4bfce0d1",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 356,
+              "transactionHash": "0x03ccdb73b4cc0f6a74a9846881e952d56551a5a649661ee2fa82c15b4bfce0d1"
+            },
+            {
+              "step": "Proposed",
+              "ms": 357,
+              "blockNumber": "70734939"
+            },
+            {
+              "step": "Voted",
+              "ms": 654,
+              "blockNumber": "70734939"
+            },
+            {
+              "step": "Finalized",
+              "ms": 879,
+              "blockNumber": "70734939"
+            },
+            {
+              "step": "Verified",
+              "ms": 1760,
+              "blockNumber": "70734939"
+            }
+          ],
+          "link": "https://testnet.monadvision.com/tx/0x03ccdb73b4cc0f6a74a9846881e952d56551a5a649661ee2fa82c15b4bfce0d1"
+        },
+        "settle": {
+          "transactionHash": "0x1fdd25575635ddd5bf0f0ac083260c2162e4fb9fc69a0c3d5187a5fd339d3059",
+          "outcome": "eligible_failure",
+          "charges": "1500/800",
+          "link": "https://testnet.monadvision.com/tx/0x1fdd25575635ddd5bf0f0ac083260c2162e4fb9fc69a0c3d5187a5fd339d3059",
+          "indexedAfterMs": 448
+        }
+      },
+      "attemptId": "0x225e70478ca33e6ef77d7fe3f1f8598db7d55739d94c66ea2ca3abb86235347c"
+    },
+    {
+      "label": "overcharge",
+      "caseRef": "1014",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "evaluator-b",
+      "settle": true,
+      "steps": {
+        "fund": {
+          "transactionHash": "0x2014bdd749c9d6f50d956785b264b4b6360f7e0ead87dfc23386f8360c4468c0",
+          "timeline": [
+            {
+              "step": "Relayed",
+              "ms": 605,
+              "transactionHash": "0x2014bdd749c9d6f50d956785b264b4b6360f7e0ead87dfc23386f8360c4468c0"
+            },
+            {
+              "step": "Proposed",
+              "ms": 605,
+              "blockNumber": "70734956"
+            },
+            {
+              "step": "Voted",
+              "ms": 953,
+              "blockNumber": "70734956"
+            },
+            {
+              "step": "Finalized",
+              "ms": 1079,
+              "blockNumber": "70734956"
+            },
+            {
+              "step": "Verified",
+              "ms": 1999,
+              "blockNumber": "70734956"
+            }
+          ],
+          "link": "https://testnet.monadvision.com/tx/0x2014bdd749c9d6f50d956785b264b4b6360f7e0ead87dfc23386f8360c4468c0"
+        },
+        "settle": {
+          "transactionHash": "0xe3f60ced61c8c4d85d4c1d8bfd148654ce04893935b680b41e033f234bcd0301",
+          "outcome": "success",
+          "charges": "1500/1000",
+          "link": "https://testnet.monadvision.com/tx/0xe3f60ced61c8c4d85d4c1d8bfd148654ce04893935b680b41e033f234bcd0301",
+          "indexedAfterMs": 393
+        }
+      },
+      "attemptId": "0xcf6b0a197567aea5133d3bade481d89950296109abbad90aaa817e0bee8129ac"
+    },
+    {
+      "label": "refused",
+      "caseRef": "1019",
+      "profileRef": "demo-standard/v1",
+      "evaluator": "evaluator-b",
+      "settle": false,
+      "steps": {},
+      "attemptId": "0x33f2d48659d8d92b45406e19001b81461a81c9f7f2b5eca48af75443432fb288",
+      "refused": [
+        "evaluator_flagged"
+      ],
+      "walletSigned": false
+    }
+  ],
+  "payouts": [
+    {
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "destination": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "amount": "10000",
+      "transactionHash": "0xe2833edb06557b8a9dea860d2c1c4277ca9f5d07528c0d131653e377eada263b"
+    },
+    {
+      "owner": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "destination": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "amount": "12800",
+      "transactionHash": "0xfb3db7829438daf6a4549f7367a2a0aaa7a3d90b0b97772b8db40d53f3e24b5d"
+    },
+    {
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "destination": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "amount": "10000",
+      "transactionHash": "0x54051f16c0abab19e2a67dc6a4e68b2ed3d2dca1ff53b24d1b195837030d9abb"
+    },
+    {
+      "owner": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "destination": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "amount": "10500",
+      "transactionHash": "0x41c4db618af64358a356cb56e6879988c631006e2ae532a1fb787e409d30ad05"
+    },
+    {
+      "owner": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "destination": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "amount": "13500",
+      "transactionHash": "0x333d2e2fafcf71facd91bc97f19abb6df938b11315dd19cf8ad65f15c476fe06"
+    },
+    {
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "destination": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "amount": "10000",
+      "transactionHash": "0x322fa9dfb219285b91cccbc7101c8efc24de6cd73ed27e546d55fe846fe4d825"
+    },
+    {
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "destination": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "amount": "10000",
+      "transactionHash": "0xaced488554853be54ade86a2257074abbea55d1ec6c62d62a035042b3a54df12"
+    },
+    {
+      "owner": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "destination": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "amount": "10400",
+      "transactionHash": "0xaced488554853be54ade86a2257074abbea55d1ec6c62d62a035042b3a54df12"
+    },
+    {
+      "owner": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "destination": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "amount": "10500",
+      "transactionHash": "0xaf7abbd372aba354476833ac961eee87238e752ac2cd3270fdb87ed0301dd04a"
+    },
+    {
+      "owner": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "destination": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "amount": "13500",
+      "transactionHash": "0xaf7abbd372aba354476833ac961eee87238e752ac2cd3270fdb87ed0301dd04a"
+    },
+    {
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "destination": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "amount": "10000",
+      "transactionHash": "0xe3f60ced61c8c4d85d4c1d8bfd148654ce04893935b680b41e033f234bcd0301"
+    },
+    {
+      "owner": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "destination": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "amount": "14900",
+      "transactionHash": "0x6d2c119d50a874d184274eff47f4caa4c6438a44f0da1f201659ce2e6773529c"
+    }
+  ],
+  "deferred": [],
+  "flagged": [
+    {
+      "party": "0xf70650a43b74ca8dfdb1f5de32f6e547608151fd",
+      "lastVerdict": "above_tariff"
+    }
+  ],
+  "envioAgreement": true,
+  "reconciliation": {
+    "ok": true,
+    "issues": [],
+    "attempts": [
+      {
+        "attemptId": "0x93a2eefd375d2272f99f86210781988bbcba20dec5ce095a67996b6609130bef",
+        "state": "refunded_timeout",
+        "issues": []
+      },
+      {
+        "attemptId": "0x340585e19aca260ec59c17abd2ab8ff219f35d596780d59d20e56aa8af3ad8bd",
+        "state": "settled_success",
+        "issues": []
+      },
+      {
+        "attemptId": "0x225e70478ca33e6ef77d7fe3f1f8598db7d55739d94c66ea2ca3abb86235347c",
+        "state": "settled_failure",
+        "issues": []
+      },
+      {
+        "attemptId": "0xcf6b0a197567aea5133d3bade481d89950296109abbad90aaa817e0bee8129ac",
+        "state": "settled_success",
+        "issues": []
+      }
+    ]
+  },
+  "ledger": {
+    "balance": "7900",
+    "lockedFunds": "0",
+    "totalCredit": "7900",
+    "unallocated": "0",
+    "solvent": true
+  },
+  "balancesBefore": {
+    "buyer": {
+      "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "mon": "0",
+      "usdc": "19.9038"
+    },
+    "provider": {
+      "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "mon": "0",
+      "usdc": "0.04"
+    },
+    "evaluator": {
+      "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "mon": "4.426485518",
+      "usdc": "20.0104"
+    },
+    "evaluatorB": {
+      "address": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd",
+      "mon": "0",
+      "usdc": "0"
+    },
+    "facilitator": {
+      "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "mon": "4.416585092",
+      "usdc": "20.024"
+    }
+  },
+  "balancesAfter": {
+    "buyer": {
+      "address": "0x2B62DaD005E9342A11C651C236bbdE7AfBa64681",
+      "mon": "0",
+      "usdc": "19.8867"
+    },
+    "provider": {
+      "address": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1",
+      "mon": "0",
+      "usdc": "0.05"
+    },
+    "evaluator": {
+      "address": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77",
+      "mon": "4.298012642",
+      "usdc": "20.0104"
+    },
+    "evaluatorB": {
+      "address": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd",
+      "mon": "0",
+      "usdc": "0"
+    },
+    "facilitator": {
+      "address": "0xeD09e99F20cEEd22BFff0D465f5A61d061b36e05",
+      "mon": "4.297963478",
+      "usdc": "20.024"
+    }
+  }
+}

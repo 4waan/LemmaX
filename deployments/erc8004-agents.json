@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "erc8004-agents/v1",
+  "identityRegistry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "agents": {
+    "directory": {
+      "agentId": "2296",
+      "registerTx": "0x43bb7bd302b7fe387f10ed37f874dc3febefa781832e8881f927ba78496c46a5",
+      "registerGas": "378545",
+      "uriTx": "0xb2172dfac535eedac37bb30ad5d5fbc7afaff0d9ee84736237cf0f3cc673858e",
+      "uriGas": "1067901",
+      "fileSha": "0x4d8e68df9ee9830aa065abad7ff07bedb52ae9ec9e06850853a79656d9160691",
+      "owner": "0x4Ce5cE1F77bE49a060D7c0DCAee3835C067EBCD4"
+    },
+    "evaluator": {
+      "agentId": "2297",
+      "registerTx": "0xd69e3420426f4da576812b6f0c32d147b1f29dc788e28328f7f851723e558369",
+      "registerGas": "371616",
+      "uriTx": "0x5318482f0820fb29e96d554b75a1266efdd60fa8502ec7e13bb5bd2a3ceca439",
+      "uriGas": "919453",
+      "fileSha": "0x45218818d34b33167cbb4e504ae2ba23be09a577463aa83a7dcdd048ce3e769b",
+      "transferTx": "0xa198b5b514df70744f533d5baeaf89e003be280e9438f1dc6413eac1cb2ece37",
+      "owner": "0xd059A60Cf6Cc3fD83002389f2128cFB6F1c70a77"
+    },
+    "evaluatorB": {
+      "agentId": "2298",
+      "registerTx": "0x85cc1a1a238b3379fc1730b70d7e656f2a232998492b1ecce7093780d78dd3b6",
+      "registerGas": "359561",
+      "uriTx": "0x7529c21b98d13fbcbbc4dfb22ec6434ab590c1ba87788734012e9f1c7ed5684d",
+      "uriGas": "907546",
+      "fileSha": "0xae14bf3de0ff5ef1c5e04fb4815d7a56e8f7c51b701347ec1713a2d99b19909a",
+      "transferTx": "0x661bc48787c63de22fc5af468d98de09070ac834c596cec23f8bf88734a98c30",
+      "owner": "0xf70650a43b74Ca8dFdb1f5dE32F6e547608151Fd"
+    },
+    "provider": {
+      "agentId": "2299",
+      "registerTx": "0x16259608923304e3c2c79ba6b1813e9878079199af97c7480e388471270eac69",
+      "registerGas": "359534",
+      "uriTx": "0x51dee5e0c65b0253598b878f9ff847e64349914d89a9caac185fcb9b55a50a8d",
+      "uriGas": "927348",
+      "fileSha": "0x6cde6a29777901b56fa3ed4d6a9097c011659ba7ccbb6572511761f6d7cffe10",
+      "transferTx": "0x5a67564ff969b108a514c07a9b726942dc4e389774e2c87f3d8e5953455c899f",
+      "owner": "0xA9361c7A43b65933EAFdCEf63CfC07449C38AcB1"
+    }
+  }
+}
