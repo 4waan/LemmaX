@@ -5,7 +5,7 @@
   "endpoint": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
   "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
   "freshness": {
-    "progressBlock": "70731436",
+    "progressBlock": "70735766",
     "lagBlocks": 3
   },
   "passed": true,
@@ -162,20 +162,64 @@
       "findings": [],
       "comparedWith": "local auditor",
       "matches": true
+    },
+    {
+      "attemptId": "0x93a2eefd375d2272f99f86210781988bbcba20dec5ce095a67996b6609130bef",
+      "contract": "v3",
+      "state": "refunded_timeout",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0x340585e19aca260ec59c17abd2ab8ff219f35d596780d59d20e56aa8af3ad8bd",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0x225e70478ca33e6ef77d7fe3f1f8598db7d55739d94c66ea2ca3abb86235347c",
+      "contract": "v3",
+      "state": "settled_failure",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
+    },
+    {
+      "attemptId": "0xcf6b0a197567aea5133d3bade481d89950296109abbad90aaa817e0bee8129ac",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [
+        "above_tariff"
+      ],
+      "comparedWith": "local auditor",
+      "matches": true
     }
   ],
   "parties": [
     {
-      "party": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
+      "party": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
       "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
-      "attempts": 17,
+      "attempts": 20,
       "blocking": 0
     },
     {
-      "party": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
+      "party": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
       "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
-      "attempts": 17,
+      "attempts": 21,
       "blocking": 0
+    },
+    {
+      "party": "0xf70650a43b74ca8dfdb1f5de32f6e547608151fd",
+      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
+      "attempts": 1,
+      "blocking": 1
     }
   ],
   "payouts": [
@@ -244,13 +288,25 @@
       "amount": "13500",
       "kind": "paid",
       "txHash": "0xaf7abbd372aba354476833ac961eee87238e752ac2cd3270fdb87ed0301dd04a"
+    },
+    {
+      "owner": "0xa9361c7a43b65933eafdcef63cfc07449c38acb1",
+      "amount": "10000",
+      "kind": "paid",
+      "txHash": "0xe3f60ced61c8c4d85d4c1d8bfd148654ce04893935b680b41e033f234bcd0301"
+    },
+    {
+      "owner": "0x2b62dad005e9342a11c651c236bbde7afba64681",
+      "amount": "14900",
+      "kind": "paid",
+      "txHash": "0x6d2c119d50a874d184274eff47f4caa4c6438a44f0da1f201659ce2e6773529c"
     }
   ],
   "guard": {
     "approved": true,
     "reasons": [],
     "indexedThrough": "70727448",
-    "ms": 228,
+    "ms": 240,
     "broadcast": false
   }
 }
