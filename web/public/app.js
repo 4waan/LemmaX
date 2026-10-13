@@ -146,6 +146,9 @@ async function session({ claim, live, caseRef, run }) {
       out(el("span", "", `search ${by("provider")} · LemmaX ${by("LemmaX (execution)")} · checker ${by("checker")} · `,
         span(e.outcome === "success" ? "" : "t-ok", `back ${by("buyer (returned)")}`)),
         el("span", "t-faint", "settled in one Monad transaction · ", tx(e.settleTx)));
+      // Credit at or above 0.01 USDC is paid out inside the same settlement.
+      const paid = e.payouts?.filter(p => Number(p.paidNow) > 0) ?? [];
+      for (const p of paid) out(el("span", "", ok(`paid out in the same transaction: ${p.paidNow} USDC to the ${p.role === "buyer (returned)" ? "agent's wallet, which holds no MON" : p.role}`)));
       view.receipt = e;
     },
   };
