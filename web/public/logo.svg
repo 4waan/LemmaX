@@ -1,7 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="LemmaX">
-  <path d="M9 6.5h11.5a2.5 2.5 0 0 1 2.5 2.5v16.2l-2.1-1.4-2.1 1.4-2.1-1.4-2.1 1.4-2.1-1.4-2.1 1.4V9A2.5 2.5 0 0 1 9 6.5Z" stroke="#111113" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M10.8 12.5h8.4M10.8 16.5h5.6" stroke="#111113" stroke-width="2" stroke-linecap="round"/>
-  <path d="M26.5 13.5c0-5-3.4-8.5-8-8.5" stroke="#6E54FF" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M5.5 18.5c0 5 3.4 8.5 8 8.5" stroke="#6E54FF" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="m11.2 24.6 2.4 2.4-2.4 2.4" stroke="#6E54FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="LemmaX">
+  <style>.ink{stroke:#14141c}.v{stroke:#6c4cf5}@media (prefers-color-scheme:dark){.ink{stroke:#f2f1f7}}</style>
+  <g stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path class="v" d="M28 40 V18 a9 9 0 0 1 9 -9 H70 a9 9 0 0 1 9 9 V62"/>
+    <path class="v" d="M28 40 H14 M21 32 L13 40 L21 48"/>
+    <path class="ink" d="M42 26 H64 M42 40 H64"/>
+    <path class="v" d="M40 66 L47 73 L60 59"/>
+    <path class="ink" d="M28 58 V88 L36 81 L43 88 L50 81 L57 88"/>
+    <path class="ink" d="M66 64 L90 92"/>
+    <path class="v" d="M64 92 L88 64"/>
+  </g>
 </svg>

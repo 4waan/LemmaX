@@ -11,7 +11,9 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
 
 .nav { display: flex; justify-content: space-between; align-items: center; max-width: 1080px; width: 100%; margin: 0 auto; padding-block: 28px; font-size: 15px; }
-.brand { font-weight: 500; letter-spacing: -0.01em; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; font-size: 18px; letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
+.nav a.brand { color: var(--ink); }
+.brand em { font-style: normal; color: var(--accent); }
 .nav a { color: var(--mute); text-decoration: none; }
 .nav a:hover { color: var(--ink); }
 
