@@ -1,6 +1,6 @@
 # LemmaX
 
-**Each search your agent buys settles on Monad by its result, and the record it leaves decides which bill its wallet signs next.**
+**Your agent sees how often a search has worked before it pays. If the search misses, your agent gets its half cent back.**
 
 Before paying, the agent sees how often the search found a right source on a public benchmark (230 of 300 claims). It signs one USDC authorization whose nonce is the hash of the whole bill; LemmaX relays it, pays the MON gas and starts the search once Monad marks the payment Verified. A checker named on the bill signs the outcome, and one settlement splits the money: the provider earns the 0.005 USDC price on a hit, the price is credited back to the agent on a miss, and the checker's published fee is the same either way.
 
