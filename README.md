@@ -120,7 +120,7 @@ The decision core can be used independently of settlement. Start with the [devel
 
 ## Team and license
 
-Aryan Singh Rathore and Awaan Mustafa Siddiqui, co-founders.
+Aryan Singh Rathore and Awaan Mustafa Siddiqui, co-founders and undergraduates at IIT Roorkee.
 
 LemmaX is the third version of an idea we have worked on for more than three weeks: LemmaXperiment, then Lemma, now LemmaX. LemmaXperiment set the contract and evaluation patterns we still use: frozen terms, signature binding, replay controls, exact allocation and solvency checks. In [Lemma](https://github.com/4waan/lemma), a coding agent bought a tested release twice over x402 on Arbitrum Sepolia; one purchase passed its tests, and the other failed and was refunded from a separate USDC bond, with each result recorded onchain. LemmaX rebuilds that loop for Monad: the buyer's money stays inside the attempt until one settlement allocates it by the signed outcome, the agent sees a measured hit rate before it pays, and a guard reads the public record before the wallet signs. No source code was copied; the testnet operator keys and the `lemma_` tool prefix carry over, and our [pre-build review of both earlier projects](docs/research/LemmaX-Build-Readiness-and-Reuse.md) records which patterns we kept.
 
