@@ -2,7 +2,7 @@
 
 This document explains what LemmaX keeps private, what it puts on Monad, and why. It separates the design choices we made from proposals that remain open.
 
-**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#measured-so-far) distinguishes live transactions from local and fork checks.
+**Status:** the design is built for one capability, a bounded search on a public benchmark. Contract version 3 is deployed on Monad Testnet ([deployment record](../deployments/AttemptSettlement-v3.testnet.json)). Contract version 2 ran three live attempts there ([run report](../verification/testnet-demo.json)). The trust loop with Envio, Privy and ERC-8004 is built and tested, and it was rehearsed on a fork with a local auditor and mandate ([trust loop](Trust-Loop.md)). The [README](../README.md#verify-it-yourself) distinguishes live transactions from local and fork checks.
 
 ## 1. Context and decisions
 
@@ -260,7 +260,7 @@ Each integration decides something in the payment path:
 - **Privy:** the buyer's server wallet. Its policy signs only quotes the buyer's guard approved. [Privy in the trust loop](Trust-Loop.md#privy-the-buyers-mandate).
 - **ERC-8004:** identities for four LemmaX agents and feedback built from settled attempts only (section 4).
 
-The hosted Envio auditor is live on Monad Testnet and gates the page's purchases ([check](../verification/auditor-check-testnet.json)). The Privy policy passed its kill test ([report](../verification/privy-kill-test.json)), and the four ERC-8004 agents are registered with feedback published from settled attempts ([record](../verification/reputation-testnet.json)). The buyer's own Privy wallet is not created yet. [Status](../README.md#measured-so-far).
+The hosted Envio auditor is live on Monad Testnet and gates the page's purchases ([check](../verification/auditor-check-testnet.json)). The Privy policy passed its kill test ([report](../verification/privy-kill-test.json)), and the four ERC-8004 agents are registered with feedback published from settled attempts ([record](../verification/reputation-testnet.json)). The buyer's own Privy wallet is not created yet. [Status](../README.md#verify-it-yourself).
 
 ## 10. Scale evidence
 
