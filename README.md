@@ -94,34 +94,26 @@ LemmaX splits the job so that **no single party both holds the money and decides
 
 ```mermaid
 flowchart LR
-    subgraph AG["The agent's side"]
-        A["AI agent<br/>Claude Code or any MCP client"]
-        W["Wallet MCP server<br/>guard and signing policy"]
-    end
-    subgraph LX["LemmaX operator"]
-        L["LemmaX MCP server<br/>offers, odds, bills, relayer"]
-        C["Checker<br/>runs the search, signs hit or miss"]
-        P["Search provider<br/>TF-IDF and BM25 over SciFact"]
-    end
-    subgraph MO["Monad Testnet"]
-        S["AttemptSettlement v3<br/>holds the USDC, splits it"]
-        U["Circle USDC"]
-        R["ERC-8004 registries<br/>identity and reputation"]
-    end
-    E[("Envio HyperIndex<br/>public auditor")]
+    A["AI agent<br/>Claude Code or any MCP client"]
+    W["Agent's wallet<br/>(MCP) guard + signing policy"]
+    L["LemmaX<br/>(MCP) offers, odds, bills, relayer"]
+    S["Settlement contract<br/>on Monad: holds the USDC, splits it"]
+    C["Checker<br/>runs the search, signs hit or miss"]
+    P["Search provider<br/>paid 0.005 on a hit"]
+    E[("Envio auditor<br/>public record")]
+    R["ERC-8004<br/>identity and reputation"]
 
     A -->|"1-2. odds, then one bill"| L
     A -->|"3. sign this bill"| W
-    W -->|"reads findings first"| E
-    W -->|"one USDC signature"| A
-    A -->|"4. fund with it"| L
-    L -->|"relays it, pays the gas"| S
-    U -->|"pulled by that signature"| S
-    C -->|"5. signed verdict, one settlement"| S
-    S -->|"0.005 on a hit"| P
-    S -->|"6. every event"| E
-    L -->|"feedback from settled attempts"| R
-    R -->|"feedback, checked against settlements"| E
+    W -.->|"reads findings first"| E
+    W -->|"signature"| A
+    A -->|"4. fund it"| L
+    L -->|"relays, pays the gas"| S
+    C -->|"5. signed verdict"| S
+    S -->|"splits the USDC"| P
+    S -->|"6. every settlement"| E
+    L -->|"feedback"| R
+    R -.->|"checked against settlements"| E
 ```
 
 | Part | What it does | Who runs it | Code |
