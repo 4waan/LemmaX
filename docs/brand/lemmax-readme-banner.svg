@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="372" viewBox="0 0 1040 372" role="img" aria-labelledby="t d">
+  <title id="t">How LemmaX works</title>
+  <desc id="d">Five steps in a loop: the agent sees the measured odds and the cost to an answer, signs one USDC bill, LemmaX relays it and the search starts once Monad marks the payment Verified, a checker signs the outcome and one settlement pays or refunds, and Envio audits the settlement so the guard can read it before the next signature.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1117"/>
+      <stop offset="1" stop-color="#171A2A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.1" r="0.6">
+      <stop offset="0" stop-color="#6C4CF5" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#6C4CF5" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#A99BFF"/>
+    </marker>
+    <marker id="loop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#5FE3A1"/>
+    </marker>
+  </defs>
+  <rect width="1040" height="372" rx="20" fill="url(#bg)"/>
+  <rect width="1040" height="372" rx="20" fill="url(#glow)"/>
+  <g font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="36" y="54" fill="#A99BFF" font-size="13" font-weight="600" letter-spacing="2">HOW LEMMAX WORKS</text>
+    <text x="36" y="88" fill="#F2F1F7" font-size="25" font-weight="600">Your agent's wallet pays only for tools with a track record</text>
+
+    <g transform="translate(36 116)">
+      <rect width="176" height="150" rx="14" fill="#151A23" stroke="#2A3142"/>
+      <circle cx="28" cy="30" r="14" fill="#A99BFF"/>
+      <text x="28" y="35" text-anchor="middle" fill="#0E1117" font-size="14" font-weight="700">1</text>
+      <text x="16" y="74" fill="#F2F1F7" font-size="17" font-weight="600">See the odds</text>
+      <text x="16" y="99" fill="#8892A3" font-size="13">Measured hit rate and</text>
+      <text x="16" y="117" fill="#8892A3" font-size="13">cost to an answer,</text>
+      <text x="16" y="135" fill="#8892A3" font-size="13">before money moves.</text>
+    </g>
+    <line x1="216" y1="191" x2="232" y2="191" stroke="#A99BFF" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(238 116)">
+      <rect width="176" height="150" rx="14" fill="#151A23" stroke="#2A3142"/>
+      <circle cx="28" cy="30" r="14" fill="#A99BFF"/>
+      <text x="28" y="35" text-anchor="middle" fill="#0E1117" font-size="14" font-weight="700">2</text>
+      <text x="16" y="74" fill="#F2F1F7" font-size="17" font-weight="600">Sign one bill</text>
+      <text x="16" y="99" fill="#8892A3" font-size="13">One USDC signature.</text>
+      <text x="16" y="117" fill="#8892A3" font-size="13">Its nonce is the hash</text>
+      <text x="16" y="135" fill="#8892A3" font-size="13">of the whole bill.</text>
+    </g>
+    <line x1="418" y1="191" x2="434" y2="191" stroke="#A99BFF" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(440 116)">
+      <rect width="176" height="150" rx="14" fill="#151A23" stroke="#2A3142"/>
+      <circle cx="28" cy="30" r="14" fill="#A99BFF"/>
+      <text x="28" y="35" text-anchor="middle" fill="#0E1117" font-size="14" font-weight="700">3</text>
+      <text x="16" y="74" fill="#F2F1F7" font-size="17" font-weight="600">Paid, Verified</text>
+      <text x="16" y="99" fill="#8892A3" font-size="13">LemmaX pays the gas.</text>
+      <text x="16" y="117" fill="#8892A3" font-size="13">The search starts once</text>
+      <text x="16" y="135" fill="#8892A3" font-size="13">Monad says Verified.</text>
+    </g>
+    <line x1="620" y1="191" x2="636" y2="191" stroke="#A99BFF" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(642 116)">
+      <rect width="176" height="150" rx="14" fill="#151A23" stroke="#2A3142"/>
+      <circle cx="28" cy="30" r="14" fill="#A99BFF"/>
+      <text x="28" y="35" text-anchor="middle" fill="#0E1117" font-size="14" font-weight="700">4</text>
+      <text x="16" y="74" fill="#F2F1F7" font-size="17" font-weight="600">Settle by result</text>
+      <text x="16" y="99" fill="#8892A3" font-size="13">A checker signs hit or</text>
+      <text x="16" y="117" fill="#8892A3" font-size="13">miss. One settlement</text>
+      <text x="16" y="135" fill="#8892A3" font-size="13">pays or refunds.</text>
+    </g>
+    <line x1="822" y1="191" x2="838" y2="191" stroke="#A99BFF" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(844 116)">
+      <rect width="160" height="150" rx="14" fill="#151A23" stroke="#5B45F6"/>
+      <circle cx="28" cy="30" r="14" fill="#5FE3A1"/>
+      <text x="28" y="35" text-anchor="middle" fill="#0E1117" font-size="14" font-weight="700">5</text>
+      <text x="16" y="74" fill="#F2F1F7" font-size="17" font-weight="600">Public record</text>
+      <text x="16" y="99" fill="#8892A3" font-size="13">Envio audits it. The</text>
+      <text x="16" y="117" fill="#8892A3" font-size="13">guard reads it before</text>
+      <text x="16" y="135" fill="#8892A3" font-size="13">the next signature.</text>
+    </g>
+
+    <path d="M924 270 C924 312 900 318 860 318 L164 318 C130 318 124 306 124 274" fill="none" stroke="#5FE3A1" stroke-width="2" stroke-dasharray="5 6" marker-end="url(#loop)"/>
+    <text x="520" y="310" text-anchor="middle" fill="#5FE3A1" font-size="13" font-weight="600">every settlement changes the next decision</text>
+    <text x="36" y="350" fill="#5C6677" font-size="12" letter-spacing="1">MONAD TESTNET 10143  ·  CIRCLE USDC  ·  MCP  ·  ENVIO  ·  PRIVY  ·  ERC-8004</text>
+  </g>
+</svg>

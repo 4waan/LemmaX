@@ -5,7 +5,7 @@
   "endpoint": "https://indexer.dev.hyperindex.xyz/7c5b0aa/v1/graphql",
   "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
   "freshness": {
-    "progressBlock": "70735766",
+    "progressBlock": "70813781",
     "lagBlocks": 3
   },
   "passed": true,
@@ -200,26 +200,35 @@
       ],
       "comparedWith": "local auditor",
       "matches": true
+    },
+    {
+      "attemptId": "0x41e72d47df69a9df818cf978f910db76a1fc9a11a7771342c156211f76c70f50",
+      "contract": "v3",
+      "state": "settled_success",
+      "termsSource": "event",
+      "findings": [],
+      "comparedWith": "local auditor",
+      "matches": true
     }
   ],
   "parties": [
-    {
-      "party": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
-      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
-      "attempts": 20,
-      "blocking": 0
-    },
-    {
-      "party": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
-      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
-      "attempts": 21,
-      "blocking": 0
-    },
     {
       "party": "0xf70650a43b74ca8dfdb1f5de32f6e547608151fd",
       "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
       "attempts": 1,
       "blocking": 1
+    },
+    {
+      "party": "0xed09e99f20ceed22bfff0d465f5a61d061b36e05",
+      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
+      "attempts": 22,
+      "blocking": 0
+    },
+    {
+      "party": "0xd059a60cf6cc3fd83002389f2128cfb6f1c70a77",
+      "rulebookHash": "0xbcd40d72b0ee6a70de91b3b2937f3300e5854e4ffef52a84967013433d2c94e1",
+      "attempts": 21,
+      "blocking": 0
     }
   ],
   "payouts": [
@@ -306,7 +315,7 @@
     "approved": true,
     "reasons": [],
     "indexedThrough": "70727448",
-    "ms": 240,
+    "ms": 228,
     "broadcast": false
   }
 }
